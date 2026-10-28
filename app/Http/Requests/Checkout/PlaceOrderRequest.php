@@ -10,6 +10,7 @@ use App\Enums\PaymentMethod;
 use App\Models\Address;
 use App\Services\CartService;
 use App\Services\OpeningHours;
+use App\Support\Money;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -155,8 +156,8 @@ class PlaceOrderRequest extends FormRequest
                 $validator->errors()->add('postcode', __('checkout.postcode.outside', ['postcode' => $postcode]));
             } elseif ($summary['subtotal'] < $zone->minimum_order) {
                 $validator->errors()->add('cart', __('checkout.errors.minimum', [
-                    'minimum' => $this->money($zone->minimum_order),
-                    'short' => $this->money($zone->minimum_order - $summary['subtotal']),
+                    'minimum' => Money::format($zone->minimum_order),
+                    'short' => Money::format($zone->minimum_order - $summary['subtotal']),
                 ]));
             }
         }
@@ -190,10 +191,5 @@ class PlaceOrderRequest extends FormRequest
         if (! $allowed) {
             $validator->errors()->add('payment_method', __('checkout.errors.payment_method'));
         }
-    }
-
-    private function money(int $pence): string
-    {
-        return '£'.number_format($pence / 100, $pence % 100 === 0 ? 0 : 2);
     }
 }

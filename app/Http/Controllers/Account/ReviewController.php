@@ -9,6 +9,7 @@ use App\Models\Order;
 use App\Models\OrderLine;
 use App\Models\Review;
 use App\Models\User;
+use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -63,14 +64,20 @@ class ReviewController extends Controller
     {
         $user = $request->user();
 
-        $order->review()->create([
-            'user_id' => $user->id,
-            'author_name' => $this->authorName($user),
-            'author_area' => $request->input('author_area'),
-            'rating' => $request->integer('rating'),
-            'body' => trim($request->string('body')->toString()),
-            'is_published' => false,
-        ]);
+        try {
+            $order->review()->create([
+                'user_id' => $user->id,
+                'author_name' => $this->authorName($user),
+                'author_area' => $request->input('author_area'),
+                'rating' => $request->integer('rating'),
+                'body' => trim($request->string('body')->toString()),
+                'is_published' => false,
+            ]);
+        } catch (UniqueConstraintViolationException) {
+            Inertia::flash('toast', ['type' => 'error', 'message' => __('reviews.errors.already')]);
+
+            return back()->withErrors(['order' => __('reviews.errors.already')]);
+        }
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __('reviews.flash.sent')]);
 

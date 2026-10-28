@@ -125,7 +125,7 @@ it('confirms small parties with no deposit', function () {
         ->and($reservation->deposit_status)->toBeNull()
         ->and($reservation->dining_table_id)->toBe($this->twoTop->id)
         ->and($reservation->phone)->toBe('+447700900123')
-        ->and($reservation->occasion)->toBe('Birthday')
+        ->and($reservation->occasion)->toBe('birthday')
         ->and($reservation->ends_at->diffInMinutes($reservation->starts_at, true))->toBe(105.0)
         ->and($reservation->reference)->toMatch('/^R[A-Z2-9]{5}$/');
 });
@@ -216,4 +216,22 @@ it('lets the customer and staff view a booking, and not another customer', funct
     $this->actingAs($owner)->get("/book/{$reservation->reference}")->assertOk();
     $this->actingAs(User::factory()->create())->get("/book/{$reservation->reference}")->assertForbidden();
     $this->actingAs(User::factory()->role(Role::Waiter)->create())->get("/book/{$reservation->reference}")->assertOk();
+});
+
+it('shows the stored occasion key as its label', function () {
+    $this->post('/book', bookingPayload());
+    $reservation = Reservation::query()->firstOrFail();
+
+    $this->get("/book/{$reservation->reference}")
+        ->assertInertia(fn (Assert $page) => $page->where('reservation.occasion', 'Birthday'));
+});
+
+it('records marketing consent for signed-in customers only', function () {
+    $this->post('/book', bookingPayload(['marketing_opt_in' => true]));
+    expect(User::where('marketing_opt_in', true)->count())->toBe(0);
+
+    $user = User::factory()->create(['marketing_opt_in' => false]);
+    $this->actingAs($user)->post('/book', bookingPayload(['date' => '2030-03-07', 'marketing_opt_in' => true]));
+
+    expect($user->fresh()->marketing_opt_in)->toBeTrue();
 });

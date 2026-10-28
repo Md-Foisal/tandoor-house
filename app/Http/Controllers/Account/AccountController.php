@@ -5,10 +5,10 @@ namespace App\Http\Controllers\Account;
 use App\Enums\OrderStatus;
 use App\Enums\ReservationStatus;
 use App\Http\Controllers\Controller;
+use App\Http\Resources\RecentOrderResource;
 use App\Models\Address;
 use App\Models\LoyaltyTransaction;
 use App\Models\Order;
-use App\Models\OrderLine;
 use App\Models\PromoCode;
 use App\Models\Reservation;
 use App\Models\User;
@@ -101,15 +101,7 @@ class AccountController extends Controller
             ->latest('placed_at')
             ->limit(3)
             ->get()
-            ->map(fn (Order $order) => [
-                'number' => $order->number,
-                'placed_at' => $order->placed_at->toIso8601String(),
-                'total' => $order->total,
-                'lines' => $order->lines
-                    ->map(fn (OrderLine $line) => ['name' => $line->name, 'quantity' => $line->quantity])
-                    ->values()
-                    ->all(),
-            ])
+            ->map(fn (Order $order) => RecentOrderResource::make($order))
             ->values()
             ->all();
     }

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Account;
 
 use App\Enums\OrderStatus;
 use App\Http\Controllers\Controller;
+use App\Http\Resources\RecentOrderResource;
 use App\Models\MenuItem;
 use App\Models\Modifier;
 use App\Models\Order;
@@ -51,10 +52,7 @@ class OrderHistoryController extends Controller
                 'channel' => $order->channel->value,
                 'placed_at' => $order->placed_at->toIso8601String(),
                 'total' => $order->total,
-                'lines' => $order->lines
-                    ->map(fn (OrderLine $line) => ['name' => $line->name, 'quantity' => $line->quantity])
-                    ->values()
-                    ->all(),
+                'lines' => RecentOrderResource::make($order)['lines'],
             ])->values()->all(),
             'pagination' => [
                 'current_page' => $page->currentPage(),
@@ -137,7 +135,7 @@ class OrderHistoryController extends Controller
             'message' => implode(' ', $parts),
         ]);
 
-        return $added > 0 ? redirect('/basket') : back();
+        return $added > 0 ? redirect()->route('basket') : back();
     }
 
     /**

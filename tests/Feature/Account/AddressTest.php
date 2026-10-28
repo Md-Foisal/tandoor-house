@@ -169,3 +169,14 @@ it('stops at ten addresses', function () {
 
     expect($user->addresses()->count())->toBe(10);
 });
+
+it('moves the default on update so only one remains', function () {
+    $user = User::factory()->create();
+    $old = Address::factory()->for($user)->default()->create();
+    $other = Address::factory()->for($user)->create();
+
+    $this->actingAs($user)->put("/account/addresses/{$other->id}", addressPayload(['is_default' => '1']))->assertRedirect();
+
+    expect($old->fresh()->is_default)->toBeFalse()
+        ->and($user->addresses()->where('is_default', true)->pluck('id')->all())->toBe([$other->id]);
+});

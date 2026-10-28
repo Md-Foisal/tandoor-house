@@ -28,7 +28,7 @@ use Illuminate\Support\Str;
  */
 class ReservationSeeder extends Seeder
 {
-    private const OCCASIONS = [['Birthday', 55], ['Anniversary', 30], ['Business dinner', 10], ['Engagement', 5]];
+    private const OCCASIONS = [['birthday', 55], ['anniversary', 30], ['business', 10], ['other', 5]];
 
     private const NOTES = [
         'High chair please', 'One guest is allergic to nuts', 'Window table if possible', 'Coming with a pram',

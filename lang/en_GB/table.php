@@ -39,6 +39,8 @@ return [
         'total' => 'Total so far',
         'remove' => 'Remove :item',
         'failed' => "That didn't go through. Try again.",
+        'age_confirmed' => 'Everyone drinking is 18 or over — we may ask for ID (Challenge 25)',
+        'age_required' => 'Tick this to send drinks to the kitchen.',
     ],
     'toast' => [
         'sent' => 'Sent to the kitchen',
@@ -93,6 +95,8 @@ return [
     'errors' => [
         'empty' => 'Add something to your order first.',
         'sold_out' => 'Something in your order has sold out.',
+        'closed' => "We're closed right now, so we can't take orders at the table. Ask a waiter if you're still here.",
+        'age' => 'Please confirm everyone drinking is 18 or over.',
         'duplicate' => 'That request is already on its way.',
     ],
     'offline_banner' => "You're offline. You can read the menu, but ordering waits until you're back.",

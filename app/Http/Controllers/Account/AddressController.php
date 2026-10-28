@@ -53,8 +53,8 @@ class AddressController extends Controller
         $user = $request->user();
 
         DB::transaction(function () use ($request, $user) {
-            $first = ! $user->addresses()->exists();
-            $default = $first || $request->boolean('is_default');
+            $existing = $user->addresses()->lockForUpdate()->pluck('id');
+            $default = $existing->isEmpty() || $request->boolean('is_default');
 
             if ($default) {
                 $user->addresses()->update(['is_default' => false]);
@@ -69,6 +69,9 @@ class AddressController extends Controller
     public function update(UpdateAddressRequest $request, Address $address): RedirectResponse
     {
         DB::transaction(function () use ($request, $address) {
+            Address::query()->where('user_id', $address->user_id)->lockForUpdate()->get(['id']);
+            $address->refresh();
+
             // The default can only move by choosing another one, so an account never has none.
             $default = $address->is_default || $request->boolean('is_default');
 

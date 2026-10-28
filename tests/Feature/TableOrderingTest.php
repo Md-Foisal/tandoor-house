@@ -10,12 +10,16 @@ use App\Models\MenuItem;
 use App\Models\Order;
 use App\Models\OrderLine;
 use App\Models\TableRequest;
+use Carbon\CarbonImmutable;
 use Database\Seeders\MenuSeeder;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Inertia\Testing\AssertableInertia as Assert;
 
 beforeEach(function () {
     $this->withCookie(config('session.cookie'), Str::random(40));
+    // Tuesday evening: open.
+    $this->travelTo(CarbonImmutable::parse('2026-10-27 19:00', 'Europe/London'));
     $this->seed(MenuSeeder::class);
     $this->table = DiningTable::factory()->create(['label' => '7', 'area' => 'Main room']);
 });
@@ -164,4 +168,55 @@ it('leaves out paid and other days orders from the bill', function () {
 
     $this->get(route('table.bill', $this->table->qr_token))
         ->assertInertia(fn (Assert $page) => $page->has('orders', 1));
+});
+
+function addBeer(): MenuItem
+{
+    $beer = MenuItem::query()->where('is_alcoholic', true)->where('is_available', true)->firstOrFail();
+    test()->post(route('basket.lines.store'), ['menu_item_id' => $beer->id, 'item_variant_id' => $beer->variants()->value('id'), 'quantity' => 1])->assertSessionHasNoErrors();
+
+    return $beer;
+}
+
+it('needs age confirmation to send alcohol from the table', function () {
+    $this->get(route('table.show', $this->table->qr_token));
+    addBeer();
+
+    $this->post(route('table.order', $this->table->qr_token))->assertSessionHasErrors('age_confirmed');
+    expect(Order::count())->toBe(0);
+
+    $this->post(route('table.order', $this->table->qr_token), ['age_confirmed' => true])->assertSessionHasNoErrors();
+    expect(Order::firstOrFail()->age_confirmed)->toBeTrue();
+});
+
+it('does not ask for age confirmation when there is no alcohol', function () {
+    $this->get(route('table.show', $this->table->qr_token));
+    addDish(1);
+
+    $this->post(route('table.order', $this->table->qr_token))->assertSessionHasNoErrors();
+    expect(Order::firstOrFail()->age_confirmed)->toBeFalse();
+});
+
+it('refuses table orders when the restaurant is closed', function () {
+    $this->get(route('table.show', $this->table->qr_token));
+    addDish(1);
+    $this->travelTo(CarbonImmutable::parse('2026-10-27 04:00', 'Europe/London'));
+
+    $this->post(route('table.order', $this->table->qr_token))->assertSessionHasErrors('basket');
+
+    expect(Order::count())->toBe(0)->and(Cart::query()->firstOrFail()->lines)->not->toBe([]);
+});
+
+it('does not write to the basket when the table page is polled', function () {
+    $this->get(route('table.show', $this->table->qr_token));
+    $writes = 0;
+    DB::listen(function ($query) use (&$writes) {
+        if (str_starts_with($query->sql, 'update "carts"')) {
+            $writes++;
+        }
+    });
+
+    $this->get(route('table.show', $this->table->qr_token))->assertOk();
+
+    expect($writes)->toBe(0);
 });

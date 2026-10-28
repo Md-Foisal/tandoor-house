@@ -29,6 +29,7 @@ return [
         'body' => 'Your review',
         'body_hint' => 'At least 20 characters. What was good, what was not.',
         'body_count' => ':count of 1000',
+        'already' => 'You have already reviewed this order.',
         'area' => 'Your neighbourhood (optional)',
         'area_hint' => 'Shown beside your first name and initial, like “Priya S., Bow”.',
         'submit' => 'Send review',

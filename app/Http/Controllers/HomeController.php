@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Enums\OrderStatus;
 use App\Enums\Role;
 use App\Http\Resources\MenuItemResource;
+use App\Http\Resources\RecentOrderResource;
 use App\Models\MenuItem;
 use App\Models\Order;
 use App\Models\OrderLine;
@@ -59,15 +60,7 @@ class HomeController extends Controller
             ->latest('placed_at')
             ->limit(self::RECENT_ORDERS)
             ->get()
-            ->map(fn (Order $order) => [
-                'number' => $order->number,
-                'placed_at' => $order->placed_at->toIso8601String(),
-                'total' => $order->total,
-                'lines' => $order->lines
-                    ->map(fn (OrderLine $line) => ['name' => $line->name, 'quantity' => $line->quantity])
-                    ->values()
-                    ->all(),
-            ])
+            ->map(fn (Order $order) => RecentOrderResource::make($order))
             ->values()
             ->all();
     }

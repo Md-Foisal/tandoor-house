@@ -25,11 +25,12 @@ class Pricing
         ?DeliveryZone $zone = null,
         ?PromoCode $promo = null,
         int $tip = 0,
+        bool $serviceCharge = true,
     ): array {
         $subtotal = array_sum(array_column($lines, 'total'));
         $discount = $this->discount($subtotal, $promo);
         $deliveryFee = $channel === OrderChannel::Delivery ? ($zone->fee ?? 0) : 0;
-        $serviceCharge = $channel === OrderChannel::DineIn
+        $service = $serviceCharge && $channel === OrderChannel::DineIn
             ? intdiv(($subtotal - $discount) * (int) $this->settings->get('service_charge_rate'), 10000)
             : 0;
 
@@ -37,10 +38,10 @@ class Pricing
             'subtotal' => $subtotal,
             'discount' => $discount,
             'delivery_fee' => $deliveryFee,
-            'service_charge' => $serviceCharge,
+            'service_charge' => $service,
             'tip' => $tip,
             'vat_total' => $this->vat($lines, $subtotal, $discount),
-            'total' => $subtotal - $discount + $deliveryFee + $serviceCharge + $tip,
+            'total' => $subtotal - $discount + $deliveryFee + $service + $tip,
         ];
     }
 

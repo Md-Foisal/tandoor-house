@@ -44,7 +44,13 @@ class TableOrderingController extends Controller
             return redirect()->route('table.show', $lead->qr_token);
         }
 
-        $this->cart->useChannel(OrderChannel::DineIn, $table);
+        // Polled by the page, so only write when the basket is not already for this table.
+        $cart = $this->cart->cart();
+
+        if ($cart->channel !== OrderChannel::DineIn->value || $cart->dining_table_id !== $table->id) {
+            $this->cart->useChannel(OrderChannel::DineIn, $table);
+        }
+
         $summary = $this->cart->summary();
 
         return Inertia::render('table/show', [
@@ -68,6 +74,7 @@ class TableOrderingController extends Controller
                 'service_charge' => $summary['service_charge'],
                 'total' => $summary['total'],
                 'has_unavailable' => $summary['has_unavailable'],
+                'has_alcohol' => $summary['has_alcohol'],
             ],
             'service_rate' => (int) $this->settings->get('service_charge_rate'),
             'orders' => fn () => $this->visit($table)->map(fn (Order $order) => $this->orderData($order))->values()->all(),
@@ -166,7 +173,7 @@ class TableOrderingController extends Controller
             return back()->withErrors(['basket' => __('table.errors.sold_out')]);
         }
 
-        $place->handle($table, $request->user());
+        $place->handle($table, $request->user(), $request->boolean('age_confirmed'));
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __('table.toast.sent')]);
 

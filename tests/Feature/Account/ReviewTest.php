@@ -5,6 +5,7 @@ use App\Models\Order;
 use App\Models\Review;
 use App\Models\User;
 use Database\Seeders\MenuSeeder;
+use Illuminate\Support\Facades\DB;
 use Inertia\Testing\AssertableInertia as Assert;
 
 beforeEach(function () {
@@ -124,4 +125,27 @@ it('redirects guests away from the review endpoint', function () {
     $order = completedOrderFor(User::factory()->create());
 
     $this->post("/account/orders/{$order->number}/review", reviewPayload())->assertRedirect('/login');
+});
+
+it('handles a double submit without a server error', function () {
+    $user = User::factory()->create();
+    $order = completedOrderFor($user);
+    $raced = false;
+
+    Review::creating(function () use ($order, &$raced) {
+        if (! $raced) {
+            $raced = true;
+            DB::table('reviews')->insert([
+                'order_id' => $order->id, 'user_id' => $order->user_id, 'author_name' => 'Pri S.', 'rating' => 5,
+                'body' => 'The same review arrived a moment earlier.', 'is_published' => false,
+                'created_at' => now(), 'updated_at' => now(),
+            ]);
+        }
+    });
+
+    $this->actingAs($user)->from('/account/reviews')->post("/account/orders/{$order->number}/review", reviewPayload())
+        ->assertRedirect('/account/reviews')
+        ->assertSessionHasErrors('order');
+
+    expect(Review::count())->toBe(1);
 });

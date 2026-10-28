@@ -7,6 +7,8 @@ import { QuantityStepper } from '@/components/brand/quantity-stepper';
 import { EmptyState, ErrorState, useOnline } from '@/components/brand/states';
 import { StickyActionBar } from '@/components/brand/sticky-action-bar';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Label } from '@/components/ui/label';
 import {
     Sheet,
     SheetContent,
@@ -35,10 +37,14 @@ export function OrderBar({
     const [open, setOpen] = useState(false);
     const [sending, setSending] = useState(false);
     const [failed, setFailed] = useState(false);
+    const [ageConfirmed, setAgeConfirmed] = useState(false);
+    const [ageError, setAgeError] = useState<string | null>(null);
     const [optimistic, setOptimistic] = useState<Record<string, number>>({});
 
     const empty = basket.lines.length === 0;
-    const blocked = empty || !online || basket.has_unavailable || sending;
+    const needsAge = basket.has_alcohol && !ageConfirmed;
+    const blocked =
+        empty || !online || basket.has_unavailable || sending || needsAge;
 
     const setQuantity = (key: string, quantity: number) => {
         setFailed(false);
@@ -70,15 +76,21 @@ export function OrderBar({
     const send = () => {
         setSending(true);
         setFailed(false);
+        setAgeError(null);
         router.post(
             `/t/${token}/order`,
-            {},
+            { age_confirmed: basket.has_alcohol && ageConfirmed },
             {
                 preserveScroll: true,
                 onSuccess: () => setOpen(false),
                 onError: (errors) => {
                     setFailed(true);
-                    toast.error(errors.basket ?? t('table.sheet.failed'));
+                    setAgeError(errors.age_confirmed ?? null);
+                    toast.error(
+                        errors.basket ??
+                            errors.age_confirmed ??
+                            t('table.sheet.failed'),
+                    );
                 },
                 onFinish: () => setSending(false),
             },
@@ -259,6 +271,44 @@ export function OrderBar({
                         )}
                     </div>
                     <div className="flex flex-col gap-2 p-4 pb-[calc(1rem+env(safe-area-inset-bottom))]">
+                        {basket.has_alcohol && !empty && (
+                            <div className="flex items-start gap-3">
+                                <Checkbox
+                                    id="table-age-confirmed"
+                                    checked={ageConfirmed}
+                                    onCheckedChange={(checked) =>
+                                        setAgeConfirmed(checked === true)
+                                    }
+                                    aria-invalid={ageError ? true : undefined}
+                                    aria-describedby={
+                                        ageError || needsAge
+                                            ? 'table-age-hint'
+                                            : undefined
+                                    }
+                                    className="mt-0.5"
+                                />
+                                <div className="grid gap-1">
+                                    <Label
+                                        htmlFor="table-age-confirmed"
+                                        className="font-normal"
+                                    >
+                                        {t('table.sheet.age_confirmed')}
+                                    </Label>
+                                    {(ageError || needsAge) && (
+                                        <p
+                                            id="table-age-hint"
+                                            role={
+                                                ageError ? 'alert' : undefined
+                                            }
+                                            className="text-sm font-medium text-chilli"
+                                        >
+                                            {ageError ??
+                                                t('table.sheet.age_required')}
+                                        </p>
+                                    )}
+                                </div>
+                            </div>
+                        )}
                         {blockReason && (
                             <p
                                 role="alert"

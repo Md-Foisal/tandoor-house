@@ -8,6 +8,7 @@ use App\Http\Requests\Reservations\StoreReservationRequest;
 use App\Models\Reservation;
 use App\Policies\ReservationPolicy;
 use App\Services\TableAvailability;
+use App\Support\CodeGenerator;
 use App\Support\Settings;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\JsonResponse;
@@ -15,6 +16,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Lang;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -22,8 +24,6 @@ use Inertia\Response;
 class ReservationController extends Controller
 {
     private const DEFAULT_PARTY = 2;
-
-    private const REFERENCE_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 
     public function __construct(private readonly TableAvailability $availability) {}
 
@@ -48,7 +48,7 @@ class ReservationController extends Controller
                 'name' => $request->user()->name ?? '',
                 'email' => $request->user()->email ?? '',
                 'phone' => $request->user()->phone ?? '',
-                'marketing_opt_in' => false,
+                'marketing_opt_in' => (bool) ($request->user()->marketing_opt_in ?? false),
             ],
             'occasions' => StoreReservationRequest::OCCASIONS,
         ]);
@@ -83,7 +83,7 @@ class ReservationController extends Controller
             }
 
             return Reservation::create([
-                'reference' => $this->newReference(),
+                'reference' => CodeGenerator::unique(Reservation::class, 'reference', 'R', 5),
                 'user_id' => $request->user()?->id,
                 'name' => $request->string('name')->trim()->toString(),
                 'email' => $request->string('email')->toString(),
@@ -95,7 +95,7 @@ class ReservationController extends Controller
                 'status' => $deposit > 0 ? ReservationStatus::PendingDeposit : ReservationStatus::Confirmed,
                 'deposit' => $deposit,
                 'deposit_status' => $deposit > 0 ? PaymentStatus::Pending : null,
-                'occasion' => $request->filled('occasion') ? __('booking.occasions.'.$request->input('occasion')) : null,
+                'occasion' => $request->filled('occasion') ? $request->string('occasion')->toString() : null,
                 'notes' => $request->filled('notes') ? $request->string('notes')->trim()->toString() : null,
             ]);
         });
@@ -139,7 +139,7 @@ class ReservationController extends Controller
                 'status' => $reservation->status->value,
                 'deposit' => $reservation->deposit,
                 'deposit_status' => $reservation->deposit_status?->value,
-                'occasion' => $reservation->occasion,
+                'occasion' => $this->occasionLabel($reservation->occasion),
                 'notes' => $reservation->notes,
             ],
         ]);
@@ -168,16 +168,15 @@ class ReservationController extends Controller
         return collect($days)->firstWhere('status', 'open')['date'] ?? null;
     }
 
-    private function newReference(): string
+    /**
+     * Occasions are stored as keys; rows from before that hold the label itself.
+     */
+    private function occasionLabel(?string $occasion): ?string
     {
-        do {
-            $reference = 'R';
+        if ($occasion === null) {
+            return null;
+        }
 
-            for ($i = 0; $i < 5; $i++) {
-                $reference .= self::REFERENCE_ALPHABET[random_int(0, strlen(self::REFERENCE_ALPHABET) - 1)];
-            }
-        } while (Reservation::query()->where('reference', $reference)->exists());
-
-        return $reference;
+        return Lang::has('booking.occasions.'.$occasion) ? __('booking.occasions.'.$occasion) : $occasion;
     }
 }

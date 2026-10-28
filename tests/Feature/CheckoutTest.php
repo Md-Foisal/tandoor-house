@@ -12,8 +12,10 @@ use App\Models\MenuItem;
 use App\Models\Order;
 use App\Models\PromoCode;
 use App\Models\User;
+use App\Services\Pricing;
 use Carbon\CarbonImmutable;
 use Database\Seeders\MenuSeeder;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 beforeEach(function () {
@@ -294,4 +296,42 @@ it('normalises UK postcodes and mobiles', function () {
         ->and(UkFormats::mobile('+44 7700 900123'))->toBe('+447700900123')
         ->and(UkFormats::mobile('07700-900123'))->toBe('+447700900123')
         ->and(UkFormats::mobile('01234 567890'))->toBeNull();
+});
+
+it('keeps total and VAT consistent with a promo and the service charge removed', function () {
+    $item = fillBasket(3);
+    $table = DiningTable::factory()->create();
+    Cart::query()->firstOrFail()->update(['channel' => 'dine_in', 'dining_table_id' => $table->id]);
+    PromoCode::factory()->create(['code' => 'SAVE10', 'percent_off' => 1000]);
+    $this->post(route('checkout.promo'), ['code' => 'SAVE10']);
+
+    $this->post(route('checkout.store'), details(['channel' => 'dine_in', 'payment_method' => 'pay_at_venue', 'remove_service_charge' => true, 'tip' => 0]))
+        ->assertSessionHasNoErrors();
+
+    $gross = $item->price * 3;
+    $discount = intdiv($gross * 1000, 10000);
+    $expected = app(Pricing::class)->vat([['total' => $gross, 'vat_rate' => $item->vat_rate]], $gross, $discount);
+    $order = Order::firstOrFail();
+
+    expect($order->service_charge)->toBe(0)
+        ->and($order->discount)->toBe($discount)
+        ->and($order->total)->toBe($gross - $discount)
+        ->and($order->vat_total)->toBe($expected);
+});
+
+it('refuses a promo code that ran out between basket and order', function () {
+    fillBasket(3);
+    PromoCode::factory()->create(['code' => 'LAST1', 'percent_off' => 1000, 'max_uses' => 1, 'uses' => 0]);
+    $this->post(route('checkout.promo'), ['code' => 'LAST1'])->assertSessionHasNoErrors();
+    $raced = false;
+    DB::beforeExecuting(function (string $query) use (&$raced) {
+        if (! $raced && str_starts_with($query, 'update "promo_codes"')) {
+            $raced = true;
+            DB::table('promo_codes')->update(['uses' => 1]);
+        }
+    });
+
+    $this->post(route('checkout.store'), details())->assertSessionHasErrors('code');
+
+    expect(Order::count())->toBe(0);
 });

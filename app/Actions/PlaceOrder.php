@@ -17,6 +17,7 @@ use App\Services\Pricing;
 use App\Support\GuestOrders;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 
 /**
  * Turns the basket into a placed order. Input is already validated by
@@ -49,12 +50,8 @@ class PlaceOrder
             $zone,
             $promo,
             (int) ($data['tip'] ?? 0),
+            ! ($channel === OrderChannel::DineIn && ($data['remove_service_charge'] ?? false)),
         );
-
-        if ($channel === OrderChannel::DineIn && ($data['remove_service_charge'] ?? false)) {
-            $totals['total'] -= $totals['service_charge'];
-            $totals['service_charge'] = 0;
-        }
 
         $rawLines = collect($this->cart->lines())->keyBy('key');
         $stations = MenuItem::query()
@@ -62,6 +59,17 @@ class PlaceOrder
             ->pluck('station', 'id');
 
         $order = DB::transaction(function () use ($data, $user, $channel, $summary, $table, $zone, $promo, $totals, $rawLines, $stations) {
+            if ($totals['discount'] > 0 && $promo !== null) {
+                $claimed = PromoCode::query()
+                    ->whereKey($promo->id)
+                    ->where(fn ($query) => $query->whereNull('max_uses')->orWhereColumn('uses', '<', 'max_uses'))
+                    ->increment('uses');
+
+                if ($claimed === 0) {
+                    throw ValidationException::withMessages(['code' => __('checkout.errors.promo_used_up')]);
+                }
+            }
+
             $order = Order::create([
                 'number' => $this->numbers->handle(),
                 'channel' => $channel,
@@ -111,10 +119,6 @@ class PlaceOrder
             }
 
             $order->events()->create(['from' => null, 'to' => OrderStatus::Placed, 'user_id' => $user?->id]);
-
-            if ($totals['discount'] > 0) {
-                $promo?->increment('uses');
-            }
 
             return $order;
         });

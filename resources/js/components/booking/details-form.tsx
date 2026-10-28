@@ -137,19 +137,21 @@ export function DetailsForm({
                     />
                 )}
             </Field>
-            <div className="flex items-start gap-3">
-                <Checkbox
-                    id="book-marketing"
-                    checked={data.marketing_opt_in}
-                    onCheckedChange={(checked) =>
-                        setData('marketing_opt_in', checked === true)
-                    }
-                    className="mt-0.5"
-                />
-                <Label htmlFor="book-marketing" className="font-normal">
-                    {t('booking.details.marketing')}
-                </Label>
-            </div>
+            {signedIn && (
+                <div className="flex items-start gap-3">
+                    <Checkbox
+                        id="book-marketing"
+                        checked={data.marketing_opt_in}
+                        onCheckedChange={(checked) =>
+                            setData('marketing_opt_in', checked === true)
+                        }
+                        className="mt-0.5"
+                    />
+                    <Label htmlFor="book-marketing" className="font-normal">
+                        {t('booking.details.marketing')}
+                    </Label>
+                </div>
+            )}
         </fieldset>
     );
 }

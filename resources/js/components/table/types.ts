@@ -23,6 +23,7 @@ export type TableBasket = {
     service_charge: number;
     total: number;
     has_unavailable: boolean;
+    has_alcohol: boolean;
 };
 
 export type SentOrder = {

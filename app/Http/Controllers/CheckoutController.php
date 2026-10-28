@@ -12,6 +12,7 @@ use App\Http\Requests\Checkout\PromoRequest;
 use App\Models\DiningTable;
 use App\Models\PromoCode;
 use App\Services\CartService;
+use App\Support\Money;
 use App\Support\Settings;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -90,7 +91,7 @@ class CheckoutController extends Controller
             ($promo->starts_at?->isFuture() ?? false) || ($promo->ends_at?->isPast() ?? false) => __('checkout.promo.expired'),
             $promo->max_uses !== null && $promo->uses >= $promo->max_uses => __('checkout.promo.used_up'),
             $subtotal < $promo->minimum_order => __('checkout.promo.minimum', [
-                'short' => self::pounds((int) ($promo->minimum_order - $subtotal)),
+                'short' => Money::format((int) ($promo->minimum_order - $subtotal)),
             ]),
             default => null,
         };
@@ -132,7 +133,7 @@ class CheckoutController extends Controller
             ],
             'short_by' => $short,
             'message' => $short > 0
-                ? __('checkout.postcode.below_minimum', ['short' => self::pounds($short), 'minimum' => self::pounds($zone->minimum_order)])
+                ? __('checkout.postcode.below_minimum', ['short' => Money::format($short), 'minimum' => Money::format($zone->minimum_order)])
                 : null,
         ]);
     }
@@ -171,10 +172,5 @@ class CheckoutController extends Controller
                 'is_available' => $line['is_available'],
             ], $summary['lines']),
         ];
-    }
-
-    private static function pounds(int $pence): string
-    {
-        return '£'.number_format($pence / 100, $pence % 100 === 0 ? 0 : 2);
     }
 }

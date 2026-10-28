@@ -12,9 +12,11 @@ use App\Models\MenuItem;
 use App\Models\Order;
 use App\Models\User;
 use App\Services\CartService;
+use App\Services\OpeningHours;
 use App\Services\Pricing;
 use App\Support\GuestOrders;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 
 /**
  * Sends the table's basket to the kitchen as a dine-in order, paid at the
@@ -27,10 +29,15 @@ class PlaceTableOrder
         private readonly Pricing $pricing,
         private readonly GenerateOrderNumber $numbers,
         private readonly GuestOrders $guestOrders,
+        private readonly OpeningHours $hours,
     ) {}
 
-    public function handle(DiningTable $table, ?User $user): Order
+    public function handle(DiningTable $table, ?User $user, bool $ageConfirmed = false): Order
     {
+        if (! $this->hours->isOpen()) {
+            throw ValidationException::withMessages(['basket' => __('table.errors.closed')]);
+        }
+
         $summary = $this->cart->summary();
         $rawLines = collect($this->cart->lines())->keyBy('key');
         $stations = MenuItem::query()
@@ -42,7 +49,7 @@ class PlaceTableOrder
             OrderChannel::DineIn,
         );
 
-        $order = DB::transaction(function () use ($table, $user, $summary, $rawLines, $stations, $totals) {
+        $order = DB::transaction(function () use ($table, $user, $ageConfirmed, $summary, $rawLines, $stations, $totals) {
             $order = Order::create([
                 'number' => $this->numbers->handle(),
                 'channel' => OrderChannel::DineIn,
@@ -58,7 +65,7 @@ class PlaceTableOrder
                 ...$totals,
                 'payment_status' => PaymentStatus::Pending,
                 'payment_method' => PaymentMethod::PayAtVenue,
-                'age_confirmed' => false,
+                'age_confirmed' => $summary['has_alcohol'] && $ageConfirmed,
                 'placed_at' => now(),
             ]);
 
