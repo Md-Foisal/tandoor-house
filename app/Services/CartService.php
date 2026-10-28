@@ -28,6 +28,9 @@ class CartService
 
     private ?Cart $cart = null;
 
+    /** @var array<string, array<string, mixed>> */
+    private array $summaries = [];
+
     public function __construct(
         private readonly Request $request,
         private readonly Pricing $pricing,
@@ -168,6 +171,7 @@ class CartService
 
     public function clear(): void
     {
+        $this->summaries = [];
         $cart = $this->cart();
         $cart->lines = [];
         $cart->promo_code = null;
@@ -176,6 +180,7 @@ class CartService
 
     public function useChannel(OrderChannel $channel, ?DiningTable $table = null): void
     {
+        $this->summaries = [];
         $cart = $this->cart();
         $cart->channel = $channel->value;
         $cart->dining_table_id = $table?->id;
@@ -184,6 +189,7 @@ class CartService
 
     public function applyPromo(?string $code): void
     {
+        $this->summaries = [];
         $cart = $this->cart();
         $cart->promo_code = $code !== null ? strtoupper(trim($code)) : null;
         $cart->save();
@@ -201,6 +207,14 @@ class CartService
      * @return array<string, mixed>
      */
     public function summary(?int $deliveryFee = null, int $tip = 0): array
+    {
+        return $this->summaries[$deliveryFee.'|'.$tip] ??= $this->summarise($deliveryFee, $tip);
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function summarise(?int $deliveryFee, int $tip): array
     {
         $cart = $this->cart();
         $lines = collect($this->lines());
@@ -254,6 +268,7 @@ class CartService
      */
     private function save(array $lines): void
     {
+        $this->summaries = [];
         $cart = $this->cart();
         $cart->lines = $lines;
         $cart->reminded_at = null;
