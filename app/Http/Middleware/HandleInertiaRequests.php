@@ -2,7 +2,9 @@
 
 namespace App\Http\Middleware;
 
+use App\Support\Translations;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
 use Inertia\Middleware;
 
 class HandleInertiaRequests extends Middleware
@@ -37,7 +39,14 @@ class HandleInertiaRequests extends Middleware
     {
         return [
             ...parent::share($request),
-            'name' => config('app.name'),
+            'name' => config('restaurant.name'),
+            'restaurant' => Inertia::once(fn () => [
+                'name' => config('restaurant.name'),
+                'phone' => config('restaurant.contact.phone'),
+                'email' => config('restaurant.contact.email'),
+                'address' => config('restaurant.contact.address'),
+            ]),
+            'translations' => Inertia::once(fn () => Translations::forLocale(app()->getLocale())),
             'auth' => [
                 'user' => $request->user(),
             ],

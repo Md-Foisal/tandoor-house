@@ -8,11 +8,12 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { edit } from '@/routes/profile';
-import type { Auth } from '@/types';
+import type { User } from '@/types';
 import { send } from '@/routes/verification';
 
+// Settings pages sit behind the auth middleware, so the user is always present.
 type PageProps = {
-    auth: Auth;
+    auth: { user: User };
 };
 
 export default function Profile({
