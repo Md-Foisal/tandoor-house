@@ -14,7 +14,7 @@ import type { MenuItem } from '@/types';
 type Props = {
     item: MenuItem;
     href: string;
-    onAdd?: (item: MenuItem) => void;
+    onAdd?: (item: MenuItem, origin: HTMLElement) => void;
     className?: string;
 };
 
@@ -92,7 +92,7 @@ export function DishRow({ item, href, onAdd, className }: Props) {
                     <button
                         type="button"
                         disabled={soldOut}
-                        onClick={() => onAdd(item)}
+                        onClick={(event) => onAdd(item, event.currentTarget)}
                         aria-label={
                             needsChoice
                                 ? t('ui.choose_item', { item: item.name })
