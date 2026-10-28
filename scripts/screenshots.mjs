@@ -57,11 +57,15 @@ for (const theme of themes) {
                 signedInAs = null;
 
                 if (email !== null) {
-                    await page.goto(`${baseUrl}/login`, { waitUntil: 'networkidle' });
+                    await page.goto(`${baseUrl}/login`, {
+                        waitUntil: 'networkidle',
+                    });
                     await page.fill('input[name="email"]', email);
                     await page.fill('input[name="password"]', 'password');
                     await Promise.all([
-                        page.waitForURL((url) => !url.pathname.startsWith('/login')),
+                        page.waitForURL(
+                            (url) => !url.pathname.startsWith('/login'),
+                        ),
                         page.click('button[type="submit"]'),
                     ]);
                     signedInAs = email;
