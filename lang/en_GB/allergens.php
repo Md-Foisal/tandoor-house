@@ -1,0 +1,18 @@
+<?php
+
+return [
+    'celery' => 'Celery',
+    'gluten' => 'Cereals containing gluten',
+    'crustaceans' => 'Crustaceans',
+    'eggs' => 'Eggs',
+    'fish' => 'Fish',
+    'lupin' => 'Lupin',
+    'milk' => 'Milk',
+    'molluscs' => 'Molluscs',
+    'mustard' => 'Mustard',
+    'tree_nuts' => 'Tree nuts',
+    'peanuts' => 'Peanuts',
+    'sesame' => 'Sesame',
+    'soya' => 'Soya',
+    'sulphites' => 'Sulphur dioxide and sulphites',
+];
