@@ -21,10 +21,16 @@ export function AccountNav() {
     ];
 
     return (
-        <nav aria-label={t('nav.account')} className="-mx-4 overflow-x-auto px-4 lg:mx-0 lg:overflow-visible lg:px-0">
+        <nav
+            aria-label={t('nav.account')}
+            className="-mx-4 overflow-x-auto px-4 lg:mx-0 lg:overflow-visible lg:px-0"
+        >
             <ul className="flex gap-1 lg:flex-col">
                 {links.map((link) => {
-                    const current = link.href === '/account' ? path === '/account' : path?.startsWith(link.href);
+                    const current =
+                        link.href === '/account'
+                            ? path === '/account'
+                            : path?.startsWith(link.href);
 
                     return (
                         <li key={link.href} className="shrink-0">
@@ -34,7 +40,8 @@ export function AccountNav() {
                                 aria-current={current ? 'page' : undefined}
                                 className={cn(
                                     'flex h-11 items-center rounded-full px-4 font-semibold whitespace-nowrap text-ink-muted outline-none hover:text-ink focus-visible:outline-2 focus-visible:outline-ember lg:rounded-md',
-                                    current && 'bg-ink text-paper hover:text-paper',
+                                    current &&
+                                        'bg-ink text-paper hover:text-paper',
                                 )}
                             >
                                 {link.label}
@@ -50,15 +57,25 @@ export function AccountNav() {
 /**
  * Page frame for account screens: the section nav beside (or above) the content.
  */
-export function AccountShell({ title, children }: { title: string; children: ReactNode }) {
+export function AccountShell({
+    title,
+    children,
+}: {
+    title: string;
+    children: ReactNode;
+}) {
     return (
         <div className="container-page grid gap-6 py-8 md:py-12 lg:grid-cols-[14rem_1fr] lg:gap-12">
             <div className="flex flex-col gap-4">
-                <h1 className="font-display text-display-lg lg:hidden">{title}</h1>
+                <h1 className="font-display text-display-lg lg:hidden">
+                    {title}
+                </h1>
                 <AccountNav />
             </div>
             <div className="flex min-w-0 flex-col gap-6">
-                <h1 className="hidden font-display text-display-lg lg:block">{title}</h1>
+                <h1 className="hidden font-display text-display-lg lg:block">
+                    {title}
+                </h1>
                 {children}
             </div>
         </div>
