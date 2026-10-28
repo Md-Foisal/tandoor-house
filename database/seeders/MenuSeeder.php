@@ -17,14 +17,14 @@ class MenuSeeder extends Seeder
         /** @var list<array<string, mixed>> $menu */
         $menu = require database_path("data/menus/{$cuisine}.php");
 
-        $dinner = [ServicePeriod::Lunch->value, ServicePeriod::Dinner->value];
+        $periods = [ServicePeriod::Lunch->value, ServicePeriod::Dinner->value];
 
         foreach ($menu as $categoryPosition => $categoryData) {
             $category = Category::create([
                 'name' => $categoryData['name'],
                 'slug' => Str::slug($categoryData['name']),
                 'description' => $categoryData['description'],
-                'service_periods' => $dinner,
+                'service_periods' => $periods,
                 'position' => $categoryPosition,
             ]);
 
@@ -54,7 +54,7 @@ class MenuSeeder extends Seeder
             'prep_minutes' => $data['prep'],
             'is_hot' => $data['hot'] ?? true,
             'is_special' => $data['special'] ?? false,
-            'image' => 'dishes/'.Str::slug($data['name']),
+            'is_alcoholic' => $data['alcohol'] ?? false,
             'position' => $position,
         ]);
 

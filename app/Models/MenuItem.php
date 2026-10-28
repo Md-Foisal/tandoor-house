@@ -32,13 +32,14 @@ use Illuminate\Support\Collection;
  * @property bool $is_available
  * @property bool $is_special
  * @property bool $is_hot
+ * @property bool $is_alcoholic
  * @property list<string>|null $service_periods
  * @property int $position
  */
 #[Fillable([
     'category_id', 'name', 'slug', 'description', 'price', 'kcal', 'spice_level',
     'is_vegetarian', 'is_vegan', 'allergens', 'vat_rate', 'station', 'prep_minutes',
-    'image', 'is_available', 'is_special', 'is_hot', 'service_periods', 'position',
+    'image', 'is_available', 'is_special', 'is_hot', 'is_alcoholic', 'service_periods', 'position',
 ])]
 class MenuItem extends Model
 {
@@ -54,6 +55,9 @@ class MenuItem extends Model
             'is_available' => 'boolean',
             'is_special' => 'boolean',
             'is_hot' => 'boolean',
+            'is_alcoholic' => 'boolean',
+            'kcal' => 'integer',
+            'vat_rate' => 'integer',
             'allergens' => AsEnumCollection::of(Allergen::class),
             'station' => Station::class,
             'service_periods' => 'array',

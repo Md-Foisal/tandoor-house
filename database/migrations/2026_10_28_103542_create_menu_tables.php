@@ -30,6 +30,7 @@ return new class extends Migration
             $table->boolean('is_vegetarian')->default(false);
             $table->boolean('is_vegan')->default(false);
             $table->json('allergens');
+            // Basis points: 2000 is the UK standard rate of 20%.
             $table->unsignedSmallInteger('vat_rate')->default(2000);
             $table->string('station', 20);
             $table->unsignedSmallInteger('prep_minutes')->default(12);
@@ -37,6 +38,7 @@ return new class extends Migration
             $table->boolean('is_available')->default(true);
             $table->boolean('is_special')->default(false);
             $table->boolean('is_hot')->default(true);
+            $table->boolean('is_alcoholic')->default(false);
             $table->json('service_periods')->nullable();
             $table->unsignedSmallInteger('position')->default(0);
             $table->timestamps();

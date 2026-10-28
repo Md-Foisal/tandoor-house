@@ -3,7 +3,9 @@
 /*
 | Seed menu for the "modern-indian" cuisine. Prices in pence.
 | Keys per dish: name, description, price, kcal, spice (0-3), veg, vegan,
-| allergens, station, prep, hot, special, variants, modifiers.
+| allergens, station, prep, hot, special, alcohol, variants, modifiers.
+| A variant's price replaces the dish price; modifier allergens are added
+| to the dish's when the modifier is chosen.
 */
 
 return [
@@ -16,7 +18,7 @@ return [
             ['name' => 'Samosa Chaat', 'description' => 'Two broken Punjabi samosas under chickpea curry, yoghurt, tamarind and pomegranate.', 'price' => 750, 'kcal' => 520, 'spice' => 1, 'veg' => true, 'allergens' => ['gluten', 'milk'], 'station' => 'tawa', 'prep' => 8],
             ['name' => 'Onion Bhaji', 'description' => 'Red onion in a light gram-flour batter, ajwain and curry leaf. Served with coriander chutney.', 'price' => 600, 'kcal' => 340, 'spice' => 1, 'veg' => true, 'vegan' => true, 'allergens' => [], 'station' => 'tawa', 'prep' => 7],
             ['name' => 'Chilli Cheese Toast', 'description' => 'Bombay café classic: sourdough, green chilli, mature cheddar and coriander, grilled until it bubbles.', 'price' => 650, 'kcal' => 450, 'spice' => 2, 'veg' => true, 'allergens' => ['gluten', 'milk'], 'station' => 'tawa', 'prep' => 6, 'special' => true],
-            ['name' => 'Prawn Koliwada', 'description' => 'Crisp-fried king prawns in a Koli fisherfolk batter, lime and a smoked chilli mayonnaise.', 'price' => 950, 'kcal' => 390, 'spice' => 2, 'allergens' => ['crustaceans', 'eggs', 'mustard'], 'station' => 'tawa', 'prep' => 8],
+            ['name' => 'Prawn Koliwada', 'description' => 'King prawns fried crisp in the Koli fishermen\'s rice and gram flour batter, lime and a smoked chilli mayonnaise.', 'price' => 950, 'kcal' => 390, 'spice' => 2, 'allergens' => ['crustaceans', 'eggs', 'mustard'], 'station' => 'tawa', 'prep' => 8],
         ],
     ],
     [
@@ -73,7 +75,7 @@ return [
             ['name' => 'Kachumber Salad', 'description' => 'Cucumber, tomato, red onion, lime and chaat masala.', 'price' => 400, 'kcal' => 70, 'spice' => 0, 'veg' => true, 'vegan' => true, 'allergens' => [], 'station' => 'cold', 'prep' => 3, 'hot' => false],
             ['name' => 'Bombay Potatoes', 'description' => 'Crushed new potatoes with mustard seed, curry leaf and turmeric.', 'price' => 550, 'kcal' => 290, 'spice' => 1, 'veg' => true, 'vegan' => true, 'allergens' => ['mustard'], 'station' => 'tawa', 'prep' => 6],
             ['name' => 'Cucumber Raita', 'description' => 'Thick yoghurt, cucumber, roast cumin and mint.', 'price' => 350, 'kcal' => 110, 'spice' => 0, 'veg' => true, 'allergens' => ['milk'], 'station' => 'cold', 'prep' => 2, 'hot' => false],
-            ['name' => 'Poppadoms and Pickles', 'description' => 'Two poppadoms, house lime pickle, mango chutney and mint sauce.', 'price' => 400, 'kcal' => 220, 'spice' => 1, 'veg' => true, 'allergens' => ['mustard', 'milk'], 'station' => 'cold', 'prep' => 2, 'hot' => false],
+            ['name' => 'Poppadoms and Pickles', 'description' => 'Two poppadoms, house lime pickle, mango chutney and mint sauce.', 'price' => 400, 'kcal' => 220, 'spice' => 1, 'veg' => true, 'allergens' => ['mustard', 'milk', 'sulphites'], 'station' => 'cold', 'prep' => 2, 'hot' => false],
         ],
     ],
     [
@@ -87,12 +89,12 @@ return [
     ],
     [
         'name' => 'Drinks',
-        'description' => 'Lassis and chai made here. A short list of beer and wine chosen to go with spice.',
+        'description' => 'Lassis and chai made here, and a cold beer chosen to stand up to spice.',
         'items' => [
             ['name' => 'Mango Lassi', 'description' => 'Alphonso mango, yoghurt and a pinch of cardamom.', 'price' => 450, 'kcal' => 240, 'spice' => 0, 'veg' => true, 'allergens' => ['milk'], 'station' => 'bar', 'prep' => 2, 'hot' => false],
-            ['name' => 'Masala Chai', 'description' => 'Assam simmered with milk, ginger, cardamom and clove.', 'price' => 350, 'kcal' => 120, 'spice' => 0, 'veg' => true, 'allergens' => ['milk'], 'station' => 'bar', 'prep' => 3, 'modifiers' => [['Milk', 1, 1, [['Whole milk', 0, ['milk']], ['Oat milk', 0, ['gluten']]]]]],
+            ['name' => 'Masala Chai', 'description' => 'Assam simmered with milk, ginger, cardamom and clove.', 'price' => 350, 'kcal' => 120, 'spice' => 0, 'veg' => true, 'allergens' => [], 'station' => 'bar', 'prep' => 3, 'modifiers' => [['Milk', 1, 1, [['Whole milk', 0, ['milk']], ['Oat milk', 0, ['gluten']]]]]],
             ['name' => 'Fresh Lime Soda', 'description' => 'Sweet, salted or both. Our best answer to a Chettinad.', 'price' => 400, 'kcal' => 90, 'spice' => 0, 'veg' => true, 'vegan' => true, 'allergens' => [], 'station' => 'bar', 'prep' => 2, 'hot' => false, 'variants' => [['Sweet', 400, 90], ['Salted', 400, 10], ['Sweet and salted', 400, 60]]],
-            ['name' => 'Indian Pale Ale', 'description' => 'A crisp lager-style IPA from a Bengaluru brewery. 330 ml, 4.8% ABV.', 'price' => 550, 'kcal' => 150, 'spice' => 0, 'veg' => true, 'vegan' => true, 'allergens' => ['gluten'], 'station' => 'bar', 'prep' => 1, 'hot' => false],
+            ['name' => 'Indian Pale Ale', 'description' => 'A crisp lager-style IPA from a Bengaluru brewery. 330 ml, 4.8% ABV.', 'price' => 550, 'kcal' => 150, 'spice' => 0, 'veg' => true, 'vegan' => true, 'allergens' => ['gluten', 'sulphites'], 'station' => 'bar', 'prep' => 1, 'hot' => false, 'alcohol' => true],
         ],
     ],
 ];
