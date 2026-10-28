@@ -1,0 +1,33 @@
+<?php
+
+return [
+    'home' => 'Home',
+    'menu' => 'Menu',
+    'book' => 'Book',
+    'book_long' => 'Book a table',
+    'story' => 'Our story',
+    'visit' => 'Find us',
+    'basket' => 'Basket',
+    'basket_count' => 'Basket, :count items',
+    'account' => 'Account',
+    'account_overview' => 'Overview',
+    'account_orders' => 'Orders',
+    'account_addresses' => 'Addresses',
+    'account_reviews' => 'Reviews',
+    'account_settings' => 'Settings',
+    'sign_in' => 'Sign in',
+    'order_now' => 'Order now',
+    'main' => 'Main',
+    'footer' => [
+        'tagline' => 'Clay oven, open kitchen, East London.',
+        'hours' => 'Opening hours',
+        'contact' => 'Get in touch',
+        'legal' => 'The small print',
+        'allergens' => 'Allergens',
+        'privacy' => 'Privacy notice',
+        'cookies' => 'Cookies',
+        'hygiene' => 'Food hygiene rating: :rating (very good)',
+        'company' => ':legal · Registered in England and Wales no. :number · VAT :vat',
+        'closed' => 'Closed',
+    ],
+];

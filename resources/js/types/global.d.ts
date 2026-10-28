@@ -1,5 +1,6 @@
 import type { Auth } from '@/types/auth';
-import type { RestaurantInfo, TranslationTree } from '@/types/ui';
+import type { OpenStatusData } from '@/components/brand/open-status';
+import type { FooterData, RestaurantInfo, TranslationTree } from '@/types/ui';
 
 declare module 'react' {
     interface InputHTMLAttributes<T> {
@@ -13,6 +14,9 @@ declare module '@inertiajs/core' {
             name: string;
             restaurant: RestaurantInfo;
             translations: TranslationTree;
+            footer: FooterData;
+            basketCount: number;
+            openStatus: OpenStatusData;
             auth: Auth;
             sidebarOpen: boolean;
             [key: string]: unknown;

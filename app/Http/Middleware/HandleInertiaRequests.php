@@ -2,6 +2,9 @@
 
 namespace App\Http\Middleware;
 
+use App\Services\CartService;
+use App\Services\OpeningHours;
+use App\Support\Settings;
 use App\Support\Translations;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -45,11 +48,18 @@ class HandleInertiaRequests extends Middleware
                 'phone' => config('restaurant.contact.phone'),
                 'email' => config('restaurant.contact.email'),
                 'address' => config('restaurant.contact.address'),
+                'company' => config('restaurant.company'),
+            ]),
+            'footer' => Inertia::once(fn () => [
+                'hours' => app(OpeningHours::class)->week(now()->startOfWeek()),
+                'hygieneRating' => app(Settings::class)->get('hygiene_rating'),
             ]),
             'translations' => Inertia::once(fn () => Translations::forLocale(app()->getLocale())),
             'auth' => [
                 'user' => $request->user(),
             ],
+            'basketCount' => fn () => $request->user()?->isStaff() ? 0 : app(CartService::class)->count(),
+            'openStatus' => fn () => app(OpeningHours::class)->status(),
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
         ];
     }
