@@ -27,50 +27,59 @@ await mkdir(outDir, { recursive: true });
 const browser = await chromium.launch();
 const errors = [];
 
+function parse(entry) {
+    const [name, target] = entry.split('=');
+    const at = target.indexOf('@');
+
+    return {
+        name,
+        path: at === -1 ? target : target.slice(0, at),
+        email: at === -1 ? null : target.slice(at + 1),
+    };
+}
+
+// Sign in once per demo user and reuse the cookies everywhere, so the
+// login rate limit is never reached.
+const sessions = new Map();
+
+for (const email of new Set(pages.map((entry) => parse(entry).email))) {
+    if (email === null) {
+        continue;
+    }
+
+    const context = await browser.newContext();
+    const page = await context.newPage();
+
+    await page.goto(`${baseUrl}/login`, { waitUntil: 'networkidle' });
+    await page.fill('input[name="email"]', email);
+    await page.fill('input[name="password"]', 'password');
+    await Promise.all([
+        page.waitForURL((url) => !url.pathname.startsWith('/login')),
+        page.click('button[type="submit"]'),
+    ]);
+    sessions.set(email, await context.storageState());
+    await context.close();
+}
+
 for (const theme of themes) {
     for (const width of widths) {
-        const context = await browser.newContext({
-            viewport: { width, height: width < 768 ? 812 : 900 },
-            colorScheme: theme,
-            deviceScaleFactor: 1,
-        });
-        const page = await context.newPage();
-
-        page.on('console', (message) => {
-            if (message.type() === 'error') {
-                errors.push(
-                    `${page.url()} [${width} ${theme}]: ${message.text()}`,
-                );
-            }
-        });
-
-        let signedInAs = null;
-
         for (const entry of pages) {
-            const [name, target] = entry.split('=');
-            const at = target.indexOf('@');
-            const path = at === -1 ? target : target.slice(0, at);
-            const email = at === -1 ? null : target.slice(at + 1);
+            const { name, path, email } = parse(entry);
+            const context = await browser.newContext({
+                viewport: { width, height: width < 768 ? 812 : 900 },
+                colorScheme: theme,
+                deviceScaleFactor: 1,
+                storageState: email === null ? undefined : sessions.get(email),
+            });
+            const page = await context.newPage();
 
-            if (email !== signedInAs) {
-                await context.clearCookies();
-                signedInAs = null;
-
-                if (email !== null) {
-                    await page.goto(`${baseUrl}/login`, {
-                        waitUntil: 'networkidle',
-                    });
-                    await page.fill('input[name="email"]', email);
-                    await page.fill('input[name="password"]', 'password');
-                    await Promise.all([
-                        page.waitForURL(
-                            (url) => !url.pathname.startsWith('/login'),
-                        ),
-                        page.click('button[type="submit"]'),
-                    ]);
-                    signedInAs = email;
+            page.on('console', (message) => {
+                if (message.type() === 'error') {
+                    errors.push(
+                        `${page.url()} [${width} ${theme}]: ${message.text()}`,
+                    );
                 }
-            }
+            });
 
             await page.goto(baseUrl + path, { waitUntil: 'networkidle' });
             await page.evaluate(async () => {
@@ -95,9 +104,8 @@ for (const theme of themes) {
                 type: 'jpeg',
                 quality: 70,
             });
+            await context.close();
         }
-
-        await context.close();
     }
 }
 
