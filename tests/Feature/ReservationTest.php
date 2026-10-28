@@ -47,7 +47,7 @@ it('shows the booking page with the next sixty days', function () {
             ->where('days.0.status', 'closed')
             ->where('query.party', 2)
             ->where('query.date', '2030-03-05')
-            ->where('rules.max_party', 10)
+            ->where('rules.max_party', 8)
             ->has('slots'));
 });
 
