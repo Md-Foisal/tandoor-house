@@ -121,6 +121,7 @@ class AccountController extends Controller
     {
         return PromoCode::query()
             ->where('is_active', true)
+            ->where('is_public', true)
             ->where(fn ($query) => $query->whereNull('starts_at')->orWhere('starts_at', '<=', now()))
             ->where(fn ($query) => $query->whereNull('ends_at')->orWhere('ends_at', '>=', now()))
             ->where(fn ($query) => $query->whereNull('max_uses')->orWhereColumn('uses', '<', 'max_uses'))

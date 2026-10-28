@@ -29,12 +29,20 @@ class CustomerSeeder extends Seeder
         PromoCode::factory()->percentOff(1000)->create([
             'code' => 'WELCOME10',
             'description' => '10% off your first order',
+            'is_public' => true,
         ]);
 
         PromoCode::factory()->amountOff(500, minimum: 3000)->create([
             'code' => 'TANDOOR5',
             'description' => '£5 off when you spend £30 or more',
             'max_uses' => 500,
+            'is_public' => true,
+        ]);
+
+        PromoCode::factory()->amountOff(1000)->create([
+            'code' => 'REGULARS10',
+            'description' => '£10 off, for guests we know by name',
+            'max_uses' => 50,
         ]);
 
         PromoCode::factory()->percentOff(1500)->expired()->create([

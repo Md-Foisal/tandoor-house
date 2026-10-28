@@ -20,10 +20,11 @@ use Illuminate\Database\Eloquent\Model;
  * @property int|null $max_uses
  * @property int $uses
  * @property bool $is_active
+ * @property bool $is_public
  * @property CarbonImmutable|null $created_at
  * @property CarbonImmutable|null $updated_at
  */
-#[Fillable(['code', 'description', 'percent_off', 'amount_off', 'minimum_order', 'starts_at', 'ends_at', 'max_uses', 'uses', 'is_active'])]
+#[Fillable(['code', 'description', 'percent_off', 'amount_off', 'minimum_order', 'starts_at', 'ends_at', 'max_uses', 'uses', 'is_active', 'is_public'])]
 class PromoCode extends Model
 {
     /** @use HasFactory<PromoCodeFactory> */
@@ -35,6 +36,7 @@ class PromoCode extends Model
             'starts_at' => 'datetime',
             'ends_at' => 'datetime',
             'is_active' => 'boolean',
+            'is_public' => 'boolean',
         ];
     }
 }

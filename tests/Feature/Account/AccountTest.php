@@ -51,7 +51,8 @@ it('fills every block for a customer with data', function () {
         LoyaltyTransaction::create(['user_id' => $customer->id, 'points' => $n, 'reason' => "Order {$n}"]);
     }
 
-    PromoCode::factory()->create(['code' => 'WELCOME10', 'minimum_order' => 1500]);
+    PromoCode::factory()->create(['code' => 'WELCOME10', 'minimum_order' => 1500, 'is_public' => true]);
+    PromoCode::factory()->create(['code' => 'PRIVATE20']);
     PromoCode::factory()->expired()->create();
     PromoCode::factory()->inactive()->create();
     PromoCode::factory()->exhausted()->create();
