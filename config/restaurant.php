@@ -50,6 +50,7 @@ return [
         'vat_rate' => 2000,
         'service_charge_rate' => 1250,
         'hygiene_rating' => 5,
+        'opened_year' => 2016,
         'tip_presets' => [0, 1000, 1250, 1500],
         'pickup_slot_minutes' => 15,
         'pickup_lead_minutes' => 20,
