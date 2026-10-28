@@ -60,7 +60,8 @@ return [
             'duration_minutes' => 105,
             'deposit_from_party' => 6,
             'deposit_per_head' => 1000,
-            'max_party' => 10,
+            // Larger groups book by phone so the team can join tables.
+            'max_party' => 8,
             'no_show_minutes' => 20,
         ],
         'loyalty' => [
