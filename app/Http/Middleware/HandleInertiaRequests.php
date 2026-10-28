@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Enums\StaffArea;
 use App\Services\CartService;
 use App\Services\OpeningHours;
 use App\Support\Settings;
@@ -60,6 +61,9 @@ class HandleInertiaRequests extends Middleware
             ],
             'basketCount' => fn () => $request->user()?->isStaff() ? 0 : app(CartService::class)->count(),
             'openStatus' => fn () => app(OpeningHours::class)->status(),
+            'staffAreas' => fn () => $request->user()?->isStaff()
+                ? array_map(fn (StaffArea $area) => $area->value, StaffArea::for($request->user()->role))
+                : [],
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
         ];
     }
