@@ -17,7 +17,7 @@ Semantic tokens; each has a light and a dark value chosen on purpose. Dark is "b
 | `ink-muted` | secondary text | `#6B5A4B` | `#B5A595` |
 | `line` | dividers, decorative borders | `#D9CBB8` | `#3A2F25` |
 | `line-strong` | input and control borders (3:1) | `#8F7C68` | `#7D6C5B` |
-| `ember` | the accent: primary actions, active state, focus | `#A8461F` | `#E8784A` |
+| `ember` | the accent: primary actions, active state, focus | `#A0421C` | `#E8784A` |
 | `ember-ink` | text on ember | `#FFF8F0` | `#1A0F08` |
 | `ember-soft` | tinted ember background | `#F4DED2` | `#3A2015` |
 | `turmeric` | specials, highlights, waiting tickets | `#8A5D00` | `#E2B04A` |
@@ -27,7 +27,7 @@ Semantic tokens; each has a light and a dark value chosen on purpose. Dark is "b
 | `chilli` | spice, errors, destructive, late tickets | `#A3231B` | `#F07A6E` |
 | `chilli-soft` | | `#F6DEDA` | `#3A1714` |
 
-Measured contrast (WCAG 2.x): ink on paper 15.9, ink-muted on paper 6.0, ember on paper 5.3, ember-ink on ember 5.6, every `x` on `x-soft` ≥ 4.5, line-strong on paper ≥ 3.4 in both themes. No blue, no purple, no gradients except the photo scrim (ink at 0 → 70%).
+Measured contrast (WCAG 2.x): ink on paper 15.9, ink-muted on paper 6.0, ember on paper 5.7, ember on clay 4.8, ember-ink on ember 5.6, every `x` on `x-soft` ≥ 4.5, line-strong on paper ≥ 3.4 in both themes. No blue, no purple, no gradients except the photo scrim (ink at 0 → 70%).
 
 shadcn variables (`--primary`, `--muted`, ...) are mapped to these tokens, so shadcn components inherit the brand.
 
@@ -97,7 +97,7 @@ Patterns (each shown at `/styleguide/motion`):
 - **Shared photo:** dish card photo → dish page hero with `layoutId`.
 - **Order slip toasts:** slide up from the bottom edge with a 1° tilt that straightens.
 
-Rules: animate transform and opacity (filter only on images, once). Nothing animates before the hero's first paint. Content renders visible without JavaScript (motion is applied only after hydration). Reduced motion: every pattern becomes a 150ms opacity fade. Public pages are the most expressive; ordering and checkout stay under 250ms; staff screens animate only state changes.
+Rules: animate transform and opacity (filter only on images, once). Two named exceptions use `clip-path`, which does not trigger layout: the gallery door reveal and the caption writing in. Nothing animates before the hero's first paint. Content renders visible without JavaScript (motion is applied only after hydration). Reduced motion: every pattern becomes a 150ms opacity fade. Public pages are the most expressive; ordering and checkout stay under 250ms; staff screens animate only state changes.
 
 ## Theme
 Follows the device by default; the toggle stores `light`, `dark` or `system` in a cookie and localStorage; an inline script in the document head sets the class before first paint, so there is no flash. The kitchen display is dark unless a cook switches it.
