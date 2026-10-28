@@ -7,6 +7,8 @@ import { initializeTheme } from '@/hooks/use-appearance';
 import PublicLayout from '@/layouts/public-layout';
 import AuthLayout from '@/layouts/auth-layout';
 import SettingsLayout from '@/layouts/settings/layout';
+import KitchenLayout from '@/layouts/kitchen-layout';
+import StaffLayout from '@/layouts/staff-layout';
 import StyleguideLayout from '@/layouts/styleguide-layout';
 
 const appName = import.meta.env.VITE_APP_NAME || 'Tandoor House';
@@ -15,6 +17,10 @@ void createInertiaApp({
     title: (title) => (title ? `${title} - ${appName}` : appName),
     layout: (name) => {
         switch (true) {
+            case name.startsWith('staff/kitchen'):
+                return KitchenLayout;
+            case name.startsWith('staff/'):
+                return StaffLayout;
             case name.startsWith('styleguide/'):
                 return StyleguideLayout;
             case name.startsWith('auth/'):
