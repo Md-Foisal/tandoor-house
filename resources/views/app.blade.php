@@ -22,19 +22,26 @@
         {{-- Inline style to set the HTML background color based on our theme in app.css --}}
         <style>
             html {
-                background-color: oklch(1 0 0);
+                background-color: #f7f1e8;
             }
 
             html.dark {
-                background-color: oklch(0.145 0 0);
+                background-color: #16110d;
             }
         </style>
+
+        <noscript>
+            <style>
+                [data-reveal] { opacity: 1 !important; transform: none !important; filter: none !important; clip-path: none !important; }
+            </style>
+        </noscript>
 
         <link rel="icon" href="/favicon.ico" sizes="any">
         <link rel="icon" href="/favicon.svg" type="image/svg+xml">
         <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 
-        @fonts
+        <meta name="theme-color" content="#f7f1e8" media="(prefers-color-scheme: light)">
+        <meta name="theme-color" content="#16110d" media="(prefers-color-scheme: dark)">
 
         @viteReactRefresh
         @vite(['resources/css/app.css', 'resources/js/app.tsx', "resources/js/pages/{$page['component']}.tsx"])
