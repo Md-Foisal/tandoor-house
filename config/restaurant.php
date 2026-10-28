@@ -51,6 +51,7 @@ return [
         'service_charge_rate' => 1250,
         'hygiene_rating' => 5,
         'opened_year' => 2016,
+        // Tip choices as basis points of the bill: none, 10%, 12.5%, 15%.
         'tip_presets' => [0, 1000, 1250, 1500],
         'pickup_slot_minutes' => 15,
         'pickup_lead_minutes' => 20,
