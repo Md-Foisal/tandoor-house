@@ -1,0 +1,55 @@
+<?php
+
+return [
+    'panel' => 'Staff',
+    'areas' => [
+        'today' => 'Today',
+        'orders' => 'Orders',
+        'kitchen' => 'Kitchen',
+        'floor' => 'Floor',
+        'reservations' => 'Bookings',
+        'deliveries' => 'Deliveries',
+        'menu' => 'Menu',
+        'inventory' => 'Stock',
+        'team' => 'Team',
+        'reports' => 'Reports',
+        'reviews' => 'Reviews',
+        'settings' => 'Settings',
+        'activity' => 'Activity',
+    ],
+    'groups' => [
+        'service' => 'Service',
+        'back_office' => 'Back office',
+    ],
+    'status' => [
+        'placed' => 'New',
+        'accepted' => 'Accepted',
+        'cooking' => 'Cooking',
+        'ready' => 'Ready',
+        'out_for_delivery' => 'Out for delivery',
+        'served' => 'Served',
+        'collected' => 'Collected',
+        'delivered' => 'Delivered',
+        'completed' => 'Completed',
+        'rejected' => 'Rejected',
+        'cancelled' => 'Cancelled',
+    ],
+    'channel' => [
+        'delivery' => 'Delivery',
+        'pickup' => 'Pickup',
+        'dine_in' => 'Table',
+    ],
+    'orders' => [
+        'invalid_transition' => "An order can't go from :from to :to.",
+        'reason_required' => 'Add a short reason so the guest knows why.',
+    ],
+    'kitchen' => [
+        'not_on_the_pass' => "That ticket isn't in the kitchen any more.",
+        'cannot_recall' => 'Only a plated dish on a live ticket can be recalled.',
+    ],
+    'signed_in_as' => 'Signed in as :name',
+    'sign_out' => 'Sign out',
+    'view_site' => 'View the website',
+    'collapse' => 'Collapse menu',
+    'open_menu' => 'Open menu',
+];
