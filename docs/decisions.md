@@ -40,3 +40,11 @@ Non-obvious choices and why. Newest at the bottom of each phase.
 - **The discretionary service charge sits outside the VAT on food.** VAT is the inclusive portion of the food and drink lines after any discount; the service charge, tip and delivery fee are added after. HMRC treats a genuinely optional service charge as outside the scope of VAT, which is how UK restaurants usually present it.
 - **Table orders need the restaurant to be open and, when the basket has alcohol, an age confirmation** (Challenge 25), the same as checkout.
 - **Booking occasions are stored as keys** (birthday, anniversary, business, other) and translated when shown.
+
+## Phase 3
+
+- **The order state machine arrives in Phase 3, not 4.** The order board and kitchen display need real status changes to be usable on seeded data; Phase 4 adds events, broadcasting, notifications and payments on top of it.
+- **Staff sections are an enum (`StaffArea`) mapping each section to roles**; one gate per section (`staff.<area>`) guards its routes, and the sidebar lists only allowed sections. Per-record rules (a rider sees only their deliveries) live in policies.
+- **Each staff section owns its own routes file** (`routes/staff/<area>.php`), so parallel builders never edit the same file.
+- **The kitchen display is dark by default on every device** and remembers a cook's switch to light per device.
+- **PDF receipts and reports use dompdf**, rendered from Blade on the server so they match the CSV exports exactly.
