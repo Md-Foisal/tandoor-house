@@ -10,6 +10,7 @@ use App\Models\Modifier;
 use App\Models\PromoCode;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
 /**
@@ -22,6 +23,8 @@ use Illuminate\Validation\ValidationException;
 class CartService
 {
     public const MAX_QUANTITY = 20;
+
+    private const GUEST_TOKEN = 'guest_cart';
 
     private ?Cart $cart = null;
 
@@ -37,13 +40,64 @@ class CartService
         }
 
         $user = $this->request->user();
-        $sessionId = $this->request->hasSession() ? $this->request->session()->getId() : null;
+        $session = $this->request->hasSession() ? $this->request->session() : null;
 
-        $this->cart = $user !== null
-            ? Cart::firstOrNew(['user_id' => $user->id], ['lines' => []])
-            : Cart::firstOrNew(['session_id' => $sessionId], ['lines' => []]);
+        if ($user === null) {
+            $token = $session?->get(self::GUEST_TOKEN);
+
+            if ($token === null && $session !== null) {
+                $token = Str::random(40);
+                $session->put(self::GUEST_TOKEN, $token);
+            }
+
+            return $this->cart = Cart::firstOrNew(['session_id' => $token], ['lines' => []]);
+        }
+
+        $this->cart = Cart::firstOrNew(['user_id' => $user->id], ['lines' => []]);
+
+        // Session data survives sign-in (only the id is regenerated), so a
+        // basket built as a guest is folded into the customer's on arrival.
+        $token = $session?->pull(self::GUEST_TOKEN);
+
+        if ($token !== null) {
+            $this->absorb(Cart::where('session_id', $token)->first());
+        }
 
         return $this->cart;
+    }
+
+    private function absorb(?Cart $guest): void
+    {
+        if ($guest === null || $this->cart === null) {
+            return;
+        }
+
+        $lines = $this->cart->lines ?? [];
+
+        foreach ($guest->lines as $line) {
+            $keys = array_column($lines, 'key');
+
+            if (! in_array($line['key'], $keys, true)) {
+                $lines[] = $line;
+
+                continue;
+            }
+
+            $lines = array_map(
+                fn (array $existing) => $existing['key'] === $line['key']
+                    ? [...$existing, 'quantity' => min(self::MAX_QUANTITY, $existing['quantity'] + $line['quantity'])]
+                    : $existing,
+                $lines,
+            );
+        }
+
+        $this->cart->lines = $lines;
+        $this->cart->channel ??= $guest->channel;
+        $this->cart->dining_table_id ??= $guest->dining_table_id;
+        $this->cart->promo_code ??= $guest->promo_code;
+        $this->cart->save();
+
+        $guest->delete();
     }
 
     /**

@@ -77,7 +77,7 @@ it('lists a line with the ids needed to put it back', function () {
         ->where('basket.total', $this->dish->price * 2));
 });
 
-it('keeps guest and customer baskets separate', function () {
+it('folds the guest basket into the customer basket on sign-in', function () {
     addToBasket($this, $this->dish);
 
     $this->get('/basket')->assertInertia(fn (Assert $page) => $page->where('basket.count', 1));
@@ -93,10 +93,10 @@ it('keeps guest and customer baskets separate', function () {
     ]]]);
 
     $this->actingAs($user)->get('/basket')->assertInertia(fn (Assert $page) => $page
-        ->where('basket.count', 3)
+        ->where('basket.count', 4)
         ->where('basket.lines.0.key', 'abc123abc123'));
 
-    expect(Cart::whereNotNull('session_id')->firstOrFail()->lines[0]['quantity'])->toBe(1);
+    expect(Cart::whereNotNull('session_id')->exists())->toBeFalse();
 });
 
 it('reflects quantity updates and removal in the page props', function () {
