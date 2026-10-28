@@ -29,6 +29,7 @@ class MenuItemFactory extends Factory
             'is_vegetarian' => false,
             'is_vegan' => false,
             'allergens' => fake()->randomElements(Allergen::cases(), fake()->numberBetween(0, 3)),
+            'vat_rate' => 2000,
             'station' => fake()->randomElement(Station::cases()),
             'prep_minutes' => fake()->numberBetween(6, 20),
             'is_available' => true,

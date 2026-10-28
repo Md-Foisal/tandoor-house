@@ -32,3 +32,4 @@ Non-obvious choices and why. Newest at the bottom of each phase.
 - **The basket's channel is chosen at checkout**, where postcode or pickup time is known, so totals shown are never estimates of a different channel.
 - **Guests who open someone else's order see a friendly page** with sign-in and call options instead of a bare 403, keeping the URL.
 - **The menu is cached for ten minutes under one key** (`menu.v1`); menu management clears it on every change.
+- **The test suite runs with a 512 MB memory limit, and the demo restaurant is seeded once in its own test.** One full seed (hundreds of orders) on top of 200 feature tests passed PHP's default 128 MB on Herd; seeding it per check also cost seconds.
