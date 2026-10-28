@@ -39,6 +39,13 @@ class MenuItemResource extends JsonResource
             'is_hot' => $this->is_hot,
             'is_alcoholic' => $this->is_alcoholic,
             'allergens' => $this->allergens->map(fn (Allergen $allergen) => $allergen->value)->values(),
+            'option_allergens' => $this->whenLoaded('modifierGroups', fn () => $this->modifierGroups
+                ->flatMap(fn (ModifierGroup $group) => $group->modifiers)
+                ->flatMap(fn (Modifier $modifier) => $modifier->allergens ?? [])
+                ->map(fn (Allergen $allergen) => $allergen->value)
+                ->diff($this->allergens->map(fn (Allergen $allergen) => $allergen->value))
+                ->unique()
+                ->values(), []),
             'image' => 'dish/'.$this->slug,
             'has_options' => ($variants?->isNotEmpty() ?? false) || ($groups?->isNotEmpty() ?? false),
             'variants' => $this->whenLoaded('variants', fn () => $this->variants->map(fn (ItemVariant $variant) => [

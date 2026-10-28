@@ -1,15 +1,17 @@
 import { usePasskeyRegister } from '@laravel/passkeys/react';
 import { useState } from 'react';
-import InputError from '@/components/input-error';
+import { Field } from '@/components/input-error';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { Spinner } from '@/components/ui/spinner';
+import { useT } from '@/lib/i18n';
 
 type Props = {
     onSuccess: () => void;
 };
 
 export default function PasskeyRegistration({ onSuccess }: Props) {
+    const t = useT();
     const [name, setName] = useState(() => {
         const ua = navigator.userAgent;
 
@@ -58,16 +60,16 @@ export default function PasskeyRegistration({ onSuccess }: Props) {
 
     if (!isSupported) {
         return (
-            <div className="text-sm text-muted-foreground">
-                Passkeys are not supported in this browser.
-            </div>
+            <p className="text-ink-muted">
+                {t('settings_pages.passkeys.unsupported')}
+            </p>
         );
     }
 
     if (!showForm) {
         return (
             <Button variant="outline" onClick={() => setShowForm(true)}>
-                Add passkey
+                {t('settings_pages.passkeys.add')}
             </Button>
         );
     }
@@ -75,32 +77,37 @@ export default function PasskeyRegistration({ onSuccess }: Props) {
     return (
         <form
             onSubmit={handleSubmit}
-            className="space-y-4 rounded-lg border border-border bg-muted/50 p-4"
+            className="space-y-4 rounded-lg bg-clay p-4"
         >
-            <div className="grid gap-2">
-                <Label htmlFor="passkey-name">Passkey name</Label>
-                <Input
-                    id="passkey-name"
-                    type="text"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    placeholder="e.g., MacBook Pro, iPhone"
-                    className="mt-1 block w-full border-foreground/20"
-                    autoFocus
-                />
-                <p className="text-xs text-muted-foreground">
-                    A name helps you identify this passkey later.
-                </p>
-            </div>
+            <Field
+                id="passkey-name"
+                label={t('settings_pages.passkeys.name_label')}
+                hint={t('settings_pages.passkeys.name_hint')}
+                error={error ?? undefined}
+            >
+                {(control) => (
+                    <Input
+                        {...control}
+                        type="text"
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
+                        placeholder={t(
+                            'settings_pages.passkeys.name_placeholder',
+                        )}
+                        autoFocus
+                    />
+                )}
+            </Field>
 
-            {error && <InputError message={error} />}
-
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2">
                 <Button type="submit" disabled={isLoading || !name.trim()}>
-                    {isLoading ? 'Registering...' : 'Register passkey'}
+                    {isLoading && <Spinner />}
+                    {isLoading
+                        ? t('settings_pages.passkeys.registering')
+                        : t('settings_pages.passkeys.register')}
                 </Button>
                 <Button type="button" variant="ghost" onClick={handleCancel}>
-                    Cancel
+                    {t('settings_pages.common.cancel')}
                 </Button>
             </div>
         </form>

@@ -25,6 +25,18 @@ export type RestaurantInfo = {
     phone: string;
     email: string;
     address: { line1: string; city: string; postcode: string };
+    company: { legal_name: string; vat_number: string; company_number: string };
+};
+
+export type OpeningDay = {
+    day: string;
+    isToday: boolean;
+    periods: string[];
+};
+
+export type FooterData = {
+    hours: OpeningDay[];
+    hygieneRating: number;
 };
 
 export type TranslationTree = {

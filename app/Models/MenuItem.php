@@ -95,4 +95,12 @@ class MenuItem extends Model
     {
         return $this->hasMany(PriceChange::class)->latest('created_at');
     }
+
+    /**
+     * @return HasMany<RecipeLine, $this>
+     */
+    public function recipeLines(): HasMany
+    {
+        return $this->hasMany(RecipeLine::class);
+    }
 }

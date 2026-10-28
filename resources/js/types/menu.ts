@@ -39,6 +39,8 @@ export type MenuItem = {
     is_hot: boolean;
     is_alcoholic: boolean;
     allergens: AllergenCode[];
+    /** Allergens that only some options add, e.g. milk in the chai. */
+    option_allergens?: AllergenCode[];
     /** Media manifest key. */
     image: string;
     has_options: boolean;

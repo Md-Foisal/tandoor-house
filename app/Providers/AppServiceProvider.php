@@ -2,6 +2,10 @@
 
 namespace App\Providers;
 
+use App\Support\Settings;
+use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\RateLimiter;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -17,7 +21,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        $this->app->singleton(Settings::class);
     }
 
     /**
@@ -26,6 +30,36 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->configureDefaults();
+        $this->configureRateLimiting();
+    }
+
+    /**
+     * Limits for public endpoints that write: keyed by session where there is
+     * one, so a busy shared IP (an office, a phone network) is not punished.
+     */
+    protected function configureRateLimiting(): void
+    {
+        $key = fn (Request $request): string => $request->hasSession()
+            ? $request->session()->getId()
+            : (string) $request->ip();
+
+        RateLimiter::for('basket', fn (Request $request) => Limit::perMinute(60)->by($key($request)));
+        RateLimiter::for('promo', fn (Request $request) => [
+            Limit::perMinute(10)->by($key($request)),
+            Limit::perHour(60)->by((string) $request->ip()),
+        ]);
+        RateLimiter::for('checkout', fn (Request $request) => Limit::perMinute(10)->by($key($request)));
+        RateLimiter::for('booking', fn (Request $request) => [
+            Limit::perMinute(30)->by($key($request)),
+            Limit::perHour(20)->by((string) $request->ip())->response(
+                fn () => back()->withErrors(['booking' => __('booking.too_many')]),
+            ),
+        ]);
+        // Runs before route model binding, so the table is still its QR token.
+        RateLimiter::for('table', fn (Request $request) => Limit::perMinute(12)->by(
+            $request->route()?->originalParameter('table').'|'.$key($request),
+        ));
+        RateLimiter::for('lookup', fn (Request $request) => Limit::perMinute(60)->by((string) $request->ip()));
     }
 
     /**

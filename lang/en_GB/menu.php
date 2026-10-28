@@ -1,0 +1,81 @@
+<?php
+
+return [
+    'title' => 'Menu',
+    'meta_description' => 'The full menu: tandoor, curries, breads and sweets, with allergens and calories on every dish.',
+    'heading' => 'The menu',
+    'intro' => 'Everything comes off the same fire. Allergens and calories sit under every dish.',
+    'allergen_note' => 'Allergies? Tell us before you order.',
+    'allergen_link' => 'Read the allergen guide',
+    'categories' => 'Menu categories',
+
+    'search' => [
+        'label' => 'Search the menu',
+        'placeholder' => 'Search dishes',
+        'clear' => 'Clear search',
+    ],
+
+    'filters' => [
+        'button' => 'Filters',
+        'button_count' => 'Filters, :count on',
+        'title' => 'Filter the menu',
+        'description' => 'Narrow the menu to what you can and want to eat.',
+        'diet' => 'Diet',
+        'vegetarian' => 'Vegetarian',
+        'vegan' => 'Vegan',
+        'spice' => 'Spice level, up to',
+        'spice_any' => 'Any heat',
+        'allergens' => 'Leave out dishes containing',
+        'price' => 'Price per dish',
+        'price_min' => 'From (£)',
+        'price_max' => 'Up to (£)',
+        'clear_all' => 'Clear all',
+        'show_results' => 'Show :count dish|Show :count dishes',
+        'none_active' => 'No filters on',
+        'active' => ':count filter on|:count filters on',
+    ],
+
+    'empty' => [
+        'title' => 'No dishes match “:query”.',
+        'title_filters' => 'No dishes match those filters.',
+        'body' => 'Try another word, or clear the filters to see the whole menu.',
+        'clear' => 'Clear search and filters',
+    ],
+
+    'error' => [
+        'title' => "The menu didn't come out of the kitchen.",
+    ],
+
+    'results' => ':count dish shown|:count dishes shown',
+
+    'dish' => [
+        'back' => 'Back to the menu',
+        'kcal' => 'Calories',
+        'allergens' => 'Allergens',
+        'allergen_note' => 'Made in a kitchen that handles all 14 major allergens. Tell us about any allergy before you order.',
+        'vat_included' => 'Price includes VAT.',
+        'size' => 'Size',
+        'size_required' => 'Choose a size',
+        'required' => 'Required',
+        'optional' => 'Optional',
+        'choose_exactly' => 'Choose 1',
+        'choose_up_to' => 'Choose up to :max',
+        'choose_between' => 'Choose :min to :max',
+        'group_limits' => 'Choose between :min and :max for :group.',
+        'notes' => 'Anything we should know?',
+        'notes_placeholder' => 'No onions, sauce on the side',
+        'notes_count' => ':count of :max',
+        'notes_hint' => 'Tell us about preferences here. For allergies, speak to us before you order.',
+        'quantity' => 'How many',
+        'total' => 'Total :price',
+        'add_total' => 'Add to basket · :price',
+        'choose_size' => 'Choose a size',
+        'adding' => 'Adding',
+        'sold_out' => 'Sold out tonight',
+        'sold_out_note' => "We've run out of this one. It'll be back when the kitchen restocks.",
+        'more_from' => 'Also in :category',
+        'error' => 'We could not add that. Check the options above.',
+        'offline' => "You're offline. Reconnect to add this to your basket.",
+        'photo_alt' => ':item, served',
+    ],
+];

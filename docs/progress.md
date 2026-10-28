@@ -35,3 +35,21 @@
 - 19 dish photos are stand-ins of a similar dish and Chilli Cheese Toast has none; the client's photographer should shoot them (`docs/photo-shotlist.md`).
 - Some Unsplash credits link the image file rather than the photo page; check them before launch.
 - Laravel Herd's PHP-FPM socket was down on this machine, so pages were checked with `php artisan serve`.
+
+## Phase 2: customer UI
+
+**Done** (each screen built by its own screen-builder, at most four at a time, on shared pieces built first)
+- Shared: public layout (top navigation from 768px, bottom tab bar below), account shell, server-side basket with fly-to-basket, VAT-inclusive pricing, opening hours, settings, guest order access, full schema and a busy demo restaurant (355 orders, 14 live, 130 bookings, recipes for all 40 dishes, stock, rota).
+- Screens: home, menu with filters, dish detail, basket, checkout (delivery postcode zones, pickup slots, tips, age check), live order tracking, table booking with deposits, QR table ordering with waiter calls and bill splitting, account overview with loyalty and promo wallet, order history and reorder, saved addresses, reviews, story, find us, allergen guide and matrix, sign-in and settings restyled.
+- Review fixes: rate limits on public writes, atomic promo limits, VAT outside the discretionary service charge, alcohol and opening-hours checks on table orders, guest basket kept at sign-in, private promo codes, allergens that depend on a chosen option, photos revealed when cached, late-order wording, two-decimal receipts.
+- 232 tests, PHPStan level 7, Vite+ lint and format, TypeScript strict and the production build all pass. Screenshots of 20 screens at 375, 768 and 1280 in light and dark: `docs/screenshots/phase-2/` (no console errors).
+
+**Decided:** see `docs/decisions.md` → Phase 2.
+
+**Open**
+- Card payments, booking deposits and paying at the table wait for the payment gateway (Phase 4); the buttons explain this.
+- Customers cannot yet cancel bookings or orders themselves (Phase 4, with refund rules).
+- Loyalty rewards are counted and shown, but redeeming one at checkout arrives with the loyalty automation (Phase 5).
+- Booking still has its own form-field component; it should move to `components/form/field.tsx`.
+- Visit page lists accessible toilet, high chairs and hearing loop as "ask us" until the restaurant confirms them.
+- The service charge VAT treatment should be confirmed with the restaurant's accountant before launch.

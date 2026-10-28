@@ -9,16 +9,19 @@ import { cn } from '@/lib/utils';
  */
 export function AllergenList({
     allergens,
+    optional = [],
     compact = false,
     className,
 }: {
     allergens: AllergenCode[];
+    /** Allergens that depend on the options chosen. */
+    optional?: AllergenCode[];
     compact?: boolean;
     className?: string;
 }) {
     const t = useT();
 
-    if (allergens.length === 0) {
+    if (allergens.length === 0 && optional.length === 0) {
         return (
             <p className={cn('text-sm text-ink-muted', className)}>
                 {t('ui.no_allergens')}
@@ -57,6 +60,20 @@ export function AllergenList({
                     </li>
                 ))}
             </ul>
+            {optional.length > 0 && (
+                <p
+                    className={cn(
+                        'text-ink-muted',
+                        compact ? 'mt-1 text-xs' : 'mt-2 text-sm',
+                    )}
+                >
+                    {t('ui.depends_on_choice', {
+                        allergens: optional
+                            .map((code) => t(`allergens.${code}`))
+                            .join(', '),
+                    })}
+                </p>
+            )}
         </div>
     );
 }

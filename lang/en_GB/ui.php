@@ -1,6 +1,7 @@
 <?php
 
 return [
+    'required' => 'required',
     'vegetarian' => 'Vegetarian',
     'vegetarian_short' => 'V',
     'vegan' => 'Vegan',
@@ -15,6 +16,7 @@ return [
     'from_price' => 'from :price',
     'contains' => 'Contains',
     'no_allergens' => 'None of the 14 major allergens',
+    'depends_on_choice' => 'Depending on your choice: :allergens',
     'allergen_note' => 'Made in a kitchen that handles all 14 major allergens. Tell us about any allergy before you order.',
     'sold_out' => 'Sold out tonight',
     'special' => "Today's special",
@@ -32,6 +34,9 @@ return [
     'closed_now' => 'Closed',
     'opens_at' => 'Opens :when',
     'closed_opens_at' => 'Closed · opens :when',
+    'at_time' => 'at :time',
+    'tomorrow_at' => 'tomorrow at :time',
+    'day_at' => ':day at :time',
     'theme' => [
         'label' => 'Theme',
         'light' => 'Light',

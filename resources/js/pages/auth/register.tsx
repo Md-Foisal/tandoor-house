@@ -1,11 +1,13 @@
 import { Form, Head } from '@inertiajs/react';
-import InputError from '@/components/input-error';
+import { Check } from 'lucide-react';
+import { useOnline } from '@/components/brand/states';
+import { Field } from '@/components/input-error';
 import PasswordInput from '@/components/password-input';
 import TextLink from '@/components/text-link';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
+import { useT } from '@/lib/i18n';
 import { login } from '@/routes';
 import { store } from '@/routes/register';
 
@@ -14,9 +16,41 @@ type Props = {
 };
 
 export default function Register({ passwordRules }: Props) {
+    const t = useT();
+    const online = useOnline();
+    const benefits = [
+        t('auth_pages.register.benefit_reorder'),
+        t('auth_pages.register.benefit_addresses'),
+        t('auth_pages.register.benefit_points'),
+    ];
+
     return (
         <>
-            <Head title="Register" />
+            <Head title={t('auth_pages.register.head')} />
+
+            <section
+                aria-labelledby="register-benefits"
+                className="rounded-lg bg-ember-soft p-4"
+            >
+                <h2
+                    id="register-benefits"
+                    className="text-label text-ember uppercase"
+                >
+                    {t('auth_pages.register.benefits_title')}
+                </h2>
+                <ul className="mt-3 grid gap-2">
+                    {benefits.map((benefit) => (
+                        <li key={benefit} className="flex items-start gap-3">
+                            <Check
+                                className="mt-1 size-4 shrink-0 text-ember"
+                                aria-hidden="true"
+                            />
+                            <span>{benefit}</span>
+                        </li>
+                    ))}
+                </ul>
+            </section>
+
             <Form
                 {...store.form()}
                 resetOnSuccess={['password', 'password_confirmation']}
@@ -25,88 +59,102 @@ export default function Register({ passwordRules }: Props) {
             >
                 {({ processing, errors }) => (
                     <>
-                        <div className="grid gap-6">
-                            <div className="grid gap-2">
-                                <Label htmlFor="name">Name</Label>
+                        <Field
+                            id="name"
+                            label={t('auth_pages.register.name')}
+                            error={errors.name}
+                        >
+                            {(control) => (
                                 <Input
-                                    id="name"
+                                    {...control}
                                     type="text"
+                                    name="name"
                                     required
                                     autoFocus
-                                    tabIndex={1}
                                     autoComplete="name"
-                                    name="name"
-                                    placeholder="Full name"
+                                    placeholder={t(
+                                        'auth_pages.register.name_placeholder',
+                                    )}
                                 />
-                                <InputError
-                                    message={errors.name}
-                                    className="mt-2"
-                                />
-                            </div>
+                            )}
+                        </Field>
 
-                            <div className="grid gap-2">
-                                <Label htmlFor="email">Email address</Label>
+                        <Field
+                            id="email"
+                            label={t('auth_pages.common.email')}
+                            error={errors.email}
+                        >
+                            {(control) => (
                                 <Input
-                                    id="email"
+                                    {...control}
                                     type="email"
-                                    required
-                                    tabIndex={2}
-                                    autoComplete="email"
                                     name="email"
-                                    placeholder="email@example.com"
-                                />
-                                <InputError message={errors.email} />
-                            </div>
-
-                            <div className="grid gap-2">
-                                <Label htmlFor="password">Password</Label>
-                                <PasswordInput
-                                    id="password"
                                     required
-                                    tabIndex={3}
-                                    autoComplete="new-password"
+                                    autoComplete="email"
+                                    placeholder={t(
+                                        'auth_pages.common.email_placeholder',
+                                    )}
+                                />
+                            )}
+                        </Field>
+
+                        <Field
+                            id="password"
+                            label={t('auth_pages.common.password')}
+                            error={errors.password}
+                            hint={t('auth_pages.register.password_hint')}
+                        >
+                            {(control) => (
+                                <PasswordInput
+                                    {...control}
                                     name="password"
-                                    placeholder="Password"
-                                    passwordrules={passwordRules}
-                                />
-                                <InputError message={errors.password} />
-                            </div>
-
-                            <div className="grid gap-2">
-                                <Label htmlFor="password_confirmation">
-                                    Confirm password
-                                </Label>
-                                <PasswordInput
-                                    id="password_confirmation"
                                     required
-                                    tabIndex={4}
                                     autoComplete="new-password"
-                                    name="password_confirmation"
-                                    placeholder="Confirm password"
                                     passwordrules={passwordRules}
                                 />
-                                <InputError
-                                    message={errors.password_confirmation}
+                            )}
+                        </Field>
+
+                        <Field
+                            id="password_confirmation"
+                            label={t('auth_pages.common.confirm_password')}
+                            error={errors.password_confirmation}
+                        >
+                            {(control) => (
+                                <PasswordInput
+                                    {...control}
+                                    name="password_confirmation"
+                                    required
+                                    autoComplete="new-password"
+                                    passwordrules={passwordRules}
                                 />
-                            </div>
+                            )}
+                        </Field>
 
-                            <Button
-                                type="submit"
-                                className="mt-2 w-full"
-                                tabIndex={5}
-                                data-test="register-user-button"
-                            >
-                                {processing && <Spinner />}
-                                Create account
-                            </Button>
-                        </div>
+                        <Button
+                            type="submit"
+                            size="lg"
+                            className="w-full"
+                            disabled={processing || !online}
+                            data-test="register-user-button"
+                        >
+                            {processing && <Spinner />}
+                            {processing
+                                ? t('auth_pages.register.busy')
+                                : t('auth_pages.register.submit')}
+                        </Button>
+                        {!online && (
+                            <p className="text-sm text-ink-muted" role="status">
+                                {t('auth_pages.common.offline')}
+                            </p>
+                        )}
 
-                        <div className="text-center text-sm text-muted-foreground">
-                            Already have an account?{' '}
-                            <TextLink href={login()} tabIndex={6}>
-                                Log in
+                        <p className="flex flex-wrap items-center gap-x-2 text-ink-muted">
+                            {t('auth_pages.register.have_account')}
+                            <TextLink href={login()}>
+                                {t('auth_pages.register.sign_in')}
                             </TextLink>
-                        </div>
+                        </p>
                     </>
                 )}
             </Form>
@@ -115,6 +163,7 @@ export default function Register({ passwordRules }: Props) {
 }
 
 Register.layout = {
-    title: 'Create an account',
-    description: 'Enter your details below to create your account',
+    title: 'auth_pages.register.title',
+    description: 'auth_pages.register.description',
+    photo: 'hands',
 };

@@ -3,13 +3,9 @@ import { Eye, EyeOff, LockKeyhole, RefreshCw } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import AlertError from '@/components/alert-error';
 import { Button } from '@/components/ui/button';
-import {
-    Card,
-    CardContent,
-    CardDescription,
-    CardHeader,
-    CardTitle,
-} from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Spinner } from '@/components/ui/spinner';
+import { useT } from '@/lib/i18n';
 import { regenerateRecoveryCodes } from '@/routes/two-factor';
 
 type Props = {
@@ -23,6 +19,7 @@ export default function TwoFactorRecoveryCodes({
     fetchRecoveryCodes,
     errors,
 }: Props) {
+    const t = useT();
     const [codesAreVisible, setCodesAreVisible] = useState<boolean>(false);
     const codesSectionRef = useRef<HTMLDivElement | null>(null);
     const canRegenerateCodes = recoveryCodesList.length > 0 && codesAreVisible;
@@ -53,112 +50,121 @@ export default function TwoFactorRecoveryCodes({
     const RecoveryCodeIconComponent = codesAreVisible ? EyeOff : Eye;
 
     return (
-        <Card>
-            <CardHeader>
-                <CardTitle className="flex gap-3">
+        <div className="w-full space-y-4 rounded-lg bg-clay p-4">
+            <div className="space-y-1">
+                <h3 className="flex items-center gap-2 font-semibold">
                     <LockKeyhole className="size-4" aria-hidden="true" />
-                    2FA recovery codes
-                </CardTitle>
-                <CardDescription>
-                    Recovery codes let you regain access if you lose your 2FA
-                    device. Store them in a secure password manager.
-                </CardDescription>
-            </CardHeader>
-            <CardContent>
-                <div className="flex flex-col gap-3 select-none sm:flex-row sm:items-center sm:justify-between">
-                    <Button
-                        onClick={toggleCodesVisibility}
-                        className="w-fit"
-                        aria-expanded={codesAreVisible}
-                        aria-controls="recovery-codes-section"
-                    >
-                        <RecoveryCodeIconComponent
-                            className="size-4"
-                            aria-hidden="true"
-                        />
-                        {codesAreVisible ? 'Hide' : 'View'} recovery codes
-                    </Button>
+                    {t('settings_pages.two_factor.recovery_title')}
+                </h3>
+                <p className="text-ink-muted">
+                    {t('settings_pages.two_factor.recovery_body')}
+                </p>
+            </div>
 
-                    {canRegenerateCodes && (
-                        <Form
-                            {...regenerateRecoveryCodes.form()}
-                            options={{ preserveScroll: true }}
-                            onSuccess={fetchRecoveryCodes}
-                        >
-                            {({ processing }) => (
-                                <Button
-                                    variant="secondary"
-                                    type="submit"
-                                    disabled={processing}
-                                    aria-describedby="regenerate-warning"
-                                >
-                                    <RefreshCw /> Regenerate codes
-                                </Button>
-                            )}
-                        </Form>
+            <div className="flex flex-wrap items-center gap-3">
+                <Button
+                    onClick={toggleCodesVisibility}
+                    variant="outline"
+                    aria-expanded={codesAreVisible}
+                    aria-controls="recovery-codes-section"
+                >
+                    <RecoveryCodeIconComponent
+                        className="size-4"
+                        aria-hidden="true"
+                    />
+                    {codesAreVisible
+                        ? t('settings_pages.two_factor.recovery_hide')
+                        : t('settings_pages.two_factor.recovery_show')}
+                </Button>
+
+                {canRegenerateCodes && (
+                    <Form
+                        {...regenerateRecoveryCodes.form()}
+                        options={{ preserveScroll: true }}
+                        onSuccess={fetchRecoveryCodes}
+                    >
+                        {({ processing }) => (
+                            <Button
+                                variant="secondary"
+                                type="submit"
+                                disabled={processing}
+                                aria-describedby="regenerate-warning"
+                            >
+                                {processing ? (
+                                    <Spinner />
+                                ) : (
+                                    <RefreshCw aria-hidden />
+                                )}
+                                {processing
+                                    ? t(
+                                          'settings_pages.two_factor.recovery_regenerating',
+                                      )
+                                    : t(
+                                          'settings_pages.two_factor.recovery_regenerate',
+                                      )}
+                            </Button>
+                        )}
+                    </Form>
+                )}
+            </div>
+
+            <div id="recovery-codes-section" hidden={!codesAreVisible}>
+                <div className="space-y-3">
+                    {errors?.length ? (
+                        <AlertError errors={errors} />
+                    ) : (
+                        <>
+                            <div
+                                ref={codesSectionRef}
+                                className="grid gap-1 rounded-md bg-surface p-4 font-mono text-sm"
+                                role="list"
+                                aria-label={t(
+                                    'settings_pages.two_factor.recovery_list',
+                                )}
+                            >
+                                {recoveryCodesList.length ? (
+                                    recoveryCodesList.map((code, index) => (
+                                        <div
+                                            key={index}
+                                            role="listitem"
+                                            className="select-text"
+                                        >
+                                            {code}
+                                        </div>
+                                    ))
+                                ) : (
+                                    <div
+                                        className="space-y-2"
+                                        role="status"
+                                        aria-label={t(
+                                            'settings_pages.two_factor.recovery_loading',
+                                        )}
+                                    >
+                                        {Array.from(
+                                            { length: 8 },
+                                            (_, index) => (
+                                                <Skeleton
+                                                    key={index}
+                                                    className="h-4 w-40"
+                                                />
+                                            ),
+                                        )}
+                                    </div>
+                                )}
+                            </div>
+
+                            <p
+                                id="regenerate-warning"
+                                className="text-sm text-ink-muted"
+                            >
+                                {t(
+                                    'settings_pages.two_factor.recovery_warning',
+                                )}
+                            </p>
+                        </>
                     )}
                 </div>
-                <div
-                    id="recovery-codes-section"
-                    className={`relative overflow-hidden transition-all duration-300 ${codesAreVisible ? 'h-auto opacity-100' : 'h-0 opacity-0'}`}
-                    aria-hidden={!codesAreVisible}
-                >
-                    <div className="mt-3 space-y-3">
-                        {errors?.length ? (
-                            <AlertError errors={errors} />
-                        ) : (
-                            <>
-                                <div
-                                    ref={codesSectionRef}
-                                    className="grid gap-1 rounded-lg bg-muted p-4 font-mono text-sm"
-                                    role="list"
-                                    aria-label="Recovery codes"
-                                >
-                                    {recoveryCodesList.length ? (
-                                        recoveryCodesList.map((code, index) => (
-                                            <div
-                                                key={index}
-                                                role="listitem"
-                                                className="select-text"
-                                            >
-                                                {code}
-                                            </div>
-                                        ))
-                                    ) : (
-                                        <div
-                                            className="space-y-2"
-                                            aria-label="Loading recovery codes"
-                                        >
-                                            {Array.from(
-                                                { length: 8 },
-                                                (_, index) => (
-                                                    <div
-                                                        key={index}
-                                                        className="h-4 animate-pulse rounded bg-muted-foreground/20"
-                                                        aria-hidden="true"
-                                                    />
-                                                ),
-                                            )}
-                                        </div>
-                                    )}
-                                </div>
-
-                                <div className="text-xs text-muted-foreground select-none">
-                                    <p id="regenerate-warning">
-                                        Each recovery code can be used once to
-                                        access your account and will be removed
-                                        after use. If you need more, click{' '}
-                                        <span className="font-bold">
-                                            Regenerate codes
-                                        </span>{' '}
-                                        above.
-                                    </p>
-                                </div>
-                            </>
-                        )}
-                    </div>
-                </div>
-            </CardContent>
-        </Card>
+            </div>
+        </div>
     );
 }

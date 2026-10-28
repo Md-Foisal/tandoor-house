@@ -8,6 +8,8 @@ use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Carbon;
@@ -63,5 +65,77 @@ class User extends Authenticatable implements MustVerifyEmail, PasskeyUser
     public function hasRole(Role ...$roles): bool
     {
         return in_array($this->role, $roles, true);
+    }
+
+    /**
+     * @return HasMany<Order, $this>
+     */
+    public function orders(): HasMany
+    {
+        return $this->hasMany(Order::class);
+    }
+
+    /**
+     * @return HasMany<Address, $this>
+     */
+    public function addresses(): HasMany
+    {
+        return $this->hasMany(Address::class);
+    }
+
+    /**
+     * @return HasMany<Reservation, $this>
+     */
+    public function reservations(): HasMany
+    {
+        return $this->hasMany(Reservation::class);
+    }
+
+    /**
+     * @return HasMany<Review, $this>
+     */
+    public function reviews(): HasMany
+    {
+        return $this->hasMany(Review::class);
+    }
+
+    /**
+     * @return HasMany<LoyaltyTransaction, $this>
+     */
+    public function loyaltyTransactions(): HasMany
+    {
+        return $this->hasMany(LoyaltyTransaction::class);
+    }
+
+    /**
+     * @return HasMany<Shift, $this>
+     */
+    public function shifts(): HasMany
+    {
+        return $this->hasMany(Shift::class);
+    }
+
+    /**
+     * @return HasMany<Attendance, $this>
+     */
+    public function attendances(): HasMany
+    {
+        return $this->hasMany(Attendance::class);
+    }
+
+    /**
+     * @return HasMany<Order, $this>
+     */
+    public function deliveries(): HasMany
+    {
+        return $this->hasMany(Order::class, 'rider_id');
+    }
+
+    /**
+     * @return HasOne<Cart, $this>
+     */
+    public function cart(): HasOne
+    {
+        return $this->hasOne(Cart::class);
     }
 }

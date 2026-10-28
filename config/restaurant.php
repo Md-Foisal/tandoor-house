@@ -32,4 +32,55 @@ return [
         'company_number' => env('RESTAURANT_COMPANY_NUMBER', '01234567'),
     ],
 
+    /*
+    | Defaults for settings the owner can change in the staff panel.
+    | Opening hours are per ISO weekday (1 = Monday), local time.
+    */
+    'defaults' => [
+        'opening_hours' => [
+            1 => [],
+            2 => [['12:00', '15:00'], ['17:30', '22:30']],
+            3 => [['12:00', '15:00'], ['17:30', '22:30']],
+            4 => [['12:00', '15:00'], ['17:30', '22:30']],
+            5 => [['12:00', '23:00']],
+            6 => [['12:00', '23:00']],
+            7 => [['12:00', '21:30']],
+        ],
+        'bank_holidays' => [],
+        'vat_rate' => 2000,
+        'service_charge_rate' => 1250,
+        'hygiene_rating' => 5,
+        'opened_year' => 2016,
+        // Tip choices as basis points of the bill: none, 10%, 12.5%, 15%.
+        'tip_presets' => [0, 1000, 1250, 1500],
+        'pickup_slot_minutes' => 15,
+        'pickup_lead_minutes' => 20,
+        'reservation' => [
+            'slot_minutes' => 15,
+            'duration_minutes' => 105,
+            'deposit_from_party' => 6,
+            'deposit_per_head' => 1000,
+            // Larger groups book by phone so the team can join tables.
+            'max_party' => 8,
+            'no_show_minutes' => 20,
+        ],
+        'loyalty' => [
+            'points_per_pound' => 1,
+            'reward_points' => 150,
+            'reward_value' => 1000,
+        ],
+        'automations' => [
+            'auto_accept' => true,
+            'notifications' => true,
+            'stock_deduction' => true,
+            'reservation_reminders' => true,
+            'no_show_release' => true,
+            'daily_close' => true,
+            'weekly_report' => true,
+            'review_requests' => true,
+            'loyalty' => true,
+            'abandoned_cart' => true,
+        ],
+    ],
+
 ];

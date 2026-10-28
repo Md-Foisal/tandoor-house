@@ -1,5 +1,6 @@
 import { KeyRound, Trash2 } from 'lucide-react';
 import { useState } from 'react';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
     Dialog,
@@ -10,6 +11,8 @@ import {
     DialogTitle,
     DialogTrigger,
 } from '@/components/ui/dialog';
+import { Spinner } from '@/components/ui/spinner';
+import { useT } from '@/lib/i18n';
 import type { Passkey } from '@/types/auth';
 
 type Props = {
@@ -18,6 +21,7 @@ type Props = {
 };
 
 export default function PasskeyItem({ passkey, onDelete }: Props) {
+    const t = useT();
     const [isDeleting, setIsDeleting] = useState(false);
 
     const handleDelete = () => {
@@ -26,32 +30,28 @@ export default function PasskeyItem({ passkey, onDelete }: Props) {
     };
 
     return (
-        <div className="flex items-center justify-between border-b p-4 last:border-b-0">
-            <div className="flex items-center gap-4">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-muted">
-                    <KeyRound className="h-5 w-5 text-muted-foreground" />
+        <li className="flex items-center justify-between gap-3 border-b border-line p-4 last:border-b-0">
+            <div className="flex min-w-0 items-center gap-4">
+                <div className="grid size-10 shrink-0 place-items-center rounded-full bg-clay">
+                    <KeyRound className="size-5 text-ink-muted" aria-hidden />
                 </div>
-                <div className="space-y-1">
-                    <div className="flex items-center gap-2.5">
-                        <p className="font-medium tracking-tight">
-                            {passkey.name}
-                        </p>
+                <div className="min-w-0 space-y-1">
+                    <div className="flex flex-wrap items-center gap-2">
+                        <p className="font-semibold">{passkey.name}</p>
                         {passkey.authenticator && (
-                            <span className="inline-flex items-center gap-1 rounded-md bg-muted px-2 py-0.5 text-[11px] font-medium tracking-wide text-muted-foreground uppercase ring-1 ring-border ring-inset">
+                            <Badge variant="secondary">
                                 {passkey.authenticator}
-                            </span>
+                            </Badge>
                         )}
                     </div>
-                    <p className="text-sm text-muted-foreground">
-                        Added {passkey.created_at_diff}
-                        {passkey.last_used_at_diff && (
-                            <>
-                                <span className="mx-1 text-muted-foreground/50">
-                                    /
-                                </span>
-                                Last used {passkey.last_used_at_diff}
-                            </>
-                        )}
+                    <p className="text-sm text-ink-muted">
+                        {t('settings_pages.passkeys.added', {
+                            when: passkey.created_at_diff,
+                        })}
+                        {passkey.last_used_at_diff &&
+                            `, ${t('settings_pages.passkeys.last_used', {
+                                when: passkey.last_used_at_diff,
+                            })}`}
                     </p>
                 </div>
             </div>
@@ -60,34 +60,43 @@ export default function PasskeyItem({ passkey, onDelete }: Props) {
                 <DialogTrigger asChild>
                     <Button
                         variant="ghost"
-                        size="sm"
-                        className="text-destructive hover:bg-destructive/10 hover:text-destructive"
+                        size="icon"
+                        className="text-chilli hover:bg-chilli-soft"
+                        aria-label={t('settings_pages.passkeys.remove', {
+                            name: passkey.name,
+                        })}
                     >
-                        <Trash2 className="h-4 w-4" />
-                        <span className="sr-only">Remove</span>
+                        <Trash2 className="size-4" aria-hidden />
                     </Button>
                 </DialogTrigger>
                 <DialogContent>
-                    <DialogTitle>Remove passkey</DialogTitle>
+                    <DialogTitle>
+                        {t('settings_pages.passkeys.remove_title')}
+                    </DialogTitle>
                     <DialogDescription>
-                        Are you sure you want to remove the "{passkey.name}"
-                        passkey? You will no longer be able to use it to sign
-                        in.
+                        {t('settings_pages.passkeys.remove_body', {
+                            name: passkey.name,
+                        })}
                     </DialogDescription>
                     <DialogFooter className="gap-2">
                         <DialogClose asChild>
-                            <Button variant="secondary">Cancel</Button>
+                            <Button variant="secondary">
+                                {t('settings_pages.common.cancel')}
+                            </Button>
                         </DialogClose>
                         <Button
                             variant="destructive"
                             onClick={handleDelete}
                             disabled={isDeleting}
                         >
-                            {isDeleting ? 'Removing...' : 'Remove passkey'}
+                            {isDeleting && <Spinner />}
+                            {isDeleting
+                                ? t('settings_pages.passkeys.removing')
+                                : t('settings_pages.passkeys.remove_confirm')}
                         </Button>
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
-        </div>
+        </li>
     );
 }

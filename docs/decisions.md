@@ -24,3 +24,19 @@ Non-obvious choices and why. Newest at the bottom of each phase.
 - **Screenshots are JPEG at quality 70.** Full-page PNGs of long pages were 3–5× larger with no review benefit.
 - **The 1080p hero film was re-encoded to stay under 3 MB** (H.264 at 1.65 Mbit/s, VP9 at 1.5 Mbit/s).
 - **Models are strict outside production** (`Model::shouldBeStrict`): lazy loading, silently discarded attributes and missing attributes throw, so N+1 queries are caught in development and tests.
+
+## Phase 2
+
+- **Online bookings go up to eight guests.** The largest table seats eight; bigger groups are asked to call so the team can join tables. Table merging for bookings arrives with the staff table map.
+- **Tips are offered as a share of the bill (none, 10%, 12.5%, 15%) or a custom amount**, and stored in pence on the order; the 2023 tips act note is shown beside them.
+- **The basket's channel is chosen at checkout**, where postcode or pickup time is known, so totals shown are never estimates of a different channel.
+- **Guests who open someone else's order see a friendly page** with sign-in and call options instead of a bare 403, keeping the URL.
+- **The menu is cached for ten minutes under one key** (`menu.v1`); menu management clears it on every change.
+- **The test suite runs with a 512 MB memory limit, and the demo restaurant is seeded once in its own test.** One full seed (hundreds of orders) on top of 200 feature tests passed PHP's default 128 MB on Herd; seeding it per check also cost seconds.
+- **Guest baskets are keyed by a random token kept in the session**, not by the session id. Sign-in regenerates the id but keeps session data, so the guest basket is found and folded into the customer's basket on their first request after signing in.
+- **Public write endpoints are rate-limited per session** (basket 60/min, promo 10/min and 60/hour per IP, checkout 10/min, booking 30/min and 20/hour per IP, table actions 12/min per table and session, order lookups 60/min).
+- **Promo codes are private unless marked public**; only public ones are listed in customer accounts.
+- **Deferred from the phase 2 review, with reasons:** paying a booking deposit and paying at the table need the payment gateway (Phase 4); customers cancelling bookings and orders needs the state machines and refund rules (Phase 4); a removed service charge on a table bill is recorded by the waiter or cashier when they take payment (Phase 3 order board). The footer keeps the opening hours on every page because guests look for them there, even where a page also shows them.
+- **The discretionary service charge sits outside the VAT on food.** VAT is the inclusive portion of the food and drink lines after any discount; the service charge, tip and delivery fee are added after. HMRC treats a genuinely optional service charge as outside the scope of VAT, which is how UK restaurants usually present it.
+- **Table orders need the restaurant to be open and, when the basket has alcohol, an age confirmation** (Challenge 25), the same as checkout.
+- **Booking occasions are stored as keys** (birthday, anniversary, business, other) and translated when shown.

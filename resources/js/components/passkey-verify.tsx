@@ -4,8 +4,8 @@ import { usePasskeyVerify } from '@laravel/passkeys/react';
 import { KeyRound } from 'lucide-react';
 import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
-import { Separator } from '@/components/ui/separator';
 import { Spinner } from '@/components/ui/spinner';
+import { useT } from '@/lib/i18n';
 
 type Props = {
     routes?: {
@@ -23,6 +23,7 @@ export default function PasskeyVerify({
     loadingLabel,
     separator,
 }: Props = {}) {
+    const t = useT();
     const { verify, isLoading, error, isSupported } = usePasskeyVerify({
         ...(routes && {
             routes: {
@@ -31,7 +32,7 @@ export default function PasskeyVerify({
             },
         }),
         onSuccess: (response) => {
-            router.visit(response.redirect ?? '/dashboard');
+            router.visit(response.redirect ?? '/account');
         },
     });
 
@@ -40,35 +41,35 @@ export default function PasskeyVerify({
     }
 
     return (
-        <>
+        <div className="flex flex-col gap-6">
             <div className="grid gap-2">
                 <Button
                     type="button"
                     variant="outline"
+                    size="lg"
                     className="w-full"
                     onClick={verify}
                     disabled={isLoading}
                 >
-                    {isLoading ? <Spinner /> : <KeyRound className="h-4 w-4" />}
+                    {isLoading ? (
+                        <Spinner />
+                    ) : (
+                        <KeyRound className="size-4" aria-hidden />
+                    )}
                     {isLoading
-                        ? (loadingLabel ?? 'Authenticating...')
-                        : (label ?? 'Sign in with a passkey')}
+                        ? (loadingLabel ?? t('auth_pages.passkey.signing_in'))
+                        : (label ?? t('auth_pages.passkey.sign_in'))}
                 </Button>
-                {error && (
-                    <InputError message={error} className="text-center" />
-                )}
+                {error && <InputError message={error} />}
             </div>
 
-            <div className="relative my-6">
-                <div className="absolute inset-0 flex items-center">
-                    <Separator className="w-full" />
-                </div>
-                <div className="relative flex justify-center text-xs uppercase">
-                    <span className="bg-background px-2 text-muted-foreground">
-                        {separator ?? 'Or continue with email'}
-                    </span>
-                </div>
+            <div className="flex items-center gap-3 text-ink-muted">
+                <span className="h-px flex-1 bg-line" aria-hidden />
+                <span className="text-sm">
+                    {separator ?? t('auth_pages.passkey.or_email')}
+                </span>
+                <span className="h-px flex-1 bg-line" aria-hidden />
             </div>
-        </>
+        </div>
     );
 }
