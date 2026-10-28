@@ -1,11 +1,13 @@
 import { Form, Head } from '@inertiajs/react';
 import { useRef } from 'react';
 import SecurityController from '@/actions/App/Http/Controllers/Settings/SecurityController';
+import { useOnline } from '@/components/brand/states';
 import Heading from '@/components/heading';
-import InputError from '@/components/input-error';
+import { Field } from '@/components/input-error';
 import PasswordInput from '@/components/password-input';
 import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label';
+import { Spinner } from '@/components/ui/spinner';
+import { useT } from '@/lib/i18n';
 import { edit } from '@/routes/security';
 import type { Props as ManagePasskeysProps } from '@/components/manage-passkeys';
 import ManagePasskeys from '@/components/manage-passkeys';
@@ -19,20 +21,21 @@ type Props = {
     ManageTwoFactorProps;
 
 export default function Security(props: Props) {
+    const t = useT();
+    const online = useOnline();
     const passwordInput = useRef<HTMLInputElement>(null);
     const currentPasswordInput = useRef<HTMLInputElement>(null);
 
     return (
         <>
-            <Head title="Security settings" />
+            <Head title={t('settings_pages.security.head')} />
 
-            <h1 className="sr-only">Security settings</h1>
-
-            <div className="space-y-6">
+            <section aria-labelledby="password-heading" className="space-y-6">
                 <Heading
+                    id="password-heading"
                     variant="small"
-                    title="Update password"
-                    description="Ensure your account is using a long, random password to stay secure"
+                    title={t('settings_pages.password.title')}
+                    description={t('settings_pages.password.description')}
                 />
 
                 <Form
@@ -55,74 +58,76 @@ export default function Security(props: Props) {
                             currentPasswordInput.current?.focus();
                         }
                     }}
-                    className="space-y-6"
+                    className="flex flex-col gap-6"
                 >
                     {({ errors, processing }) => (
                         <>
-                            <div className="grid gap-2">
-                                <Label htmlFor="current_password">
-                                    Current password
-                                </Label>
+                            <Field
+                                id="current_password"
+                                label={t('settings_pages.password.current')}
+                                error={errors.current_password}
+                            >
+                                {(control) => (
+                                    <PasswordInput
+                                        {...control}
+                                        ref={currentPasswordInput}
+                                        name="current_password"
+                                        autoComplete="current-password"
+                                    />
+                                )}
+                            </Field>
 
-                                <PasswordInput
-                                    id="current_password"
-                                    ref={currentPasswordInput}
-                                    name="current_password"
-                                    className="mt-1 block w-full"
-                                    autoComplete="current-password"
-                                    placeholder="Current password"
-                                />
+                            <Field
+                                id="password"
+                                label={t('settings_pages.password.new')}
+                                error={errors.password}
+                            >
+                                {(control) => (
+                                    <PasswordInput
+                                        {...control}
+                                        ref={passwordInput}
+                                        name="password"
+                                        autoComplete="new-password"
+                                        passwordrules={props.passwordRules}
+                                    />
+                                )}
+                            </Field>
 
-                                <InputError message={errors.current_password} />
-                            </div>
+                            <Field
+                                id="password_confirmation"
+                                label={t('settings_pages.password.confirm')}
+                                error={errors.password_confirmation}
+                            >
+                                {(control) => (
+                                    <PasswordInput
+                                        {...control}
+                                        name="password_confirmation"
+                                        autoComplete="new-password"
+                                        passwordrules={props.passwordRules}
+                                    />
+                                )}
+                            </Field>
 
-                            <div className="grid gap-2">
-                                <Label htmlFor="password">New password</Label>
-
-                                <PasswordInput
-                                    id="password"
-                                    ref={passwordInput}
-                                    name="password"
-                                    className="mt-1 block w-full"
-                                    autoComplete="new-password"
-                                    placeholder="New password"
-                                    passwordrules={props.passwordRules}
-                                />
-
-                                <InputError message={errors.password} />
-                            </div>
-
-                            <div className="grid gap-2">
-                                <Label htmlFor="password_confirmation">
-                                    Confirm password
-                                </Label>
-
-                                <PasswordInput
-                                    id="password_confirmation"
-                                    name="password_confirmation"
-                                    className="mt-1 block w-full"
-                                    autoComplete="new-password"
-                                    placeholder="Confirm password"
-                                    passwordrules={props.passwordRules}
-                                />
-
-                                <InputError
-                                    message={errors.password_confirmation}
-                                />
-                            </div>
-
-                            <div className="flex items-center gap-4">
+                            <div className="flex flex-wrap items-center gap-3">
                                 <Button
-                                    disabled={processing}
+                                    disabled={processing || !online}
                                     data-test="update-password-button"
                                 >
-                                    Save
+                                    {processing && <Spinner />}
+                                    {processing
+                                        ? t('settings_pages.common.saving')
+                                        : t('settings_pages.password.submit')}
                                 </Button>
+                                {!online && (
+                                    <p className="text-sm text-ink-muted">
+                                        {t('settings_pages.common.offline')}
+                                    </p>
+                                )}
                             </div>
                         </>
                     )}
                 </Form>
-            </div>
+            </section>
 
             <ManageTwoFactor
                 canManageTwoFactor={props.canManageTwoFactor}

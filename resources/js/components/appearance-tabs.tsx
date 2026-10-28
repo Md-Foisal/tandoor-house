@@ -1,45 +1,64 @@
+import * as RadioGroupPrimitive from '@radix-ui/react-radio-group';
 import type { LucideIcon } from 'lucide-react';
 import { Monitor, Moon, Sun } from 'lucide-react';
-import type { HTMLAttributes } from 'react';
 import type { Appearance } from '@/hooks/use-appearance';
 import { useAppearance } from '@/hooks/use-appearance';
+import { useT } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
 
+const options: Array<{ value: Appearance; icon: LucideIcon }> = [
+    { value: 'light', icon: Sun },
+    { value: 'dark', icon: Moon },
+    { value: 'system', icon: Monitor },
+];
+
+function isAppearance(value: string): value is Appearance {
+    return options.some((option) => option.value === value);
+}
+
+/**
+ * The same three choices as the header ThemeToggle, with words, for the
+ * appearance settings page.
+ */
 export default function AppearanceToggleTab({
     className = '',
-    ...props
-}: HTMLAttributes<HTMLDivElement>) {
+    label,
+}: {
+    className?: string;
+    label: string;
+}) {
+    const t = useT();
     const { appearance, updateAppearance } = useAppearance();
 
-    const tabs: { value: Appearance; icon: LucideIcon; label: string }[] = [
-        { value: 'light', icon: Sun, label: 'Light' },
-        { value: 'dark', icon: Moon, label: 'Dark' },
-        { value: 'system', icon: Monitor, label: 'System' },
-    ];
-
     return (
-        <div
-            className={cn(
-                'inline-flex gap-1 rounded-lg bg-neutral-100 p-1 dark:bg-neutral-800',
-                className,
-            )}
-            {...props}
+        <RadioGroupPrimitive.Root
+            value={appearance}
+            onValueChange={(value) =>
+                isAppearance(value) && updateAppearance(value)
+            }
+            aria-label={label}
+            className={cn('grid gap-3 sm:grid-cols-3', className)}
         >
-            {tabs.map(({ value, icon: Icon, label }) => (
-                <button
+            {options.map(({ value, icon: Icon }) => (
+                <RadioGroupPrimitive.Item
                     key={value}
-                    onClick={() => updateAppearance(value)}
-                    className={cn(
-                        'flex items-center rounded-md px-3.5 py-1.5 transition-colors',
-                        appearance === value
-                            ? 'bg-white shadow-xs dark:bg-neutral-700 dark:text-neutral-100'
-                            : 'text-neutral-500 hover:bg-neutral-200/60 hover:text-black dark:text-neutral-400 dark:hover:bg-neutral-700/60',
-                    )}
+                    value={value}
+                    className="group flex min-h-11 items-center gap-3 rounded-lg border border-line-strong bg-surface p-4 text-left transition-colors duration-150 outline-none hover:bg-clay focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ember data-[state=checked]:border-ember data-[state=checked]:bg-ember-soft sm:flex-col sm:items-start"
                 >
-                    <Icon className="-ml-1 h-4 w-4" />
-                    <span className="ml-1.5 text-sm">{label}</span>
-                </button>
+                    <Icon
+                        className="size-6 text-ink-muted group-data-[state=checked]:text-ember"
+                        aria-hidden="true"
+                    />
+                    <span className="grid">
+                        <span className="font-semibold text-ink">
+                            {t(`settings_pages.appearance.${value}`)}
+                        </span>
+                        <span className="text-sm text-ink-muted">
+                            {t(`settings_pages.appearance.${value}_hint`)}
+                        </span>
+                    </span>
+                </RadioGroupPrimitive.Item>
             ))}
-        </div>
+        </RadioGroupPrimitive.Root>
     );
 }

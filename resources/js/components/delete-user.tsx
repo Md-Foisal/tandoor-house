@@ -1,8 +1,9 @@
 import { Form } from '@inertiajs/react';
 import { useRef } from 'react';
 import ProfileController from '@/actions/App/Http/Controllers/Settings/ProfileController';
+import { useOnline } from '@/components/brand/states';
 import Heading from '@/components/heading';
-import InputError from '@/components/input-error';
+import { Field } from '@/components/input-error';
 import PasswordInput from '@/components/password-input';
 import { Button } from '@/components/ui/button';
 import {
@@ -14,25 +15,29 @@ import {
     DialogTitle,
     DialogTrigger,
 } from '@/components/ui/dialog';
-import { Label } from '@/components/ui/label';
+import { Spinner } from '@/components/ui/spinner';
+import { useT } from '@/lib/i18n';
 
 export default function DeleteUser() {
+    const t = useT();
+    const online = useOnline();
     const passwordInput = useRef<HTMLInputElement>(null);
 
     return (
-        <div className="space-y-6">
+        <section
+            aria-labelledby="delete-heading"
+            className="space-y-6 border-t border-line pt-10"
+        >
             <Heading
+                id="delete-heading"
                 variant="small"
-                title="Delete account"
-                description="Delete your account and all of its resources"
+                title={t('settings_pages.delete.title')}
+                description={t('settings_pages.delete.description')}
             />
-            <div className="space-y-4 rounded-lg border border-red-100 bg-red-50 p-4 dark:border-red-200/10 dark:bg-red-700/10">
-                <div className="relative space-y-0.5 text-red-600 dark:text-red-100">
-                    <p className="font-medium">Warning</p>
-                    <p className="text-sm">
-                        Please proceed with caution, this cannot be undone.
-                    </p>
-                </div>
+            <div className="space-y-4 rounded-lg bg-chilli-soft p-4 text-chilli">
+                <p className="font-medium">
+                    {t('settings_pages.delete.warning')}
+                </p>
 
                 <Dialog>
                     <DialogTrigger asChild>
@@ -40,18 +45,15 @@ export default function DeleteUser() {
                             variant="destructive"
                             data-test="delete-user-button"
                         >
-                            Delete account
+                            {t('settings_pages.delete.open')}
                         </Button>
                     </DialogTrigger>
                     <DialogContent>
                         <DialogTitle>
-                            Are you sure you want to delete your account?
+                            {t('settings_pages.delete.dialog_title')}
                         </DialogTitle>
                         <DialogDescription>
-                            Once your account is deleted, all of its resources
-                            and data will also be permanently deleted. Please
-                            enter your password to confirm you would like to
-                            permanently delete your account.
+                            {t('settings_pages.delete.dialog_body')}
                         </DialogDescription>
 
                         <Form
@@ -61,28 +63,26 @@ export default function DeleteUser() {
                             }}
                             onError={() => passwordInput.current?.focus()}
                             resetOnSuccess
-                            className="space-y-6"
+                            className="flex flex-col gap-6"
                         >
                             {({ resetAndClearErrors, processing, errors }) => (
                                 <>
-                                    <div className="grid gap-2">
-                                        <Label
-                                            htmlFor="password"
-                                            className="sr-only"
-                                        >
-                                            Password
-                                        </Label>
-
-                                        <PasswordInput
-                                            id="password"
-                                            name="password"
-                                            ref={passwordInput}
-                                            placeholder="Password"
-                                            autoComplete="current-password"
-                                        />
-
-                                        <InputError message={errors.password} />
-                                    </div>
+                                    <Field
+                                        id="delete-password"
+                                        label={t(
+                                            'settings_pages.delete.password',
+                                        )}
+                                        error={errors.password}
+                                    >
+                                        {(control) => (
+                                            <PasswordInput
+                                                {...control}
+                                                name="password"
+                                                ref={passwordInput}
+                                                autoComplete="current-password"
+                                            />
+                                        )}
+                                    </Field>
 
                                     <DialogFooter className="gap-2">
                                         <DialogClose asChild>
@@ -92,20 +92,29 @@ export default function DeleteUser() {
                                                     resetAndClearErrors()
                                                 }
                                             >
-                                                Cancel
+                                                {t(
+                                                    'settings_pages.common.cancel',
+                                                )}
                                             </Button>
                                         </DialogClose>
 
                                         <Button
                                             variant="destructive"
-                                            disabled={processing}
+                                            disabled={processing || !online}
                                             asChild
                                         >
                                             <button
                                                 type="submit"
                                                 data-test="confirm-delete-user-button"
                                             >
-                                                Delete account
+                                                {processing && <Spinner />}
+                                                {processing
+                                                    ? t(
+                                                          'settings_pages.delete.deleting',
+                                                      )
+                                                    : t(
+                                                          'settings_pages.delete.confirm',
+                                                      )}
                                             </button>
                                         </Button>
                                     </DialogFooter>
@@ -115,6 +124,6 @@ export default function DeleteUser() {
                     </DialogContent>
                 </Dialog>
             </div>
-        </div>
+        </section>
     );
 }
