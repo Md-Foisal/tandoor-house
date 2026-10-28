@@ -169,7 +169,7 @@ export default function MenuShow({ item, category, related }: Props) {
                 <meta name="description" content={item.description} />
             </Head>
 
-            <div className="container-page pt-4 pb-44 md:pt-8 md:pb-16">
+            <div className="container-page pt-4 pb-40 md:pt-8 md:pb-16">
                 <Link
                     href={backHref}
                     className="-ml-2 inline-flex min-h-11 items-center gap-2 rounded-md px-2 font-semibold text-ink-muted outline-none hover:text-ink focus-visible:outline-2 focus-visible:outline-ember"
@@ -362,7 +362,7 @@ export default function MenuShow({ item, category, related }: Props) {
                                     ref={button}
                                     type="submit"
                                     size="lg"
-                                    disabled={blocked || busy}
+                                    disabled={blocked || busy || variantMissing}
                                     className="h-12 flex-1"
                                 >
                                     {busy && (
@@ -373,15 +373,21 @@ export default function MenuShow({ item, category, related }: Props) {
                                     )}
                                     {soldOut
                                         ? t('menu.dish.sold_out')
-                                        : busy
-                                          ? t('menu.dish.adding')
-                                          : t('menu.dish.add_total', {
-                                                price: totalText,
-                                            })}
+                                        : variantMissing
+                                          ? t('menu.dish.choose_size')
+                                          : busy
+                                            ? t('menu.dish.adding')
+                                            : t('menu.dish.add_total', {
+                                                  price: totalText,
+                                              })}
                                 </Button>
                             </div>
                             <p className="sr-only" aria-live="polite">
-                                {t('menu.dish.total', { price: totalText })}
+                                {variantMissing
+                                    ? t('menu.dish.choose_size')
+                                    : t('menu.dish.total', {
+                                          price: totalText,
+                                      })}
                             </p>
                         </StickyActionBar>
                     </form>

@@ -89,7 +89,11 @@ export function OrderSummary({
                                 </span>
                             )}
                         </span>
-                        <Price pence={line.total} className="shrink-0" />
+                        <Price
+                            pence={line.total}
+                            compact={false}
+                            className="shrink-0"
+                        />
                     </li>
                 ))}
             </ul>

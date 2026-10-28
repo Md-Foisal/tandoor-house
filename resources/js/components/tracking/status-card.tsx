@@ -1,4 +1,5 @@
-import { Bike, CircleX } from 'lucide-react';
+import { usePage } from '@inertiajs/react';
+import { Bike, CircleX, Phone } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { TicketSteps } from '@/components/brand/ticket-steps';
 import { Plate } from '@/components/motion/served';
@@ -24,6 +25,9 @@ function useNow(active: boolean): number {
 export function StatusCard({ order }: { order: TrackedOrder }) {
     const t = useT();
     const now = useNow(order.active);
+    const { restaurant } = usePage().props as {
+        restaurant?: { name: string; phone?: string };
+    };
 
     const minutes = Math.ceil(
         (new Date(order.estimated_at).getTime() - now) / 60_000,
@@ -88,21 +92,42 @@ export function StatusCard({ order }: { order: TrackedOrder }) {
                 </h2>
                 {order.active && (
                     <>
-                        <p className="text-title font-semibold text-ember tabular-nums">
-                            {t(`tracking.estimate.${order.channel}`, {
-                                time: order.estimated_label,
-                            })}
-                        </p>
-                        <p className="text-ink-muted tabular-nums">
-                            {minutes > 0
-                                ? choice(
-                                      t('tracking.estimate.left', {
-                                          count: minutes,
-                                      }),
-                                      minutes,
-                                  )
-                                : t('tracking.estimate.any_moment')}
-                        </p>
+                        {minutes > 0 ? (
+                            <>
+                                <p className="text-title font-semibold text-ember tabular-nums">
+                                    {t(`tracking.estimate.${order.channel}`, {
+                                        time: order.estimated_label,
+                                    })}
+                                </p>
+                                <p className="text-ink-muted tabular-nums">
+                                    {choice(
+                                        t('tracking.estimate.left', {
+                                            count: minutes,
+                                        }),
+                                        minutes,
+                                    )}
+                                </p>
+                            </>
+                        ) : (
+                            <>
+                                <p className="text-title font-semibold text-ink">
+                                    {t('tracking.estimate.late')}
+                                </p>
+                                {restaurant?.phone && (
+                                    <a
+                                        href={`tel:${restaurant.phone.replace(/\s+/g, '')}`}
+                                        className="inline-flex min-h-11 items-center gap-2 self-start rounded-md font-semibold text-ember underline underline-offset-4 outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ember"
+                                    >
+                                        <Phone
+                                            className="size-4"
+                                            aria-hidden="true"
+                                        />
+                                        {t('tracking.estimate.late_call')} ·{' '}
+                                        {restaurant.phone}
+                                    </a>
+                                )}
+                            </>
+                        )}
                     </>
                 )}
             </section>

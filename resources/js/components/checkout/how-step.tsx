@@ -8,7 +8,7 @@ import { useT } from '@/lib/i18n';
 import { formatMoney } from '@/lib/money';
 import { cn } from '@/lib/utils';
 import { ChoiceCard } from './choice-card';
-import { Field } from './field';
+import { Field } from '@/components/form/field';
 import type {
     Channel,
     CheckoutFormApi,

@@ -1,6 +1,6 @@
 import { Form } from '@inertiajs/react';
 import { useOnline } from '@/components/brand/states';
-import { Field } from '@/components/checkout/field';
+import { Field } from '@/components/form/field';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import {

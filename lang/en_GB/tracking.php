@@ -57,6 +57,8 @@ return [
         'dine_in' => 'Ready around :time',
         'left' => ':count min left',
         'any_moment' => 'Any minute now',
+        'late' => "Running a little late — we're on it",
+        'late_call' => 'Call us',
     ],
     'rider' => [
         'title' => 'Your rider is on the way',

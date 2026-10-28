@@ -1,7 +1,7 @@
 import { Form } from '@inertiajs/react';
 import { useState } from 'react';
 import { useOnline } from '@/components/brand/states';
-import { Field } from '@/components/checkout/field';
+import { Field } from '@/components/form/field';
 import { Plate } from '@/components/motion/served';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';

@@ -131,6 +131,7 @@ return [
         'minimum' => 'Spend :short more to use that code.',
     ],
     'errors' => [
+        'promo_used_up' => 'That code has just run out.',
         'summary_title' => 'Please fix these before ordering',
         'edit_basket' => 'Edit basket',
         'name' => 'Tell us your name.',

@@ -1,6 +1,7 @@
 <?php
 
 return [
+    'required' => 'required',
     'vegetarian' => 'Vegetarian',
     'vegetarian_short' => 'V',
     'vegan' => 'Vegan',

@@ -3,7 +3,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useT } from '@/lib/i18n';
-import { Field } from './field';
+import { Field } from '@/components/form/field';
 import type { CheckoutFormApi, CheckoutProps } from './types';
 
 export function DetailsStep({

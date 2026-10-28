@@ -116,7 +116,7 @@ export function OrderDetails({
                                     </p>
                                 )}
                             </div>
-                            <Price pence={line.line_total} />
+                            <Price pence={line.line_total} compact={false} />
                         </li>
                     ))}
                 </ul>

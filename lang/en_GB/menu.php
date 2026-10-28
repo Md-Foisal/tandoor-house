@@ -69,6 +69,7 @@ return [
         'quantity' => 'How many',
         'total' => 'Total :price',
         'add_total' => 'Add to basket · :price',
+        'choose_size' => 'Choose a size',
         'adding' => 'Adding',
         'sold_out' => 'Sold out tonight',
         'sold_out_note' => "We've run out of this one. It'll be back when the kitchen restocks.",

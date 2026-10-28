@@ -24,7 +24,10 @@ export function Hero() {
             />
             <div className="container-page w-full pt-24 pb-20 md:pb-16">
                 <div className="flex max-w-[46rem] flex-col items-start gap-5">
-                    <OpenStatus status={openStatus} />
+                    <OpenStatus
+                        status={openStatus}
+                        className="rounded-full bg-paper/90 px-3 py-1.5 text-ink"
+                    />
                     <h1 className="font-display text-display-2xl text-balance">
                         {t('home.hero.title')}
                     </h1>
