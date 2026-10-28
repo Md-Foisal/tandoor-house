@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Resources\MenuItemResource;
 use App\Models\MenuItem;
 use App\Models\User;
 use App\Services\CartService;
@@ -195,4 +196,13 @@ it('adds a dish with options from the menu quick add only when it has none', fun
 
     $this->post('/basket/lines', ['menu_item_id' => $item->id, 'quantity' => 1])
         ->assertSessionHasNoErrors();
+});
+
+it('flags allergens that depend on the chosen option', function () {
+    $chai = MenuItemResource::make(
+        MenuItem::with(['variants', 'modifierGroups.modifiers'])->where('slug', 'masala-chai')->firstOrFail()
+    )->resolve();
+
+    expect($chai['allergens']->all())->toBe([])
+        ->and($chai['option_allergens']->all())->toEqualCanonicalizing(['milk', 'gluten']);
 });

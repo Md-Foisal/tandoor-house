@@ -31,7 +31,7 @@ class HomeController extends Controller
             'specials' => fn () => MenuItemResource::collection(
                 MenuItem::query()
                     ->where('is_special', true)
-                    ->with('variants', 'modifierGroups')
+                    ->with('variants', 'modifierGroups.modifiers')
                     ->orderByDesc('is_available')
                     ->orderBy('position')
                     ->limit(self::SPECIALS)

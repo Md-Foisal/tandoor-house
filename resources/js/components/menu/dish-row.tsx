@@ -80,6 +80,7 @@ export function DishRow({ item, href, onAdd, className }: Props) {
                 </div>
                 <AllergenList
                     allergens={item.allergens}
+                    optional={item.option_allergens}
                     compact
                     className="mt-1"
                 />
