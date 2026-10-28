@@ -14,7 +14,9 @@ const themes = ['light', 'dark'];
 const outDir = `docs/screenshots/phase-${phase}`;
 
 if (!phase || pages.length === 0) {
-    console.error('Usage: node scripts/screenshots.mjs <phase> <name>=<path> ...');
+    console.error(
+        'Usage: node scripts/screenshots.mjs <phase> <name>=<path> ...',
+    );
     process.exit(1);
 }
 
@@ -34,7 +36,9 @@ for (const theme of themes) {
 
         page.on('console', (message) => {
             if (message.type() === 'error') {
-                errors.push(`${page.url()} [${width} ${theme}]: ${message.text()}`);
+                errors.push(
+                    `${page.url()} [${width} ${theme}]: ${message.text()}`,
+                );
             }
         });
 
@@ -69,4 +73,6 @@ if (errors.length > 0) {
     process.exit(1);
 }
 
-console.log(`Saved ${pages.length * widths.length * themes.length} screenshots to ${outDir}`);
+console.log(
+    `Saved ${pages.length * widths.length * themes.length} screenshots to ${outDir}`,
+);
