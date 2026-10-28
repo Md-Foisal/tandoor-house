@@ -24,3 +24,11 @@ Non-obvious choices and why. Newest at the bottom of each phase.
 - **Screenshots are JPEG at quality 70.** Full-page PNGs of long pages were 3–5× larger with no review benefit.
 - **The 1080p hero film was re-encoded to stay under 3 MB** (H.264 at 1.65 Mbit/s, VP9 at 1.5 Mbit/s).
 - **Models are strict outside production** (`Model::shouldBeStrict`): lazy loading, silently discarded attributes and missing attributes throw, so N+1 queries are caught in development and tests.
+
+## Phase 2
+
+- **Online bookings go up to eight guests.** The largest table seats eight; bigger groups are asked to call so the team can join tables. Table merging for bookings arrives with the staff table map.
+- **Tips are offered as a share of the bill (none, 10%, 12.5%, 15%) or a custom amount**, and stored in pence on the order; the 2023 tips act note is shown beside them.
+- **The basket's channel is chosen at checkout**, where postcode or pickup time is known, so totals shown are never estimates of a different channel.
+- **Guests who open someone else's order see a friendly page** with sign-in and call options instead of a bare 403, keeping the URL.
+- **The menu is cached for ten minutes under one key** (`menu.v1`); menu management clears it on every change.
