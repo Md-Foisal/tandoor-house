@@ -19,3 +19,14 @@ export type AuthLayoutProps = {
     title?: string;
     description?: string;
 };
+
+export type RestaurantInfo = {
+    name: string;
+    phone: string;
+    email: string;
+    address: { line1: string; city: string; postcode: string };
+};
+
+export type TranslationTree = {
+    [key: string]: string | TranslationTree;
+};

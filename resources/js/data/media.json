@@ -1,0 +1,1636 @@
+{
+  "dish/bhel-puri": {
+    "alt": "Bhel puri, puffed rice with sev and chopped onion, served on newspaper",
+    "width": 1600,
+    "height": 2000,
+    "placeholder": "data:image/webp;base64,UklGRmYAAABXRUJQVlA4IFoAAAAwBACdASoQABQAPu1iqU2ppaQiMAgBMB2JbACdMoADQvIrMmiKjNj1CgAA/e9bTnQbr6Ih4hGrFc0Ma7Vlupnw17BdQR1B/RUKswY7ixTZwwkbwSshZxxFeAA=",
+    "sources": {
+      "avif": [
+        [
+          480,
+          "/media/dish/bhel-puri-480.avif"
+        ],
+        [
+          960,
+          "/media/dish/bhel-puri-960.avif"
+        ],
+        [
+          1600,
+          "/media/dish/bhel-puri-1600.avif"
+        ]
+      ],
+      "webp": [
+        [
+          480,
+          "/media/dish/bhel-puri-480.webp"
+        ],
+        [
+          960,
+          "/media/dish/bhel-puri-960.webp"
+        ],
+        [
+          1600,
+          "/media/dish/bhel-puri-1600.webp"
+        ]
+      ]
+    },
+    "credit": "Zoshua Colah / Unsplash"
+  },
+  "dish/bombay-potatoes": {
+    "alt": "Spiced Bombay potatoes in a blue bowl with chillies and fresh coriander",
+    "width": 960,
+    "height": 1200,
+    "placeholder": "data:image/webp;base64,UklGRn4AAABXRUJQVlA4IHIAAADwAwCdASoQABQAPu1kqU2ppaOiMAgBMB2JagCsABjs6qXlplTV8vFgAP7x375CnUJakab5MMNQR4hPrDrE6ldKNRYFeIEIVpWaIn5wbyLPNDx+gI9JAJKr9kXmYt+7cRXOfh4amPyjkKfqGt5jPj8OAAA=",
+    "sources": {
+      "avif": [
+        [
+          480,
+          "/media/dish/bombay-potatoes-480.avif"
+        ],
+        [
+          960,
+          "/media/dish/bombay-potatoes-960.avif"
+        ]
+      ],
+      "webp": [
+        [
+          480,
+          "/media/dish/bombay-potatoes-480.webp"
+        ],
+        [
+          960,
+          "/media/dish/bombay-potatoes-960.webp"
+        ]
+      ]
+    },
+    "credit": "Kalyani Akella / Unsplash"
+  },
+  "dish/butter-chicken": {
+    "alt": "Butter chicken in a bowl with cream and mint, naan alongside",
+    "width": 960,
+    "height": 1200,
+    "placeholder": "data:image/webp;base64,UklGRoAAAABXRUJQVlA4IHQAAADwAwCdASoQABQAPu1iqU2ppaOiMAgBMB2JbACdMoMljEK70pvbNXbMAP5BDkfVpnxTNo1X+BhhIHW3RxYHfxMCkqKO4DDI56rA62BmQ5C77huBY6IjEowu+Kjoh4KHLmtbuZathc+3CUev8sjxzX9wOCLYAA==",
+    "sources": {
+      "avif": [
+        [
+          480,
+          "/media/dish/butter-chicken-480.avif"
+        ],
+        [
+          960,
+          "/media/dish/butter-chicken-960.avif"
+        ]
+      ],
+      "webp": [
+        [
+          480,
+          "/media/dish/butter-chicken-480.webp"
+        ],
+        [
+          960,
+          "/media/dish/butter-chicken-960.webp"
+        ]
+      ]
+    },
+    "credit": "Mohammad Fahim / Unsplash"
+  },
+  "dish/butter-naan": {
+    "alt": "Blistered naan with charred spots, close up",
+    "width": 960,
+    "height": 1200,
+    "placeholder": "data:image/webp;base64,UklGRmQAAABXRUJQVlA4IFgAAACQAwCdASoQABQAPu1iqU2ppaOiMAgBMB2JQBdgA1jmfNEh3uoAAP6hP64jSfd+OO782TJF7wTbO423oVhY0Ux7N+3ZQCgGsnHjnBeQeLeBIvOL2pnjAAAA",
+    "sources": {
+      "avif": [
+        [
+          480,
+          "/media/dish/butter-naan-480.avif"
+        ],
+        [
+          960,
+          "/media/dish/butter-naan-960.avif"
+        ]
+      ],
+      "webp": [
+        [
+          480,
+          "/media/dish/butter-naan-480.webp"
+        ],
+        [
+          960,
+          "/media/dish/butter-naan-960.webp"
+        ]
+      ]
+    },
+    "credit": "Ajeet Panesar / Unsplash"
+  },
+  "dish/chana-masala": {
+    "alt": "Chana masala with ginger and coriander beside puffed fried bread",
+    "width": 1600,
+    "height": 2000,
+    "placeholder": "data:image/webp;base64,UklGRmYAAABXRUJQVlA4IFoAAAAwBACdASoQABQAPu1iqU2ppaQiMAgBMB2JZACdACP82ToN9mNOHbKo04AA992uxrcAfig3QvejXo1/6/h93/F3xx/J/i7sRFMxYCmq2r8JyGmNSMFZlLv/gAA=",
+    "sources": {
+      "avif": [
+        [
+          480,
+          "/media/dish/chana-masala-480.avif"
+        ],
+        [
+          960,
+          "/media/dish/chana-masala-960.avif"
+        ],
+        [
+          1600,
+          "/media/dish/chana-masala-1600.avif"
+        ]
+      ],
+      "webp": [
+        [
+          480,
+          "/media/dish/chana-masala-480.webp"
+        ],
+        [
+          960,
+          "/media/dish/chana-masala-960.webp"
+        ],
+        [
+          1600,
+          "/media/dish/chana-masala-1600.webp"
+        ]
+      ]
+    },
+    "credit": "Zoshua Colah / Unsplash"
+  },
+  "dish/cheese-and-chilli-kulcha": {
+    "alt": "Stuffed Indian flatbread with onion rings and lemon beside butter",
+    "width": 960,
+    "height": 1200,
+    "placeholder": "data:image/webp;base64,UklGRmoAAABXRUJQVlA4IF4AAAAwBACdASoQABQAPu1iqk2ppaQiMAgBMB2JbAC1CHADA01mTGpM88UUJqgA/u1GDbd+QrV1IKbNScqpch3soYaF2gahzYxIFoF4l7NXgAH5B7k/mbM5AV0OyQaijQAA",
+    "sources": {
+      "avif": [
+        [
+          480,
+          "/media/dish/cheese-and-chilli-kulcha-480.avif"
+        ],
+        [
+          960,
+          "/media/dish/cheese-and-chilli-kulcha-960.avif"
+        ]
+      ],
+      "webp": [
+        [
+          480,
+          "/media/dish/cheese-and-chilli-kulcha-480.webp"
+        ],
+        [
+          960,
+          "/media/dish/cheese-and-chilli-kulcha-960.webp"
+        ]
+      ]
+    },
+    "credit": "PRATEEK JAISWAL / Unsplash"
+  },
+  "dish/chicken-chettinad": {
+    "alt": "Spiced chicken and potato curry with green chilli and coriander",
+    "width": 960,
+    "height": 1200,
+    "placeholder": "data:image/webp;base64,UklGRoQAAABXRUJQVlA4IHgAAACQBACdASoQABQAPu1iqU2ppaOiMAgBMB2JbACdMoRwEGVgMfHBspOmI9wNSEAA/emD1ICyLKwaLmx9Dj3H8t20ltku5+Bq7C3u7ZF2cyGxrs/gNRZKe6GDicjyR9ernvuZM5J+5EnTJP3IkfjmYicn3OD5msJAMAA=",
+    "sources": {
+      "avif": [
+        [
+          480,
+          "/media/dish/chicken-chettinad-480.avif"
+        ],
+        [
+          960,
+          "/media/dish/chicken-chettinad-960.avif"
+        ]
+      ],
+      "webp": [
+        [
+          480,
+          "/media/dish/chicken-chettinad-480.webp"
+        ],
+        [
+          960,
+          "/media/dish/chicken-chettinad-960.webp"
+        ]
+      ]
+    },
+    "credit": "Dr Muhammad Amer / Unsplash"
+  },
+  "dish/chicken-tikka": {
+    "alt": "Chicken tikka skewers grilling over a flame",
+    "width": 960,
+    "height": 1200,
+    "placeholder": "data:image/webp;base64,UklGRmQAAABXRUJQVlA4IFgAAACQAwCdASoQABQAPu1iqU2ppaOiMAgBMB2JZAC7ABezYqeyjkWAAP21/sXXr/AVLUXqRz/MIYgASEpm8TP3f8muydPJKf006nMiyySb5HJzfuQjeT8CVAAA",
+    "sources": {
+      "avif": [
+        [
+          480,
+          "/media/dish/chicken-tikka-480.avif"
+        ],
+        [
+          960,
+          "/media/dish/chicken-tikka-960.avif"
+        ]
+      ],
+      "webp": [
+        [
+          480,
+          "/media/dish/chicken-tikka-480.webp"
+        ],
+        [
+          960,
+          "/media/dish/chicken-tikka-960.webp"
+        ]
+      ]
+    },
+    "credit": "Mihir Sabnis / Unsplash"
+  },
+  "dish/cucumber-raita": {
+    "alt": "Cucumber and onion in cool yoghurt",
+    "width": 1600,
+    "height": 2000,
+    "placeholder": "data:image/webp;base64,UklGRnAAAABXRUJQVlA4IGQAAACwAwCdASoQABQAPu1iqk4ppaQiMAgBMB2JQBUeg4ciyrgzhdhWAADifMv7f9veVPGhREuq89ddg7yhZYUgU/STpi4sGc1rntk/V13vkEU03LEmQdyFMOIOdGr6RyqJUcccAAAA",
+    "sources": {
+      "avif": [
+        [
+          480,
+          "/media/dish/cucumber-raita-480.avif"
+        ],
+        [
+          960,
+          "/media/dish/cucumber-raita-960.avif"
+        ],
+        [
+          1600,
+          "/media/dish/cucumber-raita-1600.avif"
+        ]
+      ],
+      "webp": [
+        [
+          480,
+          "/media/dish/cucumber-raita-480.webp"
+        ],
+        [
+          960,
+          "/media/dish/cucumber-raita-960.webp"
+        ],
+        [
+          1600,
+          "/media/dish/cucumber-raita-1600.webp"
+        ]
+      ]
+    },
+    "credit": "Alex Bayev / Unsplash"
+  },
+  "dish/fresh-lime-soda": {
+    "alt": "Tall glass of fresh lime soda with mint and lemons",
+    "width": 960,
+    "height": 1200,
+    "placeholder": "data:image/webp;base64,UklGRmgAAABXRUJQVlA4IFwAAABwAwCdASoQABQAPu1mq04ppaQiMAgBMB2JQBbZA4cnIi0DTsgA/Yd1ur2VKj8f+0AteeK5phzdGyJUi2l4kw0JchHDEp4fJjrINxP7z3DtZyyuQceNLvMxJzwKAA==",
+    "sources": {
+      "avif": [
+        [
+          480,
+          "/media/dish/fresh-lime-soda-480.avif"
+        ],
+        [
+          960,
+          "/media/dish/fresh-lime-soda-960.avif"
+        ]
+      ],
+      "webp": [
+        [
+          480,
+          "/media/dish/fresh-lime-soda-480.webp"
+        ],
+        [
+          960,
+          "/media/dish/fresh-lime-soda-960.webp"
+        ]
+      ]
+    },
+    "credit": "Francesca Hotchin / Unsplash"
+  },
+  "dish/garlic-and-coriander-naan": {
+    "alt": "Naan scattered with coriander beside rich curry",
+    "width": 960,
+    "height": 1200,
+    "placeholder": "data:image/webp;base64,UklGRmYAAABXRUJQVlA4IFoAAADwAwCdASoQABQAPu1iqU2ppaQiMAgBMB2JbAC06B2gCsWXhFcdjJcAAJ9C/DIWEdq1nMl1fBnO4A1dwrZXuDkDZ9F9UKzX6wGhb+2GG1oJxYnvAQw3H1vgAAA=",
+    "sources": {
+      "avif": [
+        [
+          480,
+          "/media/dish/garlic-and-coriander-naan-480.avif"
+        ],
+        [
+          960,
+          "/media/dish/garlic-and-coriander-naan-960.avif"
+        ]
+      ],
+      "webp": [
+        [
+          480,
+          "/media/dish/garlic-and-coriander-naan-480.webp"
+        ],
+        [
+          960,
+          "/media/dish/garlic-and-coriander-naan-960.webp"
+        ]
+      ]
+    },
+    "credit": "amirali mirhashemian / Unsplash"
+  },
+  "dish/goan-prawn-curry": {
+    "alt": "Prawns in a golden Goan-style curry sauce with coriander and red chilli",
+    "width": 1600,
+    "height": 2000,
+    "placeholder": "data:image/webp;base64,UklGRnoAAABXRUJQVlA4IG4AAADQAwCdASoQABQAPu1iqU2ppaOiMAgBMB2JbACw7CIfCygiHYnjPoAA/uPfuAdguGNoYsAyZ57h4qZrhEMBUIlYGePbsQVpLay1sWXKUiQeODEUL90ZlOb2eGFSTmXotqSZgSvH5P84BGHBPFvgAA==",
+    "sources": {
+      "avif": [
+        [
+          480,
+          "/media/dish/goan-prawn-curry-480.avif"
+        ],
+        [
+          960,
+          "/media/dish/goan-prawn-curry-960.avif"
+        ],
+        [
+          1600,
+          "/media/dish/goan-prawn-curry-1600.avif"
+        ]
+      ],
+      "webp": [
+        [
+          480,
+          "/media/dish/goan-prawn-curry-480.webp"
+        ],
+        [
+          960,
+          "/media/dish/goan-prawn-curry-960.webp"
+        ],
+        [
+          1600,
+          "/media/dish/goan-prawn-curry-1600.webp"
+        ]
+      ]
+    },
+    "credit": "67 Digital / Unsplash"
+  },
+  "dish/gulab-jamun": {
+    "alt": "Syrup-soaked Indian sweet topped with a dried rosebud and pistachio",
+    "width": 1600,
+    "height": 2000,
+    "placeholder": "data:image/webp;base64,UklGRmwAAABXRUJQVlA4IGAAAAAQBACdASoQABQAPu1iqU2ppaOiMAgBMB2JZgCdMoRgAAch/G6dc/zLAAD8XWytWc1wag8ZQKIFIqoZYpe8v+xr7V7rTol77jPV55QajLMVjR6tt5X780w3jAFzvLj6BAA=",
+    "sources": {
+      "avif": [
+        [
+          480,
+          "/media/dish/gulab-jamun-480.avif"
+        ],
+        [
+          960,
+          "/media/dish/gulab-jamun-960.avif"
+        ],
+        [
+          1600,
+          "/media/dish/gulab-jamun-1600.avif"
+        ]
+      ],
+      "webp": [
+        [
+          480,
+          "/media/dish/gulab-jamun-480.webp"
+        ],
+        [
+          960,
+          "/media/dish/gulab-jamun-960.webp"
+        ],
+        [
+          1600,
+          "/media/dish/gulab-jamun-1600.webp"
+        ]
+      ]
+    },
+    "credit": "Shoeib Abolhassani / Unsplash"
+  },
+  "dish/house-black-daal": {
+    "alt": "Slow-cooked black daal with naan and sliced onion on a table",
+    "width": 960,
+    "height": 1200,
+    "placeholder": "data:image/webp;base64,UklGRmgAAABXRUJQVlA4IFwAAAAQBACdASoQABQAPu1iqU2ppaOiMAgBMB2JbACdMoR4GBQgABMF0GR44AD3Bs86kltdKnY1B4PYHx/XzMiOEb90w7z8KG2QndsAr7cnh3ObH/5WeU3r/6A516gAAA==",
+    "sources": {
+      "avif": [
+        [
+          480,
+          "/media/dish/house-black-daal-480.avif"
+        ],
+        [
+          960,
+          "/media/dish/house-black-daal-960.avif"
+        ]
+      ],
+      "webp": [
+        [
+          480,
+          "/media/dish/house-black-daal-480.webp"
+        ],
+        [
+          960,
+          "/media/dish/house-black-daal-960.webp"
+        ]
+      ]
+    },
+    "credit": "Zoshua Colah / Unsplash"
+  },
+  "dish/hyderabadi-lamb-biryani": {
+    "alt": "Platter of spiced lamb biryani garnished with lime slices",
+    "width": 960,
+    "height": 1200,
+    "placeholder": "data:image/webp;base64,UklGRogAAABXRUJQVlA4IHwAAAAQBACdASoQABQAPu1iqU2ppaOiMAgBMB2JbACdMoACEXnG3U1v1q+cAAD+5FlaVtsWs0fLnKg3Bu8XL759qdP+OH1dIUcvpDqURGJUYFQ+g3JGNjNBvWqxBa20aZJ9Ca9I50iM9auMsw88d+vv5b2bmArq88fjEl2pQAAA",
+    "sources": {
+      "avif": [
+        [
+          480,
+          "/media/dish/hyderabadi-lamb-biryani-480.avif"
+        ],
+        [
+          960,
+          "/media/dish/hyderabadi-lamb-biryani-960.avif"
+        ]
+      ],
+      "webp": [
+        [
+          480,
+          "/media/dish/hyderabadi-lamb-biryani-480.webp"
+        ],
+        [
+          960,
+          "/media/dish/hyderabadi-lamb-biryani-960.webp"
+        ]
+      ]
+    },
+    "credit": "Shourav Sheikh / Unsplash"
+  },
+  "dish/indian-pale-ale": {
+    "alt": "Tall glass of golden pale ale with a foamy head",
+    "width": 1600,
+    "height": 2000,
+    "placeholder": "data:image/webp;base64,UklGRmoAAABXRUJQVlA4IF4AAADwAwCdASoQABQAPu1qrU8ppiQiMAgBMB2JYwCo9CHgDZVczOYkVmXwAP70MGj0x2TzG11Xpu/ds2WBpGMjcWtn/0n/+muJoQj8MCuTRc//bsWa2lVkFdzIWDJAOAAA",
+    "sources": {
+      "avif": [
+        [
+          480,
+          "/media/dish/indian-pale-ale-480.avif"
+        ],
+        [
+          960,
+          "/media/dish/indian-pale-ale-960.avif"
+        ],
+        [
+          1600,
+          "/media/dish/indian-pale-ale-1600.avif"
+        ]
+      ],
+      "webp": [
+        [
+          480,
+          "/media/dish/indian-pale-ale-480.webp"
+        ],
+        [
+          960,
+          "/media/dish/indian-pale-ale-960.webp"
+        ],
+        [
+          1600,
+          "/media/dish/indian-pale-ale-1600.webp"
+        ]
+      ]
+    },
+    "credit": "Giovanna Gomes / Unsplash"
+  },
+  "dish/jackfruit-biryani": {
+    "alt": "Fragrant biryani served in a terracotta pot with raita",
+    "width": 960,
+    "height": 1200,
+    "placeholder": "data:image/webp;base64,UklGRmwAAABXRUJQVlA4IGAAAAAwBACdASoQABQAPu1iqU2ppaOiMAgBMB2JZgCdMoADC4JBKg0lP+rNoAAA9rLfS3mTqVx1itpQKoLdPfylXtNDsMITHRNqrUhsrxKgTcKmWS0sp+6TEeqfLPLxRLzIAAA=",
+    "sources": {
+      "avif": [
+        [
+          480,
+          "/media/dish/jackfruit-biryani-480.avif"
+        ],
+        [
+          960,
+          "/media/dish/jackfruit-biryani-960.avif"
+        ]
+      ],
+      "webp": [
+        [
+          480,
+          "/media/dish/jackfruit-biryani-480.webp"
+        ],
+        [
+          960,
+          "/media/dish/jackfruit-biryani-960.webp"
+        ]
+      ]
+    },
+    "credit": "ANOOF C / Unsplash"
+  },
+  "dish/jeera-rice": {
+    "alt": "Cumin-scented rice in a copper bowl beside curry and poppadoms",
+    "width": 960,
+    "height": 1200,
+    "placeholder": "data:image/webp;base64,UklGRnIAAABXRUJQVlA4IGYAAAAQBACdASoQABQAPu1iqU2ppaOiMAgBMB2JbACdMoACEhfcaGHTghP0wAD+JVvsNBi0GH5eiVMWCNoc9uyANUedNJOUeF2XRJcTqVmPRg1Tr364lMwabSNTCL/9oUrq6sSjaelEQAA=",
+    "sources": {
+      "avif": [
+        [
+          480,
+          "/media/dish/jeera-rice-480.avif"
+        ],
+        [
+          960,
+          "/media/dish/jeera-rice-960.avif"
+        ]
+      ],
+      "webp": [
+        [
+          480,
+          "/media/dish/jeera-rice-480.webp"
+        ],
+        [
+          960,
+          "/media/dish/jeera-rice-960.webp"
+        ]
+      ]
+    },
+    "credit": "Kalyani Akella / Unsplash"
+  },
+  "dish/kachumber-salad": {
+    "alt": "Chopped tomato, onion and coriander salad with chickpeas",
+    "width": 1600,
+    "height": 2000,
+    "placeholder": "data:image/webp;base64,UklGRnYAAABXRUJQVlA4IGoAAAAQBACdASoQABQAPu1iqU2ppaOiMAgBMB2JbACdMoMjbCGXUGC6cPC+AAD97nsKRSMwoZR0HmISbNgCEy7m0f+0sgyH77RRjlQucmnWeGdquttGqIYctqVDMLvLQl/mVYVkR6ZozP1/vAAA",
+    "sources": {
+      "avif": [
+        [
+          480,
+          "/media/dish/kachumber-salad-480.avif"
+        ],
+        [
+          960,
+          "/media/dish/kachumber-salad-960.avif"
+        ],
+        [
+          1600,
+          "/media/dish/kachumber-salad-1600.avif"
+        ]
+      ],
+      "webp": [
+        [
+          480,
+          "/media/dish/kachumber-salad-480.webp"
+        ],
+        [
+          960,
+          "/media/dish/kachumber-salad-960.webp"
+        ],
+        [
+          1600,
+          "/media/dish/kachumber-salad-1600.webp"
+        ]
+      ]
+    },
+    "credit": "Zoshua Colah / Unsplash"
+  },
+  "dish/laccha-paratha": {
+    "alt": "Layered flaky paratha with curry and sliced onion",
+    "width": 1600,
+    "height": 2000,
+    "placeholder": "data:image/webp;base64,UklGRl4AAABXRUJQVlA4IFIAAACwAwCdASoQABQAPu1iqU2ppaOiMAgBMB2JZAC7ACHM0DGZ0pm90AD+6Nim/hwRDc+HANype0tFQa64MNHNG8Yu1NK2nuUIvKc0Zvi2BNjsAAAA",
+    "sources": {
+      "avif": [
+        [
+          480,
+          "/media/dish/laccha-paratha-480.avif"
+        ],
+        [
+          960,
+          "/media/dish/laccha-paratha-960.avif"
+        ],
+        [
+          1600,
+          "/media/dish/laccha-paratha-1600.avif"
+        ]
+      ],
+      "webp": [
+        [
+          480,
+          "/media/dish/laccha-paratha-480.webp"
+        ],
+        [
+          960,
+          "/media/dish/laccha-paratha-960.webp"
+        ],
+        [
+          1600,
+          "/media/dish/laccha-paratha-1600.webp"
+        ]
+      ]
+    },
+    "credit": "Ananthan Chithiraikani / Unsplash"
+  },
+  "dish/lamb-rogan-josh": {
+    "alt": "Lamb rogan josh in a copper karahi with coriander and red chilli",
+    "width": 1600,
+    "height": 2000,
+    "placeholder": "data:image/webp;base64,UklGRmoAAABXRUJQVlA4IF4AAADQAwCdASoQABQAPu1iqU2ppaQiMAgBMB2JZgCdABejh5hxvAJtQ7AA/njAtlLhM5IAJm1b5u9U64uQ/lnr2zv87xXrcgjZK674vwrNcMIpw8/u8Y+dKc4llkq8Ja4A",
+    "sources": {
+      "avif": [
+        [
+          480,
+          "/media/dish/lamb-rogan-josh-480.avif"
+        ],
+        [
+          960,
+          "/media/dish/lamb-rogan-josh-960.avif"
+        ],
+        [
+          1600,
+          "/media/dish/lamb-rogan-josh-1600.avif"
+        ]
+      ],
+      "webp": [
+        [
+          480,
+          "/media/dish/lamb-rogan-josh-480.webp"
+        ],
+        [
+          960,
+          "/media/dish/lamb-rogan-josh-960.webp"
+        ],
+        [
+          1600,
+          "/media/dish/lamb-rogan-josh-1600.webp"
+        ]
+      ]
+    },
+    "credit": "LOLA AZIZADA / Unsplash"
+  },
+  "dish/lamb-seekh-kebab": {
+    "alt": "Lamb seekh kebabs with lemon, onion rings and salad",
+    "width": 1600,
+    "height": 2000,
+    "placeholder": "data:image/webp;base64,UklGRnQAAABXRUJQVlA4IGgAAADwAwCdASoQABQAPu1iqk2ppaQiMAgBMB2JbACdMoACQ0qMt5Vrt0iwAP61CS4NO/UQwpqA0CAIPKQqwsON3fsrTTODFuISwLcd3XXIpQOefld4FD2q1xzG6d4LYGjrkUnOf5UiWDOAAA==",
+    "sources": {
+      "avif": [
+        [
+          480,
+          "/media/dish/lamb-seekh-kebab-480.avif"
+        ],
+        [
+          960,
+          "/media/dish/lamb-seekh-kebab-960.avif"
+        ],
+        [
+          1600,
+          "/media/dish/lamb-seekh-kebab-1600.avif"
+        ]
+      ],
+      "webp": [
+        [
+          480,
+          "/media/dish/lamb-seekh-kebab-480.webp"
+        ],
+        [
+          960,
+          "/media/dish/lamb-seekh-kebab-960.webp"
+        ],
+        [
+          1600,
+          "/media/dish/lamb-seekh-kebab-1600.webp"
+        ]
+      ]
+    },
+    "credit": "Rimsha Noor / Unsplash"
+  },
+  "dish/lemon-rice": {
+    "alt": "Bright yellow rice beside a copper karahi of curry",
+    "width": 1600,
+    "height": 2000,
+    "placeholder": "data:image/webp;base64,UklGRnAAAABXRUJQVlA4IGQAAADwAwCdASoQABQAPu1iqk4ppaQiMAgBMB2JbACdACHgN5WkaM755icAAP7vQs6JywRjwyEzGK0sC5JuegXJW9fkkJ2GDVSL00H7XeT4BH/9am3+clNC141MGzLzhALs6AG8AAAA",
+    "sources": {
+      "avif": [
+        [
+          480,
+          "/media/dish/lemon-rice-480.avif"
+        ],
+        [
+          960,
+          "/media/dish/lemon-rice-960.avif"
+        ],
+        [
+          1600,
+          "/media/dish/lemon-rice-1600.avif"
+        ]
+      ],
+      "webp": [
+        [
+          480,
+          "/media/dish/lemon-rice-480.webp"
+        ],
+        [
+          960,
+          "/media/dish/lemon-rice-960.webp"
+        ],
+        [
+          1600,
+          "/media/dish/lemon-rice-1600.webp"
+        ]
+      ]
+    },
+    "credit": "LOLA AZIZADA / Unsplash"
+  },
+  "dish/malai-fish-tikka": {
+    "alt": "Tandoor-grilled seafood tikka with lemon and sliced onion",
+    "width": 960,
+    "height": 1200,
+    "placeholder": "data:image/webp;base64,UklGRngAAABXRUJQVlA4IGwAAABwBACdASoQABQAPu1iqU2ppaQiMAgBMB2JbACdMoR4GCPT4oG+sXFU+Fn10AD9TUSIiG8l7NDWoWhnjhvJI/gEItYp9xNrJnqDc/pbzzxT8ovIkshjJFCnZElrx0ar4DPB6kbhndkGR3encAA=",
+    "sources": {
+      "avif": [
+        [
+          480,
+          "/media/dish/malai-fish-tikka-480.avif"
+        ],
+        [
+          960,
+          "/media/dish/malai-fish-tikka-960.avif"
+        ]
+      ],
+      "webp": [
+        [
+          480,
+          "/media/dish/malai-fish-tikka-480.webp"
+        ],
+        [
+          960,
+          "/media/dish/malai-fish-tikka-960.webp"
+        ]
+      ]
+    },
+    "credit": "Rashpal Singh / Unsplash"
+  },
+  "dish/mango-lassi": {
+    "alt": "Glass of golden mango lassi with a steel straw and fresh mango",
+    "width": 1600,
+    "height": 2000,
+    "placeholder": "data:image/webp;base64,UklGRnIAAABXRUJQVlA4IGYAAAAwBACdASoQABQAPu1iqU2ppaOiMAgBMB2JbAC7MoMljDUP2xAmBkyR1gAA/FOdhSBH+IzZo4nFSeI2Oa0xzt63FR1oq7vpErAvhVMJQ35PnH59C5opgXpGXn7utip+TbpaAw6rAAA=",
+    "sources": {
+      "avif": [
+        [
+          480,
+          "/media/dish/mango-lassi-480.avif"
+        ],
+        [
+          960,
+          "/media/dish/mango-lassi-960.avif"
+        ],
+        [
+          1600,
+          "/media/dish/mango-lassi-1600.avif"
+        ]
+      ],
+      "webp": [
+        [
+          480,
+          "/media/dish/mango-lassi-480.webp"
+        ],
+        [
+          960,
+          "/media/dish/mango-lassi-960.webp"
+        ],
+        [
+          1600,
+          "/media/dish/mango-lassi-1600.webp"
+        ]
+      ]
+    },
+    "credit": "Julia Zyablova / Unsplash"
+  },
+  "dish/mango-shrikhand": {
+    "alt": "Bowl of thick strained yoghurt with a sprig of mint",
+    "width": 1600,
+    "height": 2000,
+    "placeholder": "data:image/webp;base64,UklGRmYAAABXRUJQVlA4IFoAAAAQBACdASoQABQAPu1iqU2ppaQiMAgBMB2JQAECAE3sNrc5yCmDUtX6AAD44+hllzRi+4kXm5WSrTrQXxdQFGTycRScZ0t0IrZSGvwJUe3MA62a1XX81QV5AAA=",
+    "sources": {
+      "avif": [
+        [
+          480,
+          "/media/dish/mango-shrikhand-480.avif"
+        ],
+        [
+          960,
+          "/media/dish/mango-shrikhand-960.avif"
+        ],
+        [
+          1600,
+          "/media/dish/mango-shrikhand-1600.avif"
+        ]
+      ],
+      "webp": [
+        [
+          480,
+          "/media/dish/mango-shrikhand-480.webp"
+        ],
+        [
+          960,
+          "/media/dish/mango-shrikhand-960.webp"
+        ],
+        [
+          1600,
+          "/media/dish/mango-shrikhand-1600.webp"
+        ]
+      ]
+    },
+    "credit": "micheile henderson / Unsplash"
+  },
+  "dish/masala-chai": {
+    "alt": "Glass cup of masala chai with spoons of tea and spice",
+    "width": 1600,
+    "height": 2000,
+    "placeholder": "data:image/webp;base64,UklGRmAAAABXRUJQVlA4IFQAAACwAwCdASoQABQAPu1iqU2ppaOiMAgBMB2JYgCw7BitfYTzMEUSsAD+3u3MBJJMoixMTxQ5SVK4AhkaP8EZ69aWzcu0logGsG6Np56RgNqqmmpkAAA=",
+    "sources": {
+      "avif": [
+        [
+          480,
+          "/media/dish/masala-chai-480.avif"
+        ],
+        [
+          960,
+          "/media/dish/masala-chai-960.avif"
+        ],
+        [
+          1600,
+          "/media/dish/masala-chai-1600.avif"
+        ]
+      ],
+      "webp": [
+        [
+          480,
+          "/media/dish/masala-chai-480.webp"
+        ],
+        [
+          960,
+          "/media/dish/masala-chai-960.webp"
+        ],
+        [
+          1600,
+          "/media/dish/masala-chai-1600.webp"
+        ]
+      ]
+    },
+    "credit": "Nikita Khowala / Unsplash"
+  },
+  "dish/onion-bhaji": {
+    "alt": "Golden spiced fritters, freshly fried",
+    "width": 960,
+    "height": 1200,
+    "placeholder": "data:image/webp;base64,UklGRp4AAABXRUJQVlA4IJIAAADwBACdASoQABQAPu1iqU2ppaOiMAgBMB2JbACdMoRwFc5ZIABYA8/ZSWH4yOItqYAA/VODbBtVRP5TJ3l6Sp/WvsSf5V1n1LQgAZpgFFxoRnLlT7PJpGcMui+Rj8UCq+X2R3xdasQfLmmqOwJpNhYlHvOlTrQJrra9fq/YCs56E5Hqy4se/1Z9mpkXxgKeN4gAAA==",
+    "sources": {
+      "avif": [
+        [
+          480,
+          "/media/dish/onion-bhaji-480.avif"
+        ],
+        [
+          960,
+          "/media/dish/onion-bhaji-960.avif"
+        ]
+      ],
+      "webp": [
+        [
+          480,
+          "/media/dish/onion-bhaji-480.webp"
+        ],
+        [
+          960,
+          "/media/dish/onion-bhaji-960.webp"
+        ]
+      ]
+    },
+    "credit": "Abhijit Biswas / Unsplash"
+  },
+  "dish/palak-paneer": {
+    "alt": "Palak paneer with golden cubes of paneer in spinach sauce",
+    "width": 960,
+    "height": 1200,
+    "placeholder": "data:image/webp;base64,UklGRmwAAABXRUJQVlA4IGAAAADQAwCdASoQABQAPu1iqU2ppaQiMAgBMB2JZAC/OB6Wc/dnFZzWWQAA/uv8tkH+iDRuCqzAH3z6yWVHhBZfOOtBLN6T7wGAKIMJher9y489OmYhq5Yed1DjtdCDGuQAAAA=",
+    "sources": {
+      "avif": [
+        [
+          480,
+          "/media/dish/palak-paneer-480.avif"
+        ],
+        [
+          960,
+          "/media/dish/palak-paneer-960.avif"
+        ]
+      ],
+      "webp": [
+        [
+          480,
+          "/media/dish/palak-paneer-480.webp"
+        ],
+        [
+          960,
+          "/media/dish/palak-paneer-960.webp"
+        ]
+      ]
+    },
+    "credit": "Kanwardeep Kaur / Unsplash"
+  },
+  "dish/paneer-shashlik": {
+    "alt": "Skewers of paneer and vegetables laid out in a row",
+    "width": 960,
+    "height": 1200,
+    "placeholder": "data:image/webp;base64,UklGRlQAAABXRUJQVlA4IEgAAAAwAwCdASoQABQAPu1kqk4ppaQiMAgBMB2JYgC06Cz8u4oAAP7m/ZozePxHTs4HNDfph53IFhvleHrG7COE5gg4TL93AWaAAAA=",
+    "sources": {
+      "avif": [
+        [
+          480,
+          "/media/dish/paneer-shashlik-480.avif"
+        ],
+        [
+          960,
+          "/media/dish/paneer-shashlik-960.avif"
+        ]
+      ],
+      "webp": [
+        [
+          480,
+          "/media/dish/paneer-shashlik-480.webp"
+        ],
+        [
+          960,
+          "/media/dish/paneer-shashlik-960.webp"
+        ]
+      ]
+    },
+    "credit": "Ashwini Chaudhary (Monty) / Unsplash"
+  },
+  "dish/pani-puri": {
+    "alt": "Pani puri shells on a steel tray with chutneys and potato filling",
+    "width": 1600,
+    "height": 2000,
+    "placeholder": "data:image/webp;base64,UklGRmwAAABXRUJQVlA4IGAAAABQBACdASoQABQAPu1iqU2ppaOiMAgBMB2JbACdMoR2WCiHbHF9Rt9QX17AANyUHOCoGp8P/hnAF3Yr9DLDFInBrXcQnuV/S8XKVJxG5X7Vh5fDHJPzPYTXAFPaoUXlAAA=",
+    "sources": {
+      "avif": [
+        [
+          480,
+          "/media/dish/pani-puri-480.avif"
+        ],
+        [
+          960,
+          "/media/dish/pani-puri-960.avif"
+        ],
+        [
+          1600,
+          "/media/dish/pani-puri-1600.avif"
+        ]
+      ],
+      "webp": [
+        [
+          480,
+          "/media/dish/pani-puri-480.webp"
+        ],
+        [
+          960,
+          "/media/dish/pani-puri-960.webp"
+        ],
+        [
+          1600,
+          "/media/dish/pani-puri-1600.webp"
+        ]
+      ]
+    },
+    "credit": "Rimsha Noor / Unsplash"
+  },
+  "dish/pistachio-kulfi": {
+    "alt": "Pale Indian sweets topped with chopped pistachio on a white plate",
+    "width": 960,
+    "height": 1200,
+    "placeholder": "data:image/webp;base64,UklGRlAAAABXRUJQVlA4IEQAAACQAwCdASoQABQAPu1iqU2ppaOiMAgBMB2JS7AIwAKeub0W/04AAP7p0DhWfdrX2X+GmKqy2srP9IIAFlnxQZzkHVAAAA==",
+    "sources": {
+      "avif": [
+        [
+          480,
+          "/media/dish/pistachio-kulfi-480.avif"
+        ],
+        [
+          960,
+          "/media/dish/pistachio-kulfi-960.avif"
+        ]
+      ],
+      "webp": [
+        [
+          480,
+          "/media/dish/pistachio-kulfi-480.webp"
+        ],
+        [
+          960,
+          "/media/dish/pistachio-kulfi-960.webp"
+        ]
+      ]
+    },
+    "credit": "Maakhanbhog Sweets / Unsplash"
+  },
+  "dish/poppadoms-and-pickles": {
+    "alt": "Poppadoms with lime beside rice and a copper dish of curry",
+    "width": 1600,
+    "height": 2000,
+    "placeholder": "data:image/webp;base64,UklGRoAAAABXRUJQVlA4IHQAAACwBACdASoQABQAPu1iqk2ppaQiMAgBMB2JbAC7MoR4OsAA4SFKl4f1wmltsgYAAP50bLOxbQgMkAvJT92VsaSO5B0L9CUgx4stmy+0zxYCgJG7z6vKvVNxMLgtZ6sdgrgK8ppZC2zt6sUzYzfFIDZclHYgAA==",
+    "sources": {
+      "avif": [
+        [
+          480,
+          "/media/dish/poppadoms-and-pickles-480.avif"
+        ],
+        [
+          960,
+          "/media/dish/poppadoms-and-pickles-960.avif"
+        ],
+        [
+          1600,
+          "/media/dish/poppadoms-and-pickles-1600.avif"
+        ]
+      ],
+      "webp": [
+        [
+          480,
+          "/media/dish/poppadoms-and-pickles-480.webp"
+        ],
+        [
+          960,
+          "/media/dish/poppadoms-and-pickles-960.webp"
+        ],
+        [
+          1600,
+          "/media/dish/poppadoms-and-pickles-1600.webp"
+        ]
+      ]
+    },
+    "credit": "Kalyani Akella / Unsplash"
+  },
+  "dish/prawn-koliwada": {
+    "alt": "Prawns in a red chilli sauce with lime",
+    "width": 960,
+    "height": 1200,
+    "placeholder": "data:image/webp;base64,UklGRnYAAABXRUJQVlA4IGoAAADQAwCdASoQABQAPu1iqU2ppaOiMAgBMB2JbACw7CC2ZKcknd7wHwAA4iqeNifiwci07A2BIePQG82attyDw8cPtZKXIl6l1xGDXpAltnLjN9eeM9F5jWX17mk48GQo35U+4wZOZR7qroAA",
+    "sources": {
+      "avif": [
+        [
+          480,
+          "/media/dish/prawn-koliwada-480.avif"
+        ],
+        [
+          960,
+          "/media/dish/prawn-koliwada-960.avif"
+        ]
+      ],
+      "webp": [
+        [
+          480,
+          "/media/dish/prawn-koliwada-480.webp"
+        ],
+        [
+          960,
+          "/media/dish/prawn-koliwada-960.webp"
+        ]
+      ]
+    },
+    "credit": "Zayed Ahmed Zadu / Unsplash"
+  },
+  "dish/samosa-chaat": {
+    "alt": "Chaat topped with yoghurt, sev, pomegranate and chutneys",
+    "width": 960,
+    "height": 1200,
+    "placeholder": "data:image/webp;base64,UklGRngAAABXRUJQVlA4IGwAAAAQBACdASoQABQAPu1iqk4ppaQiMAgBMB2JbACdMoADDnycZxvPgrPhAAD94jruZ+EV9+R4y/ota57K0cnFoTcP9jdrrj3CjGwD1gpcE9jKU7shNEFGiuca8KUkhaLwp/Deo01yVQLXBPPo4AA=",
+    "sources": {
+      "avif": [
+        [
+          480,
+          "/media/dish/samosa-chaat-480.avif"
+        ],
+        [
+          960,
+          "/media/dish/samosa-chaat-960.avif"
+        ]
+      ],
+      "webp": [
+        [
+          480,
+          "/media/dish/samosa-chaat-480.webp"
+        ],
+        [
+          960,
+          "/media/dish/samosa-chaat-960.webp"
+        ]
+      ]
+    },
+    "credit": "Zoshua Colah / Unsplash"
+  },
+  "dish/steamed-basmati": {
+    "alt": "Steamed basmati rice with star anise and fresh leaves",
+    "width": 960,
+    "height": 1200,
+    "placeholder": "data:image/webp;base64,UklGRnoAAABXRUJQVlA4IG4AAABQBACdASoQABQAPu1iqU2ppaQiMAgBMB2JagCsOUAA2Mzcwoe4WhTIVyPWAPuZCYRz9SnRZg77vbiQA4jvFTtQLq094FHL+1wPf+vCVe1Xa1qcsAaT0x2TxzKBMNo9QvBf7IobQkrEZb0stsBgAA==",
+    "sources": {
+      "avif": [
+        [
+          480,
+          "/media/dish/steamed-basmati-480.avif"
+        ],
+        [
+          960,
+          "/media/dish/steamed-basmati-960.avif"
+        ]
+      ],
+      "webp": [
+        [
+          480,
+          "/media/dish/steamed-basmati-480.webp"
+        ],
+        [
+          960,
+          "/media/dish/steamed-basmati-960.webp"
+        ]
+      ]
+    },
+    "credit": "Chetanya Sharma / Unsplash"
+  },
+  "dish/tandoori-broccoli": {
+    "alt": "Charred vegetables on a grill with peppers, mushrooms and courgette",
+    "width": 1600,
+    "height": 2000,
+    "placeholder": "data:image/webp;base64,UklGRogAAABXRUJQVlA4IHwAAABQBACdASoQABQAPu1iqU2ppaOiMAgBMB2JbACdMoACbqdbtE7VWTVVoDsAAP7djK26ivF1uQapviKOmLNndE6b09/tYE2IBxae3TXRAM1hXNAd+6OcFe687NfuGiDRlizksXGKDMv92hKC3XfqRn4+rMVvIP07xKURXUAA",
+    "sources": {
+      "avif": [
+        [
+          480,
+          "/media/dish/tandoori-broccoli-480.avif"
+        ],
+        [
+          960,
+          "/media/dish/tandoori-broccoli-960.avif"
+        ],
+        [
+          1600,
+          "/media/dish/tandoori-broccoli-1600.avif"
+        ]
+      ],
+      "webp": [
+        [
+          480,
+          "/media/dish/tandoori-broccoli-480.webp"
+        ],
+        [
+          960,
+          "/media/dish/tandoori-broccoli-960.webp"
+        ],
+        [
+          1600,
+          "/media/dish/tandoori-broccoli-1600.webp"
+        ]
+      ]
+    },
+    "credit": "Illia Bondar / Unsplash"
+  },
+  "dish/tandoori-lamb-chops": {
+    "alt": "Hands presenting a platter of spiced grilled lamb on rice",
+    "width": 960,
+    "height": 1200,
+    "placeholder": "data:image/webp;base64,UklGRnIAAABXRUJQVlA4IGYAAABQBACdASoQABQAPu1iqU2ppaOiMAgBMB2JZACdMoADQZmzDDCpMIL4Drp4AP7u2OMCiZltBtr31/09Un/L3cPWsZucZrjwacR6nBigfzrogKti1Ncb+NaXE9I56REtm/QdZzN8AAA=",
+    "sources": {
+      "avif": [
+        [
+          480,
+          "/media/dish/tandoori-lamb-chops-480.avif"
+        ],
+        [
+          960,
+          "/media/dish/tandoori-lamb-chops-960.avif"
+        ]
+      ],
+      "webp": [
+        [
+          480,
+          "/media/dish/tandoori-lamb-chops-480.webp"
+        ],
+        [
+          960,
+          "/media/dish/tandoori-lamb-chops-960.webp"
+        ]
+      ]
+    },
+    "credit": "99 19 / Unsplash"
+  },
+  "dish/tandoori-roti": {
+    "alt": "Whole-wheat roti cooking on a hot griddle",
+    "width": 960,
+    "height": 1200,
+    "placeholder": "data:image/webp;base64,UklGRlwAAABXRUJQVlA4IFAAAADQAwCdASoQABQAPu1iqU2ppaQiMAgBMB2JYwCuHCHevKx3U8G0YgAA/uvhWw9/gJgJwKq578gNtYYc9LjR4s4WQV2wfKFIPDjW/f+h64AAAA==",
+    "sources": {
+      "avif": [
+        [
+          480,
+          "/media/dish/tandoori-roti-480.avif"
+        ],
+        [
+          960,
+          "/media/dish/tandoori-roti-960.avif"
+        ]
+      ],
+      "webp": [
+        [
+          480,
+          "/media/dish/tandoori-roti-480.webp"
+        ],
+        [
+          960,
+          "/media/dish/tandoori-roti-960.webp"
+        ]
+      ]
+    },
+    "credit": "AJOY DAS / Unsplash"
+  },
+  "story/tandoor": {
+    "alt": "Flatbreads baking on the walls of a clay tandoor above glowing coals",
+    "width": 1600,
+    "height": 1067,
+    "placeholder": "data:image/webp;base64,UklGRkAAAABXRUJQVlA4IDQAAADwAQCdASoQAAsAA4BaJYwCdAEN9wzrsgAA/trUnJ+HuyaFwX1cIq4BU1s8/TxAFFbE5cAA",
+    "sources": {
+      "avif": [
+        [
+          480,
+          "/media/story/tandoor-480.avif"
+        ],
+        [
+          960,
+          "/media/story/tandoor-960.avif"
+        ],
+        [
+          1600,
+          "/media/story/tandoor-1600.avif"
+        ]
+      ],
+      "webp": [
+        [
+          480,
+          "/media/story/tandoor-480.webp"
+        ],
+        [
+          960,
+          "/media/story/tandoor-960.webp"
+        ],
+        [
+          1600,
+          "/media/story/tandoor-1600.webp"
+        ]
+      ]
+    },
+    "credit": "Mao Xiang / Unsplash"
+  },
+  "story/hands": {
+    "alt": "A chef's hands plating food with a spoon at the pass",
+    "width": 1600,
+    "height": 1067,
+    "placeholder": "data:image/webp;base64,UklGRmAAAABXRUJQVlA4IFQAAAAwAgCdASoQAAsAA4BaJYgCdAEXgDJHJdyFWAD88mV/0vukDLesQNoq/L70gMvkr5b6MtXb9NUcH9nLHUqZhn/imQL0mDy+/Q87V0FSnlbVF5AEgAA=",
+    "sources": {
+      "avif": [
+        [
+          480,
+          "/media/story/hands-480.avif"
+        ],
+        [
+          960,
+          "/media/story/hands-960.avif"
+        ],
+        [
+          1600,
+          "/media/story/hands-1600.avif"
+        ]
+      ],
+      "webp": [
+        [
+          480,
+          "/media/story/hands-480.webp"
+        ],
+        [
+          960,
+          "/media/story/hands-960.webp"
+        ],
+        [
+          1600,
+          "/media/story/hands-1600.webp"
+        ]
+      ]
+    },
+    "credit": "Sebastian Coman Photography / Unsplash"
+  },
+  "story/naan": {
+    "alt": "A cook pulling fresh flatbread from a tandoor with long skewers",
+    "width": 1600,
+    "height": 1067,
+    "placeholder": "data:image/webp;base64,UklGRlwAAABXRUJQVlA4IFAAAAAQAgCdASoQAAsAA4BaJZACdADdHsIQzlYQAP7JJN3K80iZ6ywL3iFjOmfFoFuul9rShlzNpCbDySumQZWcLbb5jitgH99hwfV1VqNguQAAAA==",
+    "sources": {
+      "avif": [
+        [
+          480,
+          "/media/story/naan-480.avif"
+        ],
+        [
+          960,
+          "/media/story/naan-960.avif"
+        ],
+        [
+          1600,
+          "/media/story/naan-1600.avif"
+        ]
+      ],
+      "webp": [
+        [
+          480,
+          "/media/story/naan-480.webp"
+        ],
+        [
+          960,
+          "/media/story/naan-960.webp"
+        ],
+        [
+          1600,
+          "/media/story/naan-1600.webp"
+        ]
+      ]
+    },
+    "credit": "Zoshua Colah / Unsplash"
+  },
+  "story/room": {
+    "alt": "A warmly lit restaurant dining room with tables and a bar beyond",
+    "width": 1600,
+    "height": 1067,
+    "placeholder": "data:image/webp;base64,UklGRkIAAABXRUJQVlA4IDYAAADwAQCdASoQAAsAA4BaJQBOgCHwSxIC9AAA/vd3+CsmoxJ1k+mkSbi5RP+vJZfkvE2Qo8hAAAA=",
+    "sources": {
+      "avif": [
+        [
+          480,
+          "/media/story/room-480.avif"
+        ],
+        [
+          960,
+          "/media/story/room-960.avif"
+        ],
+        [
+          1600,
+          "/media/story/room-1600.avif"
+        ]
+      ],
+      "webp": [
+        [
+          480,
+          "/media/story/room-480.webp"
+        ],
+        [
+          960,
+          "/media/story/room-960.webp"
+        ],
+        [
+          1600,
+          "/media/story/room-1600.webp"
+        ]
+      ]
+    },
+    "credit": "Oliver Guhr / Unsplash"
+  },
+  "story/table": {
+    "alt": "Friends sharing a meal around a candlelit wooden table",
+    "width": 1600,
+    "height": 1067,
+    "placeholder": "data:image/webp;base64,UklGRjwAAABXRUJQVlA4IDAAAADwAQCdASoQAAsAA4BaJYwCdAEPDuRj3sAA/vaSByVnKV+xpYZjPPuHlEmxcFsAAAA=",
+    "sources": {
+      "avif": [
+        [
+          480,
+          "/media/story/table-480.avif"
+        ],
+        [
+          960,
+          "/media/story/table-960.avif"
+        ],
+        [
+          1600,
+          "/media/story/table-1600.avif"
+        ]
+      ],
+      "webp": [
+        [
+          480,
+          "/media/story/table-480.webp"
+        ],
+        [
+          960,
+          "/media/story/table-960.webp"
+        ],
+        [
+          1600,
+          "/media/story/table-1600.webp"
+        ]
+      ]
+    },
+    "credit": "Romain Gal / Unsplash"
+  },
+  "story/spices": {
+    "alt": "A steel tray of colourful ground spices in small bowls",
+    "width": 1600,
+    "height": 1067,
+    "placeholder": "data:image/webp;base64,UklGRloAAABXRUJQVlA4IE4AAADwAQCdASoQAAsAA4BaJbACdADpNoP1pYAA/gdISe/cD7njGnp5T4M3Gc/5qb8Gv6l81vWAb2T11xl5DuELJ9o6hKKfeP6SNQ2q9yUNkAA=",
+    "sources": {
+      "avif": [
+        [
+          480,
+          "/media/story/spices-480.avif"
+        ],
+        [
+          960,
+          "/media/story/spices-960.avif"
+        ],
+        [
+          1600,
+          "/media/story/spices-1600.avif"
+        ]
+      ],
+      "webp": [
+        [
+          480,
+          "/media/story/spices-480.webp"
+        ],
+        [
+          960,
+          "/media/story/spices-960.webp"
+        ],
+        [
+          1600,
+          "/media/story/spices-1600.webp"
+        ]
+      ]
+    },
+    "credit": "Deepak Adhikari / Unsplash"
+  },
+  "story/chai": {
+    "alt": "Chai being poured into small clay cups",
+    "width": 1600,
+    "height": 1067,
+    "placeholder": "data:image/webp;base64,UklGRkAAAABXRUJQVlA4IDQAAADwAQCdASoQAAsAA4BaJQBOgB6RPCfWNAAA/vhWYMCv1jQ50UeMhtfg7NllntXPxxP9igAA",
+    "sources": {
+      "avif": [
+        [
+          480,
+          "/media/story/chai-480.avif"
+        ],
+        [
+          960,
+          "/media/story/chai-960.avif"
+        ],
+        [
+          1600,
+          "/media/story/chai-1600.avif"
+        ]
+      ],
+      "webp": [
+        [
+          480,
+          "/media/story/chai-480.webp"
+        ],
+        [
+          960,
+          "/media/story/chai-960.webp"
+        ],
+        [
+          1600,
+          "/media/story/chai-1600.webp"
+        ]
+      ]
+    },
+    "credit": "AJOY DAS / Unsplash"
+  },
+  "story/pass": {
+    "alt": "Finished plates lined up at the pass as a chef spoons sauce",
+    "width": 1600,
+    "height": 1067,
+    "placeholder": "data:image/webp;base64,UklGRlIAAABXRUJQVlA4IEYAAAAQAgCdASoQAAsAA4BaJZACdAEebI8bhmAAAP4HnzOqQBjPgvd9+Tq5OKVzEgMtcXcVBWPvNk6TFCslmWwzPPDrZTZoAAAA",
+    "sources": {
+      "avif": [
+        [
+          480,
+          "/media/story/pass-480.avif"
+        ],
+        [
+          960,
+          "/media/story/pass-960.avif"
+        ],
+        [
+          1600,
+          "/media/story/pass-1600.avif"
+        ]
+      ],
+      "webp": [
+        [
+          480,
+          "/media/story/pass-480.webp"
+        ],
+        [
+          960,
+          "/media/story/pass-960.webp"
+        ],
+        [
+          1600,
+          "/media/story/pass-1600.webp"
+        ]
+      ]
+    },
+    "credit": "Louis Hansel / Unsplash"
+  },
+  "hero/poster": {
+    "alt": "Flatbreads resting on a cloth beside the open mouth of a clay tandoor",
+    "width": 1600,
+    "height": 900,
+    "placeholder": "data:image/webp;base64,UklGRkQAAABXRUJQVlA4IDgAAACwAQCdASoQAAkAA4BaJQBOgBdb491QAP70R2hLp8xFfha3uL7z8P/Kik/aFP4R9hsGT3sZVOwgAA==",
+    "sources": {
+      "avif": [
+        [
+          480,
+          "/media/hero/poster-480.avif"
+        ],
+        [
+          960,
+          "/media/hero/poster-960.avif"
+        ],
+        [
+          1600,
+          "/media/hero/poster-1600.avif"
+        ]
+      ],
+      "webp": [
+        [
+          480,
+          "/media/hero/poster-480.webp"
+        ],
+        [
+          960,
+          "/media/hero/poster-960.webp"
+        ],
+        [
+          1600,
+          "/media/hero/poster-1600.webp"
+        ]
+      ]
+    },
+    "credit": "azra melek / Pexels"
+  },
+  "hero/poster-portrait": {
+    "alt": "Flatbreads resting on a cloth beside the open mouth of a clay tandoor",
+    "width": 480,
+    "height": 600,
+    "placeholder": "data:image/webp;base64,UklGRl4AAABXRUJQVlA4IFIAAAAwBACdASoQABQAPu1kqk4ppaQiMAgBMB2JZwC/OCFxKjIAbkWglOojnYAA/tFfpzJb0pK7XpESs5dOPfspcyKjrdp7yhOURCiT3f7SE4n5AAAA",
+    "sources": {
+      "avif": [
+        [
+          480,
+          "/media/hero/poster-portrait-480.avif"
+        ]
+      ],
+      "webp": [
+        [
+          480,
+          "/media/hero/poster-portrait-480.webp"
+        ]
+      ]
+    },
+    "credit": "azra melek / Pexels"
+  },
+  "hero": {
+    "video": {
+      "720": {
+        "webm": "/media/hero/hero-720.webm",
+        "mp4": "/media/hero/hero-720.mp4"
+      },
+      "1080": {
+        "webm": "/media/hero/hero-1080.webm",
+        "mp4": "/media/hero/hero-1080.mp4"
+      }
+    },
+    "credit": "azra melek / Pexels"
+  }
+}

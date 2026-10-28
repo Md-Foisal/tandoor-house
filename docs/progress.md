@@ -15,3 +15,23 @@
 **Decided:** see `docs/decisions.md` → Phase 0 (Vite+ instead of ESLint/Prettier, enum roles, allergens as JSON, variant pricing, alcohol flag).
 
 **Open:** no screens yet, so no screenshots this phase. Dish images are added by the media curator in Phase 1.
+
+## Phase 1: brand and design system
+
+**Done**
+- Three brand directions scored; "Clay and Ember" chosen (`docs/brand-directions.md`).
+- `docs/design-system.md`: palette for light and dark (all text pairs WCAG AA), Rozha One and Hanken Grotesk self-hosted, type scale, spacing, radius, warm shadows, motion tokens and the "served from the pass" patterns.
+- Tokens in `resources/css/app.css`; shadcn variables mapped onto them; base components restyled; tabs, radio group, switch, textarea and popover added.
+- Signature pieces: tandoor arch frame, ember line, logo mark, 14 custom allergen icons, empty-plate illustration.
+- Shared pieces: dish row and dish card with skeletons, picture with blurred placeholder and "steam clears", hero film with poster-first loading and a pause control, open status, quantity stepper, kitchen-ticket progress, empty/error/offline states, order-slip toasts, theme toggle (no flash on load).
+- Helpers: `useT()` translations, `formatMoney()`, motion tokens, media manifest.
+- 47 free-licence photos (AVIF/WebP, 3 widths) and a 12 s hero film (720p and 1080p, each under 3 MB). Credits in `docs/image-credits.md`; shot list in `docs/photo-shotlist.md`.
+- `/styleguide` and `/styleguide/motion`. Screenshots in `docs/screenshots/phase-1/`.
+- Reviewer findings fixed: 44px targets, focus styles, screen-reader step state, reduced-motion count-up, motion limited to transform/opacity (two documented clip-path exceptions), contrast margin on ember.
+
+**Decided:** see `docs/decisions.md` → Phase 1.
+
+**Open**
+- 19 dish photos are stand-ins of a similar dish and Chilli Cheese Toast has none; the client's photographer should shoot them (`docs/photo-shotlist.md`).
+- Some Unsplash credits link the image file rather than the photo page; check them before launch.
+- Laravel Herd's PHP-FPM socket was down on this machine, so pages were checked with `php artisan serve`.

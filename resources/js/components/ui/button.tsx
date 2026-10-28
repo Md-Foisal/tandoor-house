@@ -5,26 +5,27 @@ import * as React from "react"
 import { cn } from "@/lib/utils"
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-[color,box-shadow] disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive",
+  "relative inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md font-semibold select-none transition-[background-color,color,border-color,box-shadow,transform] duration-150 ease-out active:translate-y-px disabled:pointer-events-none disabled:opacity-45 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-[1.125rem] [&_svg]:shrink-0 outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ember aria-invalid:border-chilli",
   {
     variants: {
       variant: {
         default:
-          "bg-primary text-primary-foreground shadow-xs hover:bg-primary/90",
+          "bg-ember text-ember-ink shadow-[inset_0_-2px_0_rgb(0_0_0/0.18)] hover:bg-[color-mix(in_oklab,var(--ember),var(--ink)_14%)]",
         destructive:
-          "bg-destructive text-white shadow-xs hover:bg-destructive/90 focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40",
+          "bg-chilli text-ember-ink hover:bg-[color-mix(in_oklab,var(--chilli),var(--ink)_14%)]",
         outline:
-          "border border-input bg-background shadow-xs hover:bg-accent hover:text-accent-foreground",
+          "border-[1.5px] border-ink/80 bg-transparent text-ink hover:bg-clay",
         secondary:
-          "bg-secondary text-secondary-foreground shadow-xs hover:bg-secondary/80",
-        ghost: "hover:bg-accent hover:text-accent-foreground",
-        link: "text-primary underline-offset-4 hover:underline",
+          "bg-clay text-ink hover:bg-[color-mix(in_oklab,var(--clay),var(--ink)_8%)]",
+        ghost: "text-ink hover:bg-clay",
+        link: "h-auto px-0 text-ember underline decoration-1 underline-offset-4 hover:decoration-2",
       },
       size: {
-        default: "h-9 px-4 py-2 has-[>svg]:px-3",
-        sm: "h-8 rounded-md px-3 has-[>svg]:px-2.5",
-        lg: "h-10 rounded-md px-6 has-[>svg]:px-4",
-        icon: "size-9",
+        default: "h-11 px-5 text-[0.9375rem] has-[>svg]:px-4",
+        sm: "h-9 px-3.5 text-sm has-[>svg]:px-3 after:absolute after:-inset-1 after:content-['']",
+        lg: "h-12 px-7 text-base has-[>svg]:px-6",
+        icon: "size-11",
+        "icon-sm": "size-9 after:absolute after:-inset-1 after:content-['']",
       },
     },
     defaultVariants: {

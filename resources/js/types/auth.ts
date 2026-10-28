@@ -1,7 +1,19 @@
+export type Role =
+    | 'customer'
+    | 'waiter'
+    | 'cashier'
+    | 'kitchen'
+    | 'rider'
+    | 'manager'
+    | 'owner';
+
 export type User = {
     id: number;
     name: string;
     email: string;
+    role: Role;
+    phone?: string | null;
+    loyalty_points?: number;
     avatar?: string;
     email_verified_at: string | null;
     two_factor_enabled?: boolean;
@@ -11,7 +23,7 @@ export type User = {
 };
 
 export type Auth = {
-    user: User;
+    user: User | null;
 };
 
 export type Passkey = {

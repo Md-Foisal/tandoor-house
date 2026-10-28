@@ -14,3 +14,13 @@ Non-obvious choices and why. Newest at the bottom of each phase.
 - **A variant's price replaces the dish price; the dish price equals its cheapest variant.** Menus list "from £x" and the cart never adds a base and a variant together.
 - **Modifier allergens add to the dish's allergens.** Where a choice changes an allergen (whole or oat milk in chai), the dish declares none for it and the required modifier carries it, so the declaration is right after every choice.
 - **Alcoholic drinks are flagged (`is_alcoholic`).** Delivery and pickup orders containing them need an age confirmation (Licensing Act 2003, Challenge 25), enforced at checkout.
+
+## Phase 1
+
+- **Brand direction A, "Clay and Ember", chosen.** Scored highest; reasons in `docs/brand-directions.md`.
+- **Fonts self-hosted from npm (`@fontsource`) instead of Bunny Fonts.** The starter kit loaded fonts from a third-party CDN; the brief asks for self-hosting, and it removes a third-party request (privacy and LCP).
+- **Interface strings reach React as an Inertia "once" prop.** All of `lang/en_GB/*.php` is sent on the first visit and cached by the client; `useT()` resolves `group.key` with Laravel-style `:placeholders`. One source of truth for Blade, mail and React.
+- **Content stays visible without JavaScript.** Animated elements carry `data-reveal`; a `<noscript>` rule in the document head resets their opacity and transform.
+- **Screenshots are JPEG at quality 70.** Full-page PNGs of long pages were 3–5× larger with no review benefit.
+- **The 1080p hero film was re-encoded to stay under 3 MB** (H.264 at 1.65 Mbit/s, VP9 at 1.5 Mbit/s).
+- **Models are strict outside production** (`Model::shouldBeStrict`): lazy loading, silently discarded attributes and missing attributes throw, so N+1 queries are caught in development and tests.
