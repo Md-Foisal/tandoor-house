@@ -113,7 +113,11 @@ export function Specials({ items }: { items: MenuItem[] }) {
                             )}
                         >
                             <DishCard item={item} href={`/menu/${item.slug}`} />
-                            <AllergenList allergens={item.allergens} optional={item.option_allergens} compact />
+                            <AllergenList
+                                allergens={item.allergens}
+                                optional={item.option_allergens}
+                                compact
+                            />
                             <SpecialAction
                                 item={item}
                                 pending={pending === item.id}

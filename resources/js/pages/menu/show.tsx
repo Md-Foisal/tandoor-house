@@ -263,7 +263,10 @@ export default function MenuShow({ item, category, related }: Props) {
                             >
                                 {t('menu.dish.allergens')}
                             </h2>
-                            <AllergenList allergens={item.allergens} optional={item.option_allergens} />
+                            <AllergenList
+                                allergens={item.allergens}
+                                optional={item.option_allergens}
+                            />
                             <p className="text-sm text-ink-muted">
                                 {t('menu.dish.allergen_note')}
                             </p>
