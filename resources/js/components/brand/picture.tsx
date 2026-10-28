@@ -1,5 +1,5 @@
 import { motion, useReducedMotion } from 'motion/react';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { LogoMark } from '@/components/brand/logo';
 import { getImage, srcSet } from '@/lib/media';
 import { cn } from '@/lib/utils';
@@ -30,6 +30,14 @@ export function Picture({
     const image = getImage(mediaKey);
     const reduced = useReducedMotion();
     const [loaded, setLoaded] = useState(priority);
+    const ref = useRef<HTMLImageElement>(null);
+
+    // A cached image can finish loading before React attaches onLoad.
+    useEffect(() => {
+        if (ref.current?.complete && ref.current.naturalWidth > 0) {
+            setLoaded(true);
+        }
+    }, []);
 
     if (image === null) {
         return <PicturePlaceholder className={className} />;
@@ -58,6 +66,7 @@ export function Picture({
                 sizes={sizes}
             />
             <motion.img
+                ref={ref}
                 src={largest?.[1]}
                 alt={alt ?? image.alt}
                 width={image.width}

@@ -80,6 +80,14 @@ for (const theme of themes) {
                 }
                 window.scrollTo(0, 0);
             });
+            await page.waitForFunction(
+                () =>
+                    Array.from(document.images).every(
+                        (image) => image.complete,
+                    ),
+                null,
+                { timeout: 15000 },
+            );
             await page.waitForTimeout(900);
             await page.screenshot({
                 path: `${outDir}/${name}-${width}-${theme}.jpg`,
