@@ -32,6 +32,9 @@ return [
     'closed_now' => 'Closed',
     'opens_at' => 'Opens :when',
     'closed_opens_at' => 'Closed · opens :when',
+    'at_time' => 'at :time',
+    'tomorrow_at' => 'tomorrow at :time',
+    'day_at' => ':day at :time',
     'theme' => [
         'label' => 'Theme',
         'light' => 'Light',

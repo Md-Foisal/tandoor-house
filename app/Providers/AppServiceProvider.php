@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Support\Settings;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -17,7 +18,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        $this->app->singleton(Settings::class);
     }
 
     /**
