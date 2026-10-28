@@ -138,7 +138,10 @@ export function Settle({
     );
 }
 
-/** A photograph developing like a print; its caption writes in after. */
+/**
+ * A photograph developing like a print (a paper-coloured veil lifts off it);
+ * its caption writes in after. The wrapper must take the photo's shape.
+ */
 export function PhotoPrint({
     children,
     caption,
@@ -161,23 +164,22 @@ export function PhotoPrint({
             <motion.div
                 data-reveal
                 className="relative"
-                variants={
-                    reduced
-                        ? fadeVariants
-                        : {
-                              hidden: {
-                                  opacity: 0.2,
-                                  filter: 'saturate(0.3) brightness(1.15)',
-                              },
-                              shown: {
-                                  opacity: 1,
-                                  filter: 'saturate(1) brightness(1)',
-                                  transition: { duration: 0.7, ease: ease.out },
-                              },
-                          }
-                }
+                variants={fadeVariants}
             >
                 {children}
+                {!reduced && (
+                    <motion.span
+                        aria-hidden="true"
+                        className="pointer-events-none absolute inset-0 rounded-[inherit] bg-paper"
+                        variants={{
+                            hidden: { opacity: 0.75 },
+                            shown: {
+                                opacity: 0,
+                                transition: { duration: 0.7, ease: ease.out },
+                            },
+                        }}
+                    />
+                )}
             </motion.div>
             {caption && (
                 <motion.figcaption
@@ -314,7 +316,13 @@ export function CountUp({
     const text = useTransform(value, format);
 
     useEffect(() => {
-        if (!seen || reduced) {
+        if (reduced) {
+            value.set(to);
+
+            return;
+        }
+
+        if (!seen) {
             return;
         }
 

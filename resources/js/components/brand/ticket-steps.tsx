@@ -1,6 +1,7 @@
 import { Check } from 'lucide-react';
 import { motion, useReducedMotion } from 'motion/react';
 import { Stamp } from '@/components/motion/served';
+import { useT } from '@/lib/i18n';
 import { spring } from '@/lib/motion';
 import { cn } from '@/lib/utils';
 
@@ -26,6 +27,7 @@ export function TicketSteps({
     className?: string;
 }) {
     const reduced = useReducedMotion();
+    const t = useT();
     const horizontal = orientation === 'horizontal';
 
     return (
@@ -44,17 +46,10 @@ export function TicketSteps({
                     <motion.li
                         key={step.key}
                         aria-current={active ? 'step' : undefined}
-                        animate={
-                            active && !reduced
-                                ? {
-                                      y: -3,
-                                      boxShadow: 'var(--shadow-lift-value)',
-                                  }
-                                : { y: 0, boxShadow: '0 0 0 0 transparent' }
-                        }
+                        animate={active && !reduced ? { y: -3 } : { y: 0 }}
                         transition={spring.ticket}
                         className={cn(
-                            'flex items-center gap-3 rounded-md border px-3.5 py-3',
+                            'relative flex items-center gap-3 rounded-md border px-3.5 py-3',
                             horizontal && 'flex-1 flex-col items-start gap-2',
                             active && 'border-ember bg-surface',
                             done && 'border-line bg-surface',
@@ -63,6 +58,13 @@ export function TicketSteps({
                                 'border-dashed border-line-strong/60 text-ink-muted',
                         )}
                     >
+                        <motion.span
+                            aria-hidden="true"
+                            className="pointer-events-none absolute inset-0 rounded-[inherit] shadow-lift"
+                            initial={false}
+                            animate={{ opacity: active ? 1 : 0 }}
+                            transition={{ duration: 0.2 }}
+                        />
                         <span
                             className={cn(
                                 'grid size-8 shrink-0 place-items-center rounded-full border-[1.5px] text-sm font-bold tabular-nums',
@@ -91,6 +93,15 @@ export function TicketSteps({
                                 )}
                             >
                                 {step.label}
+                            </span>
+                            <span className="sr-only">
+                                {t(
+                                    done
+                                        ? 'ui.step_done'
+                                        : active
+                                          ? 'ui.step_current'
+                                          : 'ui.step_upcoming',
+                                )}
                             </span>
                             {step.detail && (
                                 <span className="text-sm text-ink-muted">

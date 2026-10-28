@@ -94,7 +94,9 @@ export function ErrorState({
                 {title ?? t('ui.states.error_title')}
             </h3>
             <p className="text-ink-muted">
-                {t('ui.states.error_body', { phone: restaurant?.phone ?? '' })}
+                {restaurant?.phone
+                    ? t('ui.states.error_body', { phone: restaurant.phone })
+                    : t('ui.states.error_body_no_phone')}
             </p>
             {onRetry && (
                 <Button variant="outline" size="sm" onClick={onRetry}>

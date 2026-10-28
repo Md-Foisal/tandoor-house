@@ -31,6 +31,7 @@ return [
     'open_until' => 'Open until :time',
     'closed_now' => 'Closed',
     'opens_at' => 'Opens :when',
+    'closed_opens_at' => 'Closed · opens :when',
     'theme' => [
         'label' => 'Theme',
         'light' => 'Light',
@@ -41,6 +42,7 @@ return [
         'empty_title' => 'Nothing on the pass yet.',
         'error_title' => 'Something went wrong in the kitchen.',
         'error_body' => 'Try again, or call us on :phone.',
+        'error_body_no_phone' => 'Please try again in a moment.',
         'try_again' => 'Try again',
         'offline' => "You're offline. We'll keep your basket until you're back.",
         'back_online' => "You're back online.",
@@ -51,5 +53,8 @@ return [
         'play' => 'Play background video',
     ],
     'close' => 'Close',
+    'step_done' => 'done',
+    'step_current' => 'in progress',
+    'step_upcoming' => 'to come',
     'skip_to_content' => 'Skip to content',
 ];

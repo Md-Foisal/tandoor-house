@@ -41,7 +41,7 @@ export function OpenStatus({
                     ? t('ui.open_until', { time: status.until })
                     : t('ui.open_now')
                 : status.opensAt
-                  ? `${t('ui.closed_now')} · ${t('ui.opens_at', { when: status.opensAt })}`
+                  ? t('ui.closed_opens_at', { when: status.opensAt })
                   : t('ui.closed_now')}
         </p>
     );
