@@ -30,7 +30,7 @@ Route::controller(MenuController::class)->prefix('menu')->name('menu.')->group(f
 });
 
 Route::get('basket', BasketController::class)->name('basket');
-Route::controller(CartLineController::class)->prefix('basket/lines')->name('basket.lines.')->group(function () {
+Route::controller(CartLineController::class)->middleware('throttle:basket')->prefix('basket/lines')->name('basket.lines.')->group(function () {
     Route::post('/', 'store')->name('store');
     Route::patch('{key}', 'update')->name('update');
     Route::delete('{key}', 'destroy')->name('destroy');
@@ -38,25 +38,25 @@ Route::controller(CartLineController::class)->prefix('basket/lines')->name('bask
 
 Route::controller(CheckoutController::class)->prefix('checkout')->name('checkout.')->group(function () {
     Route::get('/', 'show')->name('show');
-    Route::post('promo', 'promo')->name('promo');
-    Route::post('postcode', 'postcode')->name('postcode');
-    Route::post('/', 'store')->name('store');
+    Route::post('promo', 'promo')->middleware('throttle:promo')->name('promo');
+    Route::post('postcode', 'postcode')->middleware('throttle:checkout')->name('postcode');
+    Route::post('/', 'store')->middleware('throttle:checkout')->name('store');
 });
 
-Route::get('orders/{order:number}', [OrderTrackingController::class, 'show'])->name('orders.show');
+Route::get('orders/{order:number}', [OrderTrackingController::class, 'show'])->middleware('throttle:lookup')->name('orders.show');
 
 Route::controller(ReservationController::class)->prefix('book')->name('book.')->group(function () {
     Route::get('/', 'create')->name('create');
     Route::get('slots', 'slots')->name('slots');
-    Route::post('/', 'store')->name('store');
+    Route::post('/', 'store')->middleware('throttle:booking')->name('store');
     Route::get('{reservation:reference}', 'show')->name('show');
 });
 
 Route::controller(TableOrderingController::class)->prefix('t/{table:qr_token}')->name('table.')->group(function () {
     Route::get('/', 'show')->name('show');
-    Route::post('requests', 'request')->name('request');
+    Route::post('requests', 'request')->middleware('throttle:table')->name('request');
     Route::get('bill', 'bill')->name('bill');
-    Route::post('order', 'order')->name('order');
+    Route::post('order', 'order')->middleware('throttle:table')->name('order');
 });
 
 Route::middleware(['auth', 'verified'])->prefix('account')->name('account.')->group(function () {

@@ -144,4 +144,5 @@ return [
         'see_menu' => 'Read the menu',
         'card_label' => 'Booking for :name, :party, :date at :time',
     ],
+    'too_many' => 'That is a lot of bookings from one place. Please call us and we will sort it out.',
 ];
