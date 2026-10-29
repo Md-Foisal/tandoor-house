@@ -450,7 +450,9 @@ class OrderHistorySeeder extends Seeder
         }
 
         $cooking = $accepted + mt_rand(60, 180);
-        $ready = $cooking + min($maxPrep, $live ? 12 : 60) * 60 + mt_rand(120, 360);
+        // Estimates are prep time plus four minutes; most tickets beat that,
+        // about one in five runs over, as in a well-run kitchen.
+        $ready = $accepted + max(240, min($maxPrep, $live ? 12 : 60) * 60 + mt_rand(-150, 330));
         $steps = [[OrderStatus::Placed, 0], [OrderStatus::Accepted, $accepted], [OrderStatus::Cooking, $cooking], [OrderStatus::Ready, $ready]];
 
         if ($channel === OrderChannel::Delivery) {
