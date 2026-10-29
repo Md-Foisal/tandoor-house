@@ -1,5 +1,7 @@
 # Tandoor House
 
+> **Unfinished build.** Before anything else, read `.claude/continue.md` and follow it.
+
 A restaurant platform for a UK restaurant: customers order, book and pay; staff take, cook, serve and deliver; the owner runs menu, stock, people and money. The restaurant name and cuisine come from `config/restaurant.php`.
 
 ## Stack (do not swap)
@@ -43,3 +45,4 @@ A restaurant platform for a UK restaurant: customers order, book and pay; staff 
 - `docs/design-system.md` tokens, type, motion
 - `docs/decisions.md` why things are the way they are
 - `docs/progress.md` phase reports
+- `.claude/briefs/` instructions given to subagents (customer screens, staff screens, review fixes)
