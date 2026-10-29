@@ -28,7 +28,9 @@ const browser = await chromium.launch();
 const errors = [];
 
 function parse(entry) {
-    const [name, target] = entry.split('=');
+    const split = entry.indexOf('=');
+    const name = entry.slice(0, split);
+    const target = entry.slice(split + 1);
     const at = target.indexOf('@');
 
     return {
