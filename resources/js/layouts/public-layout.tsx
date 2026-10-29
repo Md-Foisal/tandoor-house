@@ -245,9 +245,14 @@ function Footer() {
                         {t('nav.footer.tagline')}
                     </p>
                     <p className="mt-2 inline-flex w-fit items-center gap-2 rounded-sm border border-line px-2.5 py-1.5 text-sm font-semibold">
-                        {t('nav.footer.hygiene', {
-                            rating: footer.hygieneRating,
-                        })}
+                        {typeof footer.hygieneRating === 'number'
+                            ? t('nav.footer.hygiene', {
+                                  rating: footer.hygieneRating,
+                                  label: t(
+                                      `nav.footer.hygiene_labels.${footer.hygieneRating}`,
+                                  ),
+                              })
+                            : t('nav.footer.hygiene_awaiting')}
                     </p>
                 </div>
                 <div>

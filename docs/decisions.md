@@ -48,3 +48,9 @@ Non-obvious choices and why. Newest at the bottom of each phase.
 - **Each staff section owns its own routes file** (`routes/staff/<area>.php`), so parallel builders never edit the same file.
 - **The kitchen display is dark by default on every device** and remembers a cook's switch to light per device.
 - **PDF receipts and reports use dompdf**, rendered from Blade on the server so they match the CSV exports exactly.
+- **Refunds update the original payment row** (refunded amount, status, history in `meta.refunds`) instead of adding a negative row, because amounts are unsigned and a second row would double-count in reports. Cashiers may refund up to £50 per order in total; managers and owners have no limit; waiters cannot refund.
+- **A closing time of midnight is stored as "24:00"** and shown as 00:00, so a period never wraps into the next day.
+- **Owner-only settings:** VAT, service charge, tip presets, deposits and delivery zone fees and minimums. Managers see them read-only.
+- **Hidden reviews need no extra column:** a review is hidden when it is unpublished and its latest moderation entry in the activity log says so.
+- **The food hygiene rating shows the Food Standards Agency wording for its score**, or "awaiting inspection" before a first visit.
+- **Kitchen "late" means ready after the estimate** (prep time plus four minutes), or after the slowest dish's prep time when there is no estimate, everywhere: kitchen display, Today, and reports.

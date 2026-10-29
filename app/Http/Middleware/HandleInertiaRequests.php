@@ -53,7 +53,9 @@ class HandleInertiaRequests extends Middleware
             ]),
             'footer' => Inertia::once(fn () => [
                 'hours' => app(OpeningHours::class)->week(now()->startOfWeek()),
-                'hygieneRating' => app(Settings::class)->get('hygiene_rating'),
+                'hygieneRating' => is_numeric($rating = app(Settings::class)->get('hygiene_rating'))
+                    ? (int) $rating
+                    : $rating,
             ]),
             'translations' => Inertia::once(fn () => Translations::forLocale(app()->getLocale())),
             'auth' => [
