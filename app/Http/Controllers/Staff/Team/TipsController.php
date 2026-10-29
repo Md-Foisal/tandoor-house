@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Staff\Team;
 
-use App\Actions\Team\Csv;
+use App\Support\Csv;
 use App\Actions\Team\TipSplit;
 use App\Actions\Team\WeekRange;
 use App\Actions\Team\WeekReport;

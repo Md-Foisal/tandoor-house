@@ -45,47 +45,51 @@ class OrderStateMachine
 
     public function transition(Order $order, OrderStatus $to, ?User $by = null, ?string $reason = null): Order
     {
-        if (! $this->can($order, $to)) {
-            throw ValidationException::withMessages([
-                'status' => __('staff.orders.invalid_transition', [
-                    'from' => __('staff.status.'.$order->status->value),
-                    'to' => __('staff.status.'.$to->value),
-                ]),
-            ]);
-        }
-
         if (in_array($to, [OrderStatus::Rejected, OrderStatus::Cancelled], true) && blank($reason)) {
             throw ValidationException::withMessages(['reason' => __('staff.orders.reason_required')]);
         }
 
         return DB::transaction(function () use ($order, $to, $by, $reason) {
-            $from = $order->status;
+            // Re-read under a row lock so two people pressing buttons at once
+            // cannot both move the order on.
+            $locked = Order::query()->lockForUpdate()->whereKey($order->getKey())->firstOrFail();
+
+            if (! $this->can($locked, $to)) {
+                throw ValidationException::withMessages([
+                    'status' => __('staff.orders.invalid_transition', [
+                        'from' => __('staff.status.'.$locked->status->value),
+                        'to' => __('staff.status.'.$to->value),
+                    ]),
+                ]);
+            }
+
+            $from = $locked->status;
             $now = now();
 
-            $order->status = $to;
-            $order->accepted_at ??= $to === OrderStatus::Accepted ? $now : null;
-            $order->ready_at = $to === OrderStatus::Ready ? $now : $order->ready_at;
-            $order->completed_at = $to === OrderStatus::Completed ? $now : $order->completed_at;
-            $order->rejection_reason = $reason ?? $order->rejection_reason;
-            $order->save();
+            $locked->status = $to;
+            $locked->accepted_at ??= $to === OrderStatus::Accepted ? $now : null;
+            $locked->ready_at = $to === OrderStatus::Ready ? $now : $locked->ready_at;
+            $locked->completed_at = $to === OrderStatus::Completed ? $now : $locked->completed_at;
+            $locked->rejection_reason = $reason ?? $locked->rejection_reason;
+            $locked->save();
 
             if ($to === OrderStatus::Cooking) {
-                $order->lines()->where('status', LineStatus::Queued)->update([
+                $locked->lines()->where('status', LineStatus::Queued)->update([
                     'status' => LineStatus::Cooking,
                     'started_at' => $now,
                 ]);
             }
 
             if ($to === OrderStatus::Ready) {
-                $order->lines()->where('status', '!=', LineStatus::Ready)->update([
+                $locked->lines()->where('status', '!=', LineStatus::Ready)->update([
                     'status' => LineStatus::Ready,
                     'bumped_at' => $now,
                 ]);
             }
 
-            $order->events()->create(['from' => $from, 'to' => $to, 'user_id' => $by?->id]);
+            $locked->events()->create(['from' => $from, 'to' => $to, 'user_id' => $by?->id]);
 
-            return $order;
+            return $order->setRawAttributes($locked->getAttributes(), true);
         });
     }
 

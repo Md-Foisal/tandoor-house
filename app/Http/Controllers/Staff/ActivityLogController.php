@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Staff;
 
-use App\Actions\Team\Csv;
+use App\Support\Csv;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Staff\Activity\ActivityEntry;
 use App\Http\Controllers\Staff\Activity\ActivityQuery;

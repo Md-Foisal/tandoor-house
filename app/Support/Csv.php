@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Actions\Team;
+namespace App\Support;
 
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
