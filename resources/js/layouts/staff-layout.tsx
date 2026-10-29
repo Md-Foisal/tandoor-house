@@ -16,11 +16,20 @@ import {
     Settings,
     Users,
     Bike,
+    ChevronsUpDown,
 } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { LogoMark } from '@/components/brand/logo';
 import { OfflineBanner } from '@/components/brand/states';
 import { ThemeToggle } from '@/components/brand/theme-toggle';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import {
     Sidebar,
     SidebarContent,
@@ -145,36 +154,67 @@ export default function StaffLayout({ children }: { children: ReactNode }) {
                         links={staffLinks.backOffice}
                     />
                 </SidebarContent>
-                <SidebarFooter className="gap-2">
-                    <div className="px-2 text-sm group-data-[collapsible=icon]:hidden">
-                        <p className="font-semibold">{auth.user?.name}</p>
-                        <p className="text-ink-muted">
-                            {auth.user ? t(`roles.${auth.user.role}`) : null}
-                        </p>
-                    </div>
-                    <ThemeToggle className="self-start group-data-[collapsible=icon]:hidden" />
+                <SidebarFooter>
                     <SidebarMenu>
                         <SidebarMenuItem>
-                            <SidebarMenuButton
-                                asChild
-                                tooltip={t('staff.view_site')}
-                                className="h-11"
-                            >
-                                <Link href="/">
-                                    <ExternalLink aria-hidden="true" />
-                                    <span>{t('staff.view_site')}</span>
-                                </Link>
-                            </SidebarMenuButton>
-                        </SidebarMenuItem>
-                        <SidebarMenuItem>
-                            <SidebarMenuButton
-                                tooltip={t('staff.sign_out')}
-                                className="h-11"
-                                onClick={() => router.post('/logout')}
-                            >
-                                <LogOut aria-hidden="true" />
-                                <span>{t('staff.sign_out')}</span>
-                            </SidebarMenuButton>
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <SidebarMenuButton
+                                        size="lg"
+                                        tooltip={auth.user?.name}
+                                        className="data-[state=open]:bg-clay"
+                                    >
+                                        <span className="grid size-8 shrink-0 place-items-center rounded-full bg-ember-soft text-sm font-bold text-ember">
+                                            {auth.user?.name.charAt(0)}
+                                        </span>
+                                        <span className="flex min-w-0 flex-col text-left leading-tight">
+                                            <span className="truncate font-semibold">
+                                                {auth.user?.name}
+                                            </span>
+                                            <span className="truncate text-xs text-ink-muted">
+                                                {auth.user
+                                                    ? t(
+                                                          `roles.${auth.user.role}`,
+                                                      )
+                                                    : null}
+                                            </span>
+                                        </span>
+                                        <ChevronsUpDown
+                                            className="ml-auto size-4"
+                                            aria-hidden="true"
+                                        />
+                                    </SidebarMenuButton>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent
+                                    side="top"
+                                    align="start"
+                                    className="w-64"
+                                >
+                                    <DropdownMenuLabel className="text-label text-ink-muted">
+                                        {t('ui.theme.label')}
+                                    </DropdownMenuLabel>
+                                    <div className="px-2 pb-2">
+                                        <ThemeToggle />
+                                    </div>
+                                    <DropdownMenuSeparator />
+                                    <DropdownMenuItem
+                                        asChild
+                                        className="min-h-11"
+                                    >
+                                        <Link href="/">
+                                            <ExternalLink aria-hidden="true" />
+                                            {t('staff.view_site')}
+                                        </Link>
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem
+                                        className="min-h-11"
+                                        onSelect={() => router.post('/logout')}
+                                    >
+                                        <LogOut aria-hidden="true" />
+                                        {t('staff.sign_out')}
+                                    </DropdownMenuItem>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
                         </SidebarMenuItem>
                     </SidebarMenu>
                 </SidebarFooter>
