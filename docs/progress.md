@@ -53,3 +53,20 @@
 - Booking still has its own form-field component; it should move to `components/form/field.tsx`.
 - Visit page lists accessible toilet, high chairs and hearing loop as "ask us" until the restaurant confirms them.
 - The service charge VAT treatment should be confirmed with the restaurant's accountant before launch.
+
+## Phase 3: staff UI
+
+**Done** (13 screens, each built by its own screen-builder on shared staff pieces built first)
+- Shared: staff shell with a collapsible sidebar (bottom bar on phones), one gate per staff area (`StaffArea`), per-area route files, the order state machine with row locks, the activity recorder, CSV and PDF exports.
+- Screens: Today per role, order board (accept, reject, edit before cooking, refund, assign rider, receipts as page and PDF), kitchen display (stations, timers, colour by wait, bump, recall, sold out; dark by default), floor plan (status, merge, transfer, waiter calls and bill requests), reservations day and week (seat, no-show), rider runs (map link, picked up, delivered, cash), menu manager (categories, dishes, variants, options, photos, service periods, price history), inventory (stock in and adjust, recipes with costing, waste, movements, suppliers, purchase orders with PDF), team (people, rota, attendance, weekly tip split), reports (day, hour, dish, channel, prep time, payment mix, VAT, service charge, tips; CSV and PDF), reviews moderation, activity log with export, settings (hours, bank holidays, zones, VAT, service charge, receipt, notifications, hygiene rating, automation switches).
+- Two reviews: 33 findings from the first pass fixed; a security pass then found 7 more (kitchen could see ingredient costs, managers could correct their own clock-outs, a recall racing a "served", a rider removed from a run, a run sent out without a rider, two owners demoting each other at once, no rate limit on refunds and edits), all fixed with tests.
+- Chilli Cheese Toast now has a stand-in photo.
+- Tests, PHPStan, TypeScript, Vite+ lint and format, Pint and the production build all pass. Screenshots of 32 views at 375, 768 and 1280 in light and dark: `docs/screenshots/phase-3/` (no console errors).
+
+**Decided:** see `docs/decisions.md` → Phase 3.
+
+**Open**
+- Screens refresh by polling; Reverb broadcasting replaces it in Phase 4.
+- Refunds only update the payment row until the payment gateway arrives (Phase 4).
+- The weekly tip split is shown but not stored; `tip_allocations` is created in Phase 4.
+- Uploaded menu photos are served as uploaded; AVIF/WebP conversion with `srcset` comes in Phase 4.

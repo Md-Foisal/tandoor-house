@@ -2,15 +2,18 @@
 
 namespace App\Providers;
 
+use App\Enums\StaffArea;
+use App\Models\User;
 use App\Support\Settings;
-use Illuminate\Cache\RateLimiting\Limit;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\RateLimiter;
 use Carbon\CarbonImmutable;
+use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
 
@@ -31,6 +34,17 @@ class AppServiceProvider extends ServiceProvider
     {
         $this->configureDefaults();
         $this->configureRateLimiting();
+        $this->configureStaffAreas();
+    }
+
+    /**
+     * One gate per staff panel section, e.g. "staff.kitchen".
+     */
+    protected function configureStaffAreas(): void
+    {
+        foreach (StaffArea::cases() as $area) {
+            Gate::define("staff.{$area->value}", fn (User $user) => $area->allows($user->role));
+        }
     }
 
     /**
@@ -60,6 +74,7 @@ class AppServiceProvider extends ServiceProvider
             $request->route()?->originalParameter('table').'|'.$key($request),
         ));
         RateLimiter::for('lookup', fn (Request $request) => Limit::perMinute(60)->by((string) $request->ip()));
+        RateLimiter::for('staff-sensitive', fn (Request $request) => Limit::perMinute(30)->by((string) ($request->user()?->getAuthIdentifier() ?? $request->ip())));
     }
 
     /**

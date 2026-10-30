@@ -36,7 +36,8 @@ export type OpeningDay = {
 
 export type FooterData = {
     hours: OpeningDay[];
-    hygieneRating: number;
+    /** 0–5, or a string such as "Awaiting inspection" before a first visit. */
+    hygieneRating: number | string;
 };
 
 export type TranslationTree = {

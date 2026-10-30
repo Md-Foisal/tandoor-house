@@ -1,5 +1,6 @@
 import type { Auth } from '@/types/auth';
 import type { OpenStatusData } from '@/components/brand/open-status';
+import type { StaffArea } from '@/types/staff';
 import type { FooterData, RestaurantInfo, TranslationTree } from '@/types/ui';
 
 declare module 'react' {
@@ -17,6 +18,7 @@ declare module '@inertiajs/core' {
             footer: FooterData;
             basketCount: number;
             openStatus: OpenStatusData;
+            staffAreas: StaffArea[];
             auth: Auth;
             sidebarOpen: boolean;
             [key: string]: unknown;

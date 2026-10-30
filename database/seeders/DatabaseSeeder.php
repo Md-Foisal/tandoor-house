@@ -17,6 +17,7 @@ class DatabaseSeeder extends Seeder
             VenueSeeder::class,
             CustomerSeeder::class,
             OrderHistorySeeder::class,
+            DemoRiderSeeder::class,
             StockSeeder::class,
             ReservationSeeder::class,
             ReviewSeeder::class,

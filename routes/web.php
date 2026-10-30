@@ -74,3 +74,4 @@ Route::controller(StyleguideController::class)->prefix('styleguide')->name('styl
 });
 
 require __DIR__.'/settings.php';
+require __DIR__.'/staff.php';

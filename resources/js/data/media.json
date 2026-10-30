@@ -1632,5 +1632,42 @@
       }
     },
     "credit": "azra melek / Pexels"
+  },
+  "dish/chilli-cheese-toast": {
+    "alt": "Hands pulling apart a toasted cheese sandwich, a long string of melted cheese stretching between the crisp bread",
+    "width": 1600,
+    "height": 2000,
+    "placeholder": "data:image/webp;base64,UklGRnIAAABXRUJQVlA4IGYAAAAwBACdASoQABQAPu1iqk2ppaQiMAgBMB2JZgCdMoACsg30jLGAUU9LEwAA/uUEdF2WlV1/4uXYWbhipHo1SLB0QfJii0IX7nutulUnzK8BOox+jQcj/J6ka7I8tImE7my77OCNyAA=",
+    "sources": {
+      "avif": [
+        [
+          480,
+          "/media/dish/chilli-cheese-toast-480.avif"
+        ],
+        [
+          960,
+          "/media/dish/chilli-cheese-toast-960.avif"
+        ],
+        [
+          1600,
+          "/media/dish/chilli-cheese-toast-1600.avif"
+        ]
+      ],
+      "webp": [
+        [
+          480,
+          "/media/dish/chilli-cheese-toast-480.webp"
+        ],
+        [
+          960,
+          "/media/dish/chilli-cheese-toast-960.webp"
+        ],
+        [
+          1600,
+          "/media/dish/chilli-cheese-toast-1600.webp"
+        ]
+      ]
+    },
+    "credit": "Polina Tankilevitch / Pexels"
   }
 }

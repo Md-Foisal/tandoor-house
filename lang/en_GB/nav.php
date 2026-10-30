@@ -26,7 +26,17 @@ return [
         'allergens' => 'Allergens',
         'privacy' => 'Privacy notice',
         'cookies' => 'Cookies',
-        'hygiene' => 'Food hygiene rating: :rating (very good)',
+        'hygiene' => 'Food hygiene rating: :rating (:label)',
+        'hygiene_awaiting' => 'Food hygiene rating: awaiting inspection',
+        // Food Standards Agency wording for each score.
+        'hygiene_labels' => [
+            '5' => 'very good',
+            '4' => 'good',
+            '3' => 'generally satisfactory',
+            '2' => 'improvement necessary',
+            '1' => 'major improvement necessary',
+            '0' => 'urgent improvement necessary',
+        ],
         'company' => ':legal · Registered in England and Wales no. :number · VAT :vat',
         'closed' => 'Closed',
     ],

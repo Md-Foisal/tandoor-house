@@ -40,3 +40,17 @@ Non-obvious choices and why. Newest at the bottom of each phase.
 - **The discretionary service charge sits outside the VAT on food.** VAT is the inclusive portion of the food and drink lines after any discount; the service charge, tip and delivery fee are added after. HMRC treats a genuinely optional service charge as outside the scope of VAT, which is how UK restaurants usually present it.
 - **Table orders need the restaurant to be open and, when the basket has alcohol, an age confirmation** (Challenge 25), the same as checkout.
 - **Booking occasions are stored as keys** (birthday, anniversary, business, other) and translated when shown.
+
+## Phase 3
+
+- **The order state machine arrives in Phase 3, not 4.** The order board and kitchen display need real status changes to be usable on seeded data; Phase 4 adds events, broadcasting, notifications and payments on top of it.
+- **Staff sections are an enum (`StaffArea`) mapping each section to roles**; one gate per section (`staff.<area>`) guards its routes, and the sidebar lists only allowed sections. Per-record rules (a rider sees only their deliveries) live in policies.
+- **Each staff section owns its own routes file** (`routes/staff/<area>.php`), so parallel builders never edit the same file.
+- **The kitchen display is dark by default on every device** and remembers a cook's switch to light per device.
+- **PDF receipts and reports use dompdf**, rendered from Blade on the server so they match the CSV exports exactly.
+- **Refunds update the original payment row** (refunded amount, status, history in `meta.refunds`) instead of adding a negative row, because amounts are unsigned and a second row would double-count in reports. Cashiers may refund up to £50 per order in total; managers and owners have no limit; waiters cannot refund.
+- **A closing time of midnight is stored as "24:00"** and shown as 00:00, so a period never wraps into the next day.
+- **Owner-only settings:** VAT, service charge, tip presets, deposits and delivery zone fees and minimums. Managers see them read-only.
+- **Hidden reviews need no extra column:** a review is hidden when it is unpublished and its latest moderation entry in the activity log says so.
+- **The food hygiene rating shows the Food Standards Agency wording for its score**, or "awaiting inspection" before a first visit.
+- **Kitchen "late" means ready after the estimate** (prep time plus four minutes), or after the slowest dish's prep time when there is no estimate, everywhere: kitchen display, Today, and reports.
