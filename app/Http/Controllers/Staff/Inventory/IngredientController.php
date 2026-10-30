@@ -59,7 +59,7 @@ class IngredientController extends Controller
     }
 
     /**
-     * @return array{count: int, low: int, value: int}
+     * @return array{count: int, low: int, value?: int}
      */
     private function summary(bool $costs): array
     {

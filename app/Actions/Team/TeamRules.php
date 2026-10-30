@@ -67,7 +67,7 @@ class TeamRules
             return;
         }
 
-        $others = User::query()->where('role', Role::Owner)->whereKeyNot($target->id)->lockForUpdate()->pluck('id')->count();
+        $others = User::query()->where('role', Role::Owner)->whereKeyNot($target->id)->lockForUpdate()->count();
 
         if ($others === 0) {
             throw ValidationException::withMessages(['role' => __('staff_team.errors.last_owner')]);

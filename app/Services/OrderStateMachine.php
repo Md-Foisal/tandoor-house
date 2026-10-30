@@ -134,8 +134,8 @@ class OrderStateMachine
         }
 
         return DB::transaction(function () use ($line, $order, $by) {
-            $order = Order::query()->lockForUpdate()->findOrFail($order->getKey());
-            $line = OrderLine::query()->lockForUpdate()->findOrFail($line->getKey());
+            $order = Order::query()->lockForUpdate()->whereKey($order->getKey())->firstOrFail();
+            $line = OrderLine::query()->lockForUpdate()->whereKey($line->getKey())->firstOrFail();
 
             if ($line->status !== LineStatus::Ready || ! in_array($order->status, [OrderStatus::Cooking, OrderStatus::Ready], true)) {
                 throw ValidationException::withMessages(['line' => __('staff.kitchen.cannot_recall')]);
