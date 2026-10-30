@@ -85,6 +85,28 @@ it('puts stock back when an accepted order is cancelled, once', function (OrderS
     expect($back->quantity)->toBe(400);
 })->with([OrderStatus::Cancelled, OrderStatus::Rejected]);
 
+it('ends with stock untouched when the cancel listener runs before the accept listener', function () {
+    $ingredient = Ingredient::factory()->create(['stock' => 10000, 'low_threshold' => 500, 'par_level' => 12000]);
+    $order = stockOrder(stockDish($ingredient, 200), 2);
+    $order->forceFill(['status' => OrderStatus::Cancelled])->save();
+
+    moveOrder($order, OrderStatus::Cancelled);
+    moveOrder($order, OrderStatus::Accepted);
+
+    expect($ingredient->fresh()->stock)->toBe(10000)->and(StockMovement::count())->toBe(0);
+});
+
+it('ends with stock restored when the accept listener runs before the cancel listener', function () {
+    $ingredient = Ingredient::factory()->create(['stock' => 10000, 'low_threshold' => 500, 'par_level' => 12000]);
+    $order = stockOrder(stockDish($ingredient, 200), 2);
+
+    moveOrder($order, OrderStatus::Accepted);
+    $order->forceFill(['status' => OrderStatus::Cancelled])->save();
+    moveOrder($order, OrderStatus::Cancelled);
+
+    expect($ingredient->fresh()->stock)->toBe(10000);
+});
+
 it('does not invent stock for an order that was never accepted', function () {
     $ingredient = Ingredient::factory()->create(['stock' => 1000]);
     $order = stockOrder(stockDish($ingredient, 200), 1);

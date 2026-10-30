@@ -11,6 +11,7 @@ use App\Models\Order;
 use App\Models\StockMovement;
 use App\Support\Automation;
 use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Support\Facades\DB;
 
 /**
  * An order rejected or cancelled after it was accepted never used its
@@ -26,29 +27,31 @@ class RestoreStockForOrder implements ShouldQueue
             return;
         }
 
-        $order = Order::find($event->orderId);
+        DB::transaction(function () use ($event) {
+            $order = Order::query()->whereKey($event->orderId)->lockForUpdate()->first();
 
-        if ($order === null) {
-            return;
-        }
-
-        $sales = StockMovement::query()
-            ->with('ingredient')
-            ->where('order_id', $order->id)
-            ->where('type', StockMovementType::Sale)
-            ->get();
-
-        foreach ($sales as $sale) {
-            $quantity = -$sale->quantity;
-            $movement = $this->ledger->returnSale($sale->ingredient, $quantity, $order, __('automations.stock.return_reason', ['number' => $order->number]));
-
-            if ($movement !== null) {
-                $this->automation->log('automation.stock.restored', __('automations.stock.restored', [
-                    'ingredient' => $sale->ingredient->name,
-                    'quantity' => Quantity::format($quantity, $sale->ingredient->unit),
-                    'number' => $order->number,
-                ]), $order, ['ingredient_id' => $sale->ingredient_id, 'movement_id' => $movement->id]);
+            if ($order === null) {
+                return;
             }
-        }
+
+            $sales = StockMovement::query()
+                ->with('ingredient')
+                ->where('order_id', $order->id)
+                ->where('type', StockMovementType::Sale)
+                ->get();
+
+            foreach ($sales as $sale) {
+                $quantity = -$sale->quantity;
+                $movement = $this->ledger->returnSale($sale->ingredient, $quantity, $order, __('automations.stock.return_reason', ['number' => $order->number]));
+
+                if ($movement !== null) {
+                    $this->automation->log('automation.stock.restored', __('automations.stock.restored', [
+                        'ingredient' => $sale->ingredient->name,
+                        'quantity' => Quantity::format($quantity, $sale->ingredient->unit),
+                        'number' => $order->number,
+                    ]), $order, ['ingredient_id' => $sale->ingredient_id, 'movement_id' => $movement->id]);
+                }
+            }
+        });
     }
 }
