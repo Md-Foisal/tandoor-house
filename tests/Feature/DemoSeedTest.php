@@ -2,7 +2,9 @@
 
 use App\Enums\OrderChannel;
 use App\Enums\OrderStatus;
+use App\Enums\PaymentStatus;
 use App\Enums\ReservationStatus;
+use App\Models\ActivityLog;
 use App\Models\Cart;
 use App\Models\DeliveryZone;
 use App\Models\DiningTable;
@@ -11,6 +13,8 @@ use App\Models\MenuItem;
 use App\Models\Order;
 use App\Models\Reservation;
 use App\Models\Review;
+use App\Models\StaffInvite;
+use App\Models\TipAllocation;
 use App\Models\User;
 use App\Services\Pricing;
 use Database\Factories\OrderFactory;
@@ -120,6 +124,51 @@ $checks = [
 
         expect($cart->lines)->toHaveCount(2)
             ->and(DB::table('carts')->where('user_id', $demo->id)->value('updated_at'))->toBeLessThan(now()->subHours(2)->toDateTimeString());
+    },
+    'shows the later phases to the demo customer' => function () {
+        $demo = User::where('email', 'customer@tandoorhouse.test')->firstOrFail();
+
+        expect($demo->loyalty_points)->toBeGreaterThanOrEqual(220)
+            ->and($demo->marketing_opt_in)->toBeTrue()
+            ->and($demo->loyaltyTransactions()->where('kind', 'redeemed')->count())->toBe(1)
+            ->and($demo->loyaltyTransactions()->where('kind', 'earned')->whereNotNull('order_id')->count())->toBeGreaterThan(5);
+
+        $basket = Cart::where('user_id', $demo->id)->firstOrFail();
+        $value = collect($basket->lines)->sum(fn ($line) => MenuItem::find($line['menu_item_id'])->price * $line['quantity']);
+        expect($value)->toBeGreaterThan(1500);
+
+        $unpaid = Order::with('payments')->where('number', 'TH-90001')->firstOrFail();
+        expect($unpaid->user_id)->toBe($demo->id)
+            ->and($unpaid->status)->toBe(OrderStatus::Placed)
+            ->and($unpaid->payment_status)->toBe(PaymentStatus::Pending)
+            ->and($unpaid->payments)->toHaveCount(1)
+            ->and($unpaid->payments->first()->status)->toBe(PaymentStatus::Pending)
+            ->and($unpaid->payments->first()->gateway)->toBe('fake')
+            ->and($unpaid->payments->first()->amount)->toBe($unpaid->total);
+
+        $booking = Reservation::where('reference', 'RDEMO26')->firstOrFail();
+        expect($booking->user_id)->toBe($demo->id)
+            ->and($booking->status)->toBe(ReservationStatus::Confirmed)
+            ->and($booking->starts_at->greaterThan(now()->addHours(24)))->toBeTrue()
+            ->and($booking->deposit_status)->toBe(PaymentStatus::Paid)
+            ->and($booking->payments()->where('status', 'paid')->where('gateway', 'fake')->sum('amount'))->toBe($booking->deposit);
+    },
+    'shows a pending invite, recorded tips and automated activity' => function () {
+        $invite = StaffInvite::with('user')->firstOrFail();
+        expect($invite->user->name)->toBe('Nadia Hussain')
+            ->and($invite->accepted_at)->toBeNull()
+            ->and($invite->isExpired())->toBeFalse()
+            ->and($invite->token_hash)->toHaveLength(64);
+
+        $periods = TipAllocation::query()->distinct()->pluck('period')->map(fn ($p) => substr((string) $p, 0, 10))->sort()->values();
+        $lastWeek = now()->startOfWeek()->subWeek()->toDateString();
+        expect($periods->all())->toContain($lastWeek)
+            ->and(TipAllocation::whereDate('period', $lastWeek)->whereNull('paid_at')->exists())->toBeTrue()
+            ->and(TipAllocation::whereNotNull('paid_at')->exists())->toBeTrue();
+
+        foreach (['order.auto_accepted', 'stock.low', 'reservation.reminder_sent', 'report.daily_close', 'loyalty.points_awarded'] as $event) {
+            expect(ActivityLog::where('event', $event)->whereNull('user_id')->exists())->toBeTrue("no automated {$event} entry");
+        }
     },
     'keeps loyalty balances equal to their transactions' => function () {
         User::query()->where('loyalty_points', '>', 0)->get()->each(function (User $user) {
