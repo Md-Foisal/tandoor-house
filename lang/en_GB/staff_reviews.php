@@ -110,6 +110,14 @@ return [
         'reply_required' => 'Write a reply, or remove the existing one.',
         'reply_max' => 'Keep the reply to :max characters or fewer.',
     ],
+    'log' => [
+        'label' => ':rating-star review from :name',
+        'published' => 'Published a :label',
+        'hidden' => 'Hid a :label (:reason)',
+        'replied' => 'Replied to a :label',
+        'reply_edited' => 'Edited the reply to a :label',
+        'reply_removed' => 'Removed the reply to a :label',
+    ],
     'flash' => [
         'published' => 'Published the review from :name.',
         'hidden' => 'Hid the review from :name.',

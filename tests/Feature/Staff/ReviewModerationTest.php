@@ -211,3 +211,34 @@ it('lists the words that recur in low ratings, ignoring filler', function () {
     expect(ReviewSummary::build()['themes'])->toBe([['word' => 'slow', 'count' => 2]]);
     expect($good->rating)->toBe(5);
 });
+
+it('words every moderation log entry from the language file', function () {
+    $manager = reviewer();
+    $review = Review::factory()->unpublished()->create(['rating' => 4, 'author_name' => 'Asha']);
+
+    $this->actingAs($manager)->post("/staff/reviews/{$review->id}/publish")->assertRedirect();
+    $this->post("/staff/reviews/{$review->id}/hide", ['reason' => 'abusive'])->assertRedirect();
+    $this->put("/staff/reviews/{$review->id}/reply", ['reply' => 'Thanks.'])->assertRedirect();
+
+    expect(ActivityLog::query()->where('event', 'review.published')->value('description'))->toBe('Published a 4-star review from Asha')
+        ->and(ActivityLog::query()->where('event', 'review.hidden')->value('description'))->toBe('Hid a 4-star review from Asha (Abusive or hateful)')
+        ->and(ActivityLog::query()->where('event', 'review.replied')->value('description'))->toBe('Replied to a 4-star review from Asha');
+});
+
+it('does not log a second publish when the review is already published', function () {
+    $manager = reviewer();
+    $review = Review::factory()->unpublished()->create();
+
+    $this->actingAs($manager)->post("/staff/reviews/{$review->id}/publish")->assertRedirect();
+    $this->post("/staff/reviews/{$review->id}/publish")->assertRedirect();
+
+    expect(logsFor($review, 'review.published'))->toBe(1);
+});
+
+it('refuses the form requests to roles without the reviews area', function () {
+    $review = Review::factory()->unpublished()->create();
+
+    $this->actingAs(reviewer(Role::Cashier));
+    $this->post('/staff/reviews/publish', ['ids' => [$review->id]])->assertForbidden();
+    $this->put("/staff/reviews/{$review->id}/reply", ['reply' => 'Hi'])->assertForbidden();
+});

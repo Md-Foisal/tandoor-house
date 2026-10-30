@@ -6,17 +6,25 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Staff\Reviews\BulkPublishRequest;
 use App\Http\Requests\Staff\Reviews\HideReviewRequest;
 use App\Models\Review;
+use App\Support\ActivityRecorder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 
 class ReviewModerationController extends Controller
 {
+    public function __construct(private readonly ActivityRecorder $activity) {}
+
     public function publish(Request $request, Review $review): RedirectResponse
     {
-        if (! $review->is_published) {
-            $this->publishOne($review, $request);
-        }
+        DB::transaction(function () use ($review, $request) {
+            $locked = Review::query()->whereKey($review->id)->lockForUpdate()->firstOrFail();
+
+            if (! $locked->is_published) {
+                $this->publishOne($locked, $request);
+            }
+        });
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __('staff_reviews.flash.published', ['name' => $review->author_name])]);
 
@@ -28,15 +36,17 @@ class ReviewModerationController extends Controller
         $reason = $request->string('reason')->toString();
         $note = trim($request->string('note')->toString());
 
-        $review->update(['is_published' => false]);
+        DB::transaction(function () use ($review, $reason, $note, $request) {
+            $review->update(['is_published' => false]);
 
-        ReviewQueue::log(
-            ReviewQueue::HIDDEN,
-            $review,
-            $request->user(),
-            'Hid a '.ReviewQueue::label($review).' ('.__("staff_reviews.reasons.{$reason}").')',
-            ['reason' => $reason, 'note' => $note !== '' ? $note : null],
-        );
+            $this->activity->record(
+                ReviewQueue::HIDDEN,
+                __('staff_reviews.log.hidden', ['label' => ReviewQueue::label($review), 'reason' => __("staff_reviews.reasons.{$reason}")]),
+                $review,
+                ['reason' => $reason, 'note' => $note !== '' ? $note : null],
+                $request->user(),
+            );
+        });
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __('staff_reviews.flash.hidden', ['name' => $review->author_name])]);
 
@@ -45,16 +55,20 @@ class ReviewModerationController extends Controller
 
     public function bulkPublish(BulkPublishRequest $request): RedirectResponse
     {
-        $reviews = ReviewQueue::tab(Review::query(), 'waiting')->whereIn('id', $request->array('ids'))->get();
+        $reviews = DB::transaction(function () use ($request) {
+            $reviews = ReviewQueue::tab(Review::query(), 'waiting')->whereIn('id', $request->array('ids'))->lockForUpdate()->get();
+
+            foreach ($reviews as $review) {
+                $this->publishOne($review, $request, bulk: true);
+            }
+
+            return $reviews;
+        });
 
         if ($reviews->isEmpty()) {
             Inertia::flash('toast', ['type' => 'error', 'message' => __('staff_reviews.flash.bulk_none')]);
 
             return back();
-        }
-
-        foreach ($reviews as $review) {
-            $this->publishOne($review, $request, bulk: true);
         }
 
         Inertia::flash('toast', ['type' => 'success', 'message' => trans_choice('staff_reviews.flash.bulk_published', $reviews->count(), ['count' => $reviews->count()])]);
@@ -66,12 +80,12 @@ class ReviewModerationController extends Controller
     {
         $review->update(['is_published' => true]);
 
-        ReviewQueue::log(
+        $this->activity->record(
             ReviewQueue::PUBLISHED,
+            __('staff_reviews.log.published', ['label' => ReviewQueue::label($review)]),
             $review,
-            $request->user(),
-            'Published a '.ReviewQueue::label($review),
             ['bulk' => $bulk],
+            $request->user(),
         );
     }
 }

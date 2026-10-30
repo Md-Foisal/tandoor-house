@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Staff\Reviews;
 
 use App\Models\ActivityLog;
 use App\Models\Review;
-use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
 
 /**
@@ -66,23 +65,8 @@ class ReviewQueue
         ];
     }
 
-    /**
-     * @param  array<string, mixed>  $properties
-     */
-    public static function log(string $event, Review $review, User $by, string $description, array $properties = []): void
-    {
-        ActivityLog::create([
-            'event' => $event,
-            'subject_type' => $review->getMorphClass(),
-            'subject_id' => $review->id,
-            'user_id' => $by->id,
-            'description' => $description,
-            'properties' => $properties,
-        ]);
-    }
-
     public static function label(Review $review): string
     {
-        return "{$review->rating}-star review from {$review->author_name}";
+        return __('staff_reviews.log.label', ['rating' => $review->rating, 'name' => $review->author_name]);
     }
 }
