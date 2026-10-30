@@ -70,7 +70,7 @@ Route::controller(ReservationController::class)->prefix('book')->name('book.')->
     Route::get('/', 'create')->name('create');
     Route::get('slots', 'slots')->name('slots');
     Route::post('/', 'store')->middleware('throttle:booking')->name('store');
-    Route::get('{reservation:reference}', 'show')->name('show');
+    Route::get('{reservation:reference}', 'show')->middleware('throttle:lookup')->name('show');
 });
 
 Route::controller(ReservationPaymentController::class)->prefix('book/{reservation:reference}/pay')->name('book.pay')->group(function () {
@@ -100,10 +100,12 @@ Route::middleware(['auth', 'verified'])->prefix('account')->name('account.')->gr
     Route::get('data-export', DataExportController::class)->middleware('throttle:5,60')->name('data-export');
 });
 
-Route::controller(StyleguideController::class)->prefix('styleguide')->name('styleguide.')->group(function () {
-    Route::get('/', 'index')->name('index');
-    Route::get('motion', 'motion')->name('motion');
-});
+if (! app()->isProduction()) {
+    Route::controller(StyleguideController::class)->prefix('styleguide')->name('styleguide.')->group(function () {
+        Route::get('/', 'index')->name('index');
+        Route::get('motion', 'motion')->name('motion');
+    });
+}
 
 require __DIR__.'/settings.php';
 require __DIR__.'/staff.php';

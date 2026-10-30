@@ -5,7 +5,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
 
         {{-- Inline script to detect system dark mode preference and apply it immediately --}}
-        <script>
+        <script nonce="{{ Vite::cspNonce() }}">
             (function() {
                 const appearance = '{{ $appearance ?? "system" }}';
 
@@ -20,7 +20,7 @@
         </script>
 
         {{-- Inline style to set the HTML background color based on our theme in app.css --}}
-        <style>
+        <style nonce="{{ Vite::cspNonce() }}">
             html {
                 background-color: #f7f1e8;
             }
@@ -31,7 +31,7 @@
         </style>
 
         <noscript>
-            <style>
+            <style nonce="{{ Vite::cspNonce() }}">
                 [data-reveal] { opacity: 1 !important; transform: none !important; filter: none !important; clip-path: none !important; }
             </style>
         </noscript>
@@ -64,7 +64,7 @@
             <meta name="twitter:description" content="{{ $seo['description'] }}">
             <meta name="twitter:image" content="{{ $seo['image'] }}">
             @foreach ($seo['jsonld'] as $document)
-                <script type="application/ld+json">{!! \App\Support\StructuredData::encode($document) !!}</script>
+                <script type="application/ld+json" nonce="{{ Vite::cspNonce() }}">{!! \App\Support\StructuredData::encode($document) !!}</script>
             @endforeach
         @endif
         <x-inertia::head>

@@ -292,8 +292,9 @@ it('clears the menu cache on every write', function () {
     expect(Cache::has(MenuController::CACHE_KEY))->toBeFalse();
 });
 
-it('accepts a valid photo and stores it on the public disk', function () {
+it('accepts a valid photo and keeps the original on the private disk', function () {
     Storage::fake('public');
+    Storage::fake('local');
     $category = Category::factory()->create();
 
     $this->actingAs(menuStaff(Role::Manager))
@@ -301,15 +302,16 @@ it('accepts a valid photo and stores it on the public disk', function () {
         ->assertRedirect();
 
     $item = MenuItem::query()->firstOrFail();
-    expect($item->image)->toStartWith('menu/');
-    Storage::disk('public')->assertExists($item->image);
+    expect($item->image)->toStartWith('menu-originals/');
+    Storage::disk('local')->assertExists($item->image);
+    Storage::disk('public')->assertMissing($item->image);
 
     $old = $item->image;
     $this->actingAs(menuStaff(Role::Manager))
         ->put("/staff/menu/items/{$item->id}", itemPayload($category, ['photo' => UploadedFile::fake()->image('new.png', 1000, 800)]))
         ->assertRedirect();
-    Storage::disk('public')->assertMissing($old);
-    Storage::disk('public')->assertExists($item->fresh()->image);
+    Storage::disk('local')->assertMissing($old);
+    Storage::disk('local')->assertExists($item->fresh()->image);
 });
 
 it('rejects photos that are the wrong type, too small or too large', function (UploadedFile $file) {

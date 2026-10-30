@@ -38,7 +38,7 @@ function photoItemPayload(Category $category): array
 function uploadedItem(): MenuItem
 {
     $item = MenuItem::factory()->for(Category::factory())->create();
-    $item->image = UploadedFile::fake()->image('dish.jpg', 1200, 900)->store('menu', 'public');
+    $item->image = UploadedFile::fake()->image('dish.jpg', 1200, 900)->store(ConvertMenuPhoto::ORIGINALS, 'local');
     $item->save();
 
     return $item;
@@ -46,6 +46,7 @@ function uploadedItem(): MenuItem
 
 beforeEach(function () {
     Storage::fake('public');
+    Storage::fake('local');
     $this->manager = User::factory()->role(Role::Manager)->create();
 });
 
@@ -61,6 +62,8 @@ it('queues the conversion when staff upload a photo', function () {
 
     Queue::assertPushed(ConvertMenuPhoto::class, fn ($job) => $job->menuItemId === $item->id && $job->source === $item->image);
     expect($item->photo)->toBeNull();
+    Storage::disk('local')->assertExists($item->image);
+    Storage::disk('public')->assertMissing($item->image);
 });
 
 it('does not queue a conversion when no photo is sent', function () {
@@ -101,7 +104,8 @@ it('cleans up the old derived files when a photo is replaced', function () {
     $item = uploadedItem();
     (new ConvertMenuPhoto($item->id, $item->image))->handle();
     $item->refresh();
-    $oldFiles = [$item->image, ...$item->photoPaths()];
+    $oldOriginal = $item->image;
+    $oldFiles = $item->photoPaths();
 
     $this->actingAs($this->manager)
         ->put("/staff/menu/items/{$item->id}", [...photoItemPayload($item->category), 'photo' => UploadedFile::fake()->image('new.jpg', 1000, 800)])
@@ -113,9 +117,11 @@ it('cleans up the old derived files when a photo is replaced', function () {
         Storage::disk('public')->assertMissing($path);
     }
 
+    Storage::disk('local')->assertMissing($oldOriginal);
     expect($item->image)->not->toBeNull()
-        ->and($item->image)->not->toBe($oldFiles[0]);
-    Storage::disk('public')->assertExists($item->image);
+        ->and($item->image)->not->toBe($oldOriginal);
+    Storage::disk('local')->assertExists($item->image);
+    Storage::disk('public')->assertMissing($item->image);
     expect(array_diff($oldFiles, $item->photoPaths()))->toEqual($oldFiles);
 });
 
@@ -123,7 +129,8 @@ it('removes the original and every derived file when the photo is removed', func
     $item = uploadedItem();
     (new ConvertMenuPhoto($item->id, $item->image))->handle();
     $item->refresh();
-    $files = [$item->image, ...$item->photoPaths()];
+    $original = $item->image;
+    $files = $item->photoPaths();
 
     $this->actingAs($this->manager)
         ->put("/staff/menu/items/{$item->id}", [...photoItemPayload($item->category), 'remove_photo' => true])
@@ -135,12 +142,14 @@ it('removes the original and every derived file when the photo is removed', func
     foreach ($files as $path) {
         Storage::disk('public')->assertMissing($path);
     }
+
+    Storage::disk('local')->assertMissing($original);
 });
 
 it('discards a conversion that finished after the photo was replaced', function () {
     $item = uploadedItem();
     $stale = $item->image;
-    $item->forceFill(['image' => UploadedFile::fake()->image('newer.jpg', 1000, 800)->store('menu', 'public')])->save();
+    $item->forceFill(['image' => UploadedFile::fake()->image('newer.jpg', 1000, 800)->store(ConvertMenuPhoto::ORIGINALS, 'local')])->save();
 
     (new ConvertMenuPhoto($item->id, $stale))->handle();
 
@@ -175,4 +184,61 @@ it('rejects a photo with oversize dimensions', function () {
         ->assertSessionHasErrors('photo');
 
     Queue::assertNothingPushed();
+});
+
+/**
+ * A JPEG with an APP1 EXIF block whose ImageDescription holds $marker.
+ */
+function jpegWithExif(string $marker): string
+{
+    $image = imagecreatetruecolor(1200, 900);
+    imagefill($image, 0, 0, imagecolorallocate($image, 200, 120, 40));
+    ob_start();
+    imagejpeg($image, null, 90);
+    $jpeg = (string) ob_get_clean();
+
+    $value = $marker."\0";
+    $tiff = 'MM'.pack('n', 42).pack('N', 8)
+        .pack('n', 1).pack('nnNN', 0x010E, 2, strlen($value), 26)
+        .pack('N', 0).$value;
+    $payload = "Exif\0\0".$tiff;
+
+    return substr($jpeg, 0, 2)."\xFF\xE1".pack('n', strlen($payload) + 2).$payload.substr($jpeg, 2);
+}
+
+it('keeps the EXIF-bearing original private and strips it from every public crop', function () {
+    Queue::fake();
+    $marker = 'GPS-51.5074N-SECRET';
+    $path = tempnam(sys_get_temp_dir(), 'exif').'.jpg';
+    file_put_contents($path, jpegWithExif($marker));
+
+    $this->actingAs($this->manager)
+        ->post('/staff/menu/items', [...photoItemPayload(Category::factory()->create()), 'photo' => new UploadedFile($path, 'dish.jpg', 'image/jpeg', null, true)])
+        ->assertSessionHasNoErrors();
+
+    $item = MenuItem::query()->firstOrFail();
+    expect(Storage::disk('local')->get($item->image))->toContain($marker);
+    expect(Storage::disk('public')->allFiles())->toBe([]);
+
+    (new ConvertMenuPhoto($item->id, $item->image))->handle();
+
+    $public = Storage::disk('public')->allFiles();
+    expect($public)->not->toBeEmpty();
+
+    foreach ($public as $file) {
+        expect(Storage::disk('public')->get($file))->not->toContain($marker);
+    }
+
+    expect($item->fresh()->photo['placeholder'])->not->toContain(base64_encode($marker));
+});
+
+it('moves an older public original onto the private disk when converting it', function () {
+    $item = MenuItem::factory()->for(Category::factory())->create();
+    $item->forceFill(['image' => UploadedFile::fake()->image('dish.jpg', 1200, 900)->store('menu', 'public')])->save();
+
+    (new ConvertMenuPhoto($item->id, $item->image))->handle();
+
+    Storage::disk('public')->assertMissing($item->image);
+    Storage::disk('local')->assertExists($item->image);
+    expect($item->fresh()->photo)->not->toBeNull();
 });

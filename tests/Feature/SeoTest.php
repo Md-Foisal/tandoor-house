@@ -14,7 +14,7 @@ beforeEach(function () {
  */
 function jsonLd(string $html): array
 {
-    preg_match_all('#<script type="application/ld\+json">(.*?)</script>#s', $html, $matches);
+    preg_match_all('#<script type="application/ld\+json"[^>]*>(.*?)</script>#s', $html, $matches);
 
     return array_map(fn (string $raw) => json_decode($raw, true, flags: JSON_THROW_ON_ERROR), $matches[1]);
 }

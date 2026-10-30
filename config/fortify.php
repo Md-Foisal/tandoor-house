@@ -118,6 +118,11 @@ return [
         'login' => 'login',
         'two-factor' => 'two-factor',
         'passkeys' => 'passkeys',
+        // Not read by Fortify itself: FortifyServiceProvider attaches these.
+        'register' => 'register',
+        'forgot-password' => 'forgot-password',
+        'reset-password' => 'reset-password',
+        'confirm-password' => 'confirm-password',
     ],
 
     /*

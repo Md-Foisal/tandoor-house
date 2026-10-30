@@ -8,6 +8,7 @@ use App\Http\Responses\LoginResponse;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rules\Password;
@@ -34,6 +35,31 @@ class FortifyServiceProvider extends ServiceProvider
         $this->configureActions();
         $this->configureViews();
         $this->configureRateLimiting();
+        $this->throttleAccountRoutes();
+    }
+
+    /**
+     * Fortify only throttles login, two-factor and passkeys; these routes
+     * send email or check a password, so they get a limiter too.
+     */
+    private function throttleAccountRoutes(): void
+    {
+        $this->app->booted(function () {
+            $limiters = [
+                'register.store' => config('fortify.limiters.register'),
+                'password.email' => config('fortify.limiters.forgot-password'),
+                'password.update' => config('fortify.limiters.reset-password'),
+                'password.confirm.store' => config('fortify.limiters.confirm-password'),
+            ];
+
+            foreach (Route::getRoutes()->getRoutes() as $route) {
+                $limiter = $limiters[$route->getName()] ?? null;
+
+                if (is_string($limiter) && $limiter !== '' && ! in_array('throttle:'.$limiter, $route->middleware(), true)) {
+                    $route->middleware('throttle:'.$limiter);
+                }
+            }
+        });
     }
 
     /**
@@ -92,6 +118,18 @@ class FortifyServiceProvider extends ServiceProvider
 
             return Limit::perMinute(5)->by($throttleKey);
         });
+
+        $emailAndIp = fn (Request $request): string => Str::transliterate(Str::lower((string) $request->input(Fortify::email())).'|'.$request->ip());
+
+        RateLimiter::for('register', fn (Request $request) => Limit::perMinute(5)->by((string) $request->ip()));
+        RateLimiter::for('forgot-password', fn (Request $request) => [
+            Limit::perMinute(5)->by($emailAndIp($request)),
+            Limit::perHour(30)->by('ip|'.$request->ip()),
+        ]);
+        RateLimiter::for('reset-password', fn (Request $request) => Limit::perMinute(5)->by($emailAndIp($request)));
+        RateLimiter::for('confirm-password', fn (Request $request) => Limit::perMinute(5)->by(
+            ($request->user()?->getAuthIdentifier() ?? '').'|'.$request->ip(),
+        ));
 
         RateLimiter::for('passkeys', function (Request $request) {
             return Limit::perMinute(10)->by(
