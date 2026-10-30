@@ -8,6 +8,7 @@ use App\Events\ReservationUpdated;
 use App\Http\Requests\Reservations\StoreReservationRequest;
 use App\Models\Reservation;
 use App\Policies\ReservationPolicy;
+use App\Services\ReservationCancellation;
 use App\Services\TableAvailability;
 use App\Support\CodeGenerator;
 use App\Support\Settings;
@@ -120,7 +121,7 @@ class ReservationController extends Controller
         return redirect()->route('book.show', $reservation);
     }
 
-    public function show(Reservation $reservation, Settings $settings): Response
+    public function show(Reservation $reservation, Settings $settings, ReservationCancellation $cancellation): Response
     {
         Gate::authorize('view', $reservation);
 
@@ -145,6 +146,7 @@ class ReservationController extends Controller
                 'occasion' => $this->occasionLabel($reservation->occasion),
                 'notes' => $reservation->notes,
             ],
+            'cancel' => $cancellation->terms($reservation, Gate::allows('cancel', $reservation)),
         ]);
     }
 

@@ -24,4 +24,16 @@ class ReservationPolicy
 
         return in_array($reservation->reference, (array) session()->get(self::SESSION_KEY, []), true);
     }
+
+    /**
+     * Only whoever booked, not staff: they change bookings on the floor screens.
+     */
+    public function cancel(?User $user, Reservation $reservation): bool
+    {
+        if ($user !== null && $reservation->user_id === $user->id) {
+            return true;
+        }
+
+        return in_array($reservation->reference, (array) session()->get(self::SESSION_KEY, []), true);
+    }
 }

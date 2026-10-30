@@ -4,6 +4,7 @@ import { CreditCard, Phone } from 'lucide-react';
 import { useState } from 'react';
 import { EmberLine } from '@/components/brand/ember-line';
 import { Settle } from '@/components/motion/served';
+import { CancelBooking } from '@/components/booking/cancel-booking';
 import type { ShowProps } from '@/components/booking/types';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -80,7 +81,7 @@ function Row({
     );
 }
 
-export default function BookShow({ reservation }: ShowProps) {
+export default function BookShow({ reservation, cancel }: ShowProps) {
     const t = useT();
     const reduced = useReducedMotion();
     const { restaurant } = usePage().props;
@@ -231,7 +232,9 @@ export default function BookShow({ reservation }: ShowProps) {
                         </div>
                     )}
                     <p className="text-sm text-ink-muted">
-                        {t('booking.confirmation.policy')}{' '}
+                        {t('booking.confirmation.policy', {
+                            hours: cancel.hours,
+                        })}{' '}
                         {t('booking.confirmation.late', {
                             minutes: reservation.no_show_minutes,
                         })}
@@ -251,6 +254,17 @@ export default function BookShow({ reservation }: ShowProps) {
                         </a>
                     </p>
                     <div className="flex flex-wrap gap-3">
+                        {cancel.allowed && (
+                            <CancelBooking
+                                reference={reservation.reference}
+                                terms={cancel}
+                                summary={{
+                                    party,
+                                    date: reservation.date_label,
+                                    time: reservation.time,
+                                }}
+                            />
+                        )}
                         <Button asChild variant="outline">
                             <Link href={menu()}>
                                 {t('booking.confirmation.see_menu')}

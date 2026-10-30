@@ -63,5 +63,5 @@ export type OrderTrackingProps =
           number: string;
           order: TrackedOrder;
           details?: TrackedDetails;
-          can: { reorder: boolean; review: boolean };
+          can: { reorder: boolean; review: boolean; cancel: boolean };
       };

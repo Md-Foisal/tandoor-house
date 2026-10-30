@@ -59,4 +59,12 @@ export type ReservationView = {
     notes: string | null;
 };
 
-export type ShowProps = { reservation: ReservationView };
+export type CancelTerms = {
+    allowed: boolean;
+    free: boolean;
+    hours: number;
+    deadline_label: string;
+    deposit_paid: number;
+};
+
+export type ShowProps = { reservation: ReservationView; cancel: CancelTerms };

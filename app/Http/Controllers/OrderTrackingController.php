@@ -56,6 +56,7 @@ class OrderTrackingController extends Controller
             'can' => [
                 'reorder' => $owner && Gate::allows('reorder', $order),
                 'review' => $owner && Gate::allows('review', $order),
+                'cancel' => $order->status === OrderStatus::Placed && Gate::allows('cancel', $order),
             ],
         ]);
     }

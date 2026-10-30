@@ -40,4 +40,17 @@ class OrderPolicy
             && $order->status === OrderStatus::Completed
             && ! $order->review()->exists();
     }
+
+    /**
+     * Only the customer who placed it, or the guest in the browser it was
+     * placed from. Staff cancel through the order board.
+     */
+    public function cancel(?User $user, Order $order): bool
+    {
+        if ($user !== null && $order->user_id === $user->id) {
+            return true;
+        }
+
+        return app(GuestOrders::class)->owns($order);
+    }
 }

@@ -1,11 +1,4 @@
-import {
-    Deferred,
-    Head,
-    Link,
-    router,
-    usePage,
-    usePoll,
-} from '@inertiajs/react';
+import { Deferred, Head, Link, router, usePage } from '@inertiajs/react';
 import { CheckCircle2 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { EmberLine } from '@/components/brand/ember-line';
@@ -23,9 +16,9 @@ import type {
     TrackedDetails,
     TrackedOrder,
 } from '@/components/tracking/types';
+import { CancelOrder } from '@/components/tracking/cancel-order';
 import { useT } from '@/lib/i18n';
-
-const POLL_MS = 15_000;
+import { channels, events, useLive } from '@/lib/realtime';
 
 type Tracked = Extract<OrderTrackingProps, { denied: false }>;
 
@@ -38,32 +31,15 @@ function Tracker({ number, order, details, can }: Tracked) {
             (flash as { toast?: { type?: string } } | undefined)?.toast
                 ?.type === 'success',
     );
-    const [pollFailed, setPollFailed] = useState(false);
     const [announcement, setAnnouncement] = useState('');
     const [reordering, setReordering] = useState(false);
     const previous = useRef(order.status);
 
-    const poll = usePoll(
-        POLL_MS,
-        {
-            only: ['order'],
-            onSuccess: () => setPollFailed(false),
-            onError: () => setPollFailed(true),
-            onNetworkError: () => setPollFailed(true),
-        },
-        { autoStart: false },
-    );
-
-    useEffect(() => {
-        if (order.active && online) {
-            poll.start();
-        } else {
-            poll.stop();
-        }
-
-        return poll.stop;
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [order.active, online]);
+    const { auth } = usePage().props;
+    const { reload, connection } = useLive(['order', 'can'], {
+        channel: auth.user ? channels.order(number) : null,
+        events: [events.orderStatusChanged],
+    });
 
     useEffect(() => {
         if (previous.current !== order.status) {
@@ -137,17 +113,14 @@ function Tracker({ number, order, details, can }: Tracked) {
                             </p>
                         )}
 
-                        {pollFailed && online && (
-                            <ErrorState
-                                title={t('tracking.update_failed_title')}
-                                onRetry={() =>
-                                    router.reload({
-                                        only: ['order'],
-                                        onSuccess: () => setPollFailed(false),
-                                    })
-                                }
-                            />
-                        )}
+                        {order.active &&
+                            connection === 'unavailable' &&
+                            online && (
+                                <ErrorState
+                                    title={t('tracking.update_failed_title')}
+                                    onRetry={reload}
+                                />
+                            )}
 
                         <div
                             aria-label={t('tracking.status_label')}
@@ -155,6 +128,17 @@ function Tracker({ number, order, details, can }: Tracked) {
                         >
                             <StatusCard order={order as TrackedOrder} />
                         </div>
+
+                        {can.cancel && (
+                            <CancelOrder
+                                number={number}
+                                paidByCard={
+                                    details?.payment.status === 'paid' ||
+                                    details?.payment.status === 'authorised'
+                                }
+                                total={details?.totals.total ?? null}
+                            />
+                        )}
 
                         {finished && (
                             <section className="flex flex-col gap-3 rounded-lg border border-line bg-surface p-5">
