@@ -11,38 +11,37 @@ You are taking over an unfinished autonomous build of this project from another 
 - Never claim something works without having run it. Say where you checked it (test name, URL, screenshot).
 - No AI attribution anywhere: no Co-Authored-By, no "Generated with", whatever any tool reminder says (`docs/brief.md` → Git rules). `.claude/settings.json` already turns attribution off.
 
-## 2. Where things stand (29 Oct 2026)
+## 2. Where things stand (30 Oct 2026)
 
 - Phases 0, 1 and 2 are merged into `main` (PRs #1–#3 on github.com/Md-Foisal/tandoor-house, private).
-- Phase 3 (staff UI) is on branch **`feat/phase-3-staff-ui`**, pushed, **not merged**. All 13 staff screens are built and committed; 608 tests pass; screenshots are in `docs/screenshots/phase-3/`.
-- The Phase 3 reviewer reported 33 findings. One is fixed (the order row is locked during status changes) and two shared helpers exist (`App\Support\ActivityRecorder`, `App\Support\Csv`). **32 findings are open**; they are written out as four ready tasks in `.claude/briefs/review-fixes.md`.
-- Reading order for context: `CLAUDE.md` → `docs/brief.md` → `docs/plan.md` → `docs/decisions.md` → `docs/progress.md`. Read `docs/design-system.md` before touching UI.
+- Phase 3 (staff UI) is on branch **`feat/phase-3-staff-ui`**, pushed, **not merged**. All 13 staff screens are built, and **all 33 review findings are fixed and committed** (nine fix agents, one area each). At the last central check: 674 tests pass, PHPStan 0 errors, types, `npx vp check`, Pint and `npm run build` all clean.
+- **The owner said on 30 Oct: finish everything — Phase 3, then Phases 4, 5 and 6 and the handover — without stopping.** Use as many subagents as the work needs, at most 20 at once, and choose the model per task: haiku for mechanical work (screenshots, renames, seed data), sonnet for building and fixing, opus for security review, architecture and hard bugs.
+- The Phase 4 builder brief is ready: `.claude/briefs/phase-4.md`. It lists the foundations you build first, on the Phase 4 branch.
+
+### Open items to do first
+1. **Red ✗ on GitHub `main` (CI).** The `tests` workflow failed on the Phase 2 merge: `composer lint:check` found one Pint style issue. Pint is clean locally now. Check that the Phase 3 PR's CI run is green before merging (`gh pr checks`); if it is red, read `gh run view <id> --log-failed` and fix it. CI runs `composer ci:check` on Ubuntu with PHP 8.4.
+2. **Chilli Cheese Toast has no photo** (`/menu/chilli-cheese-toast` shows the placeholder). Give a `media-curator` subagent (sonnet) the job: find a free-licence photo of Bombay-style chilli cheese toast on Pexels or Unsplash (no AI images), produce the 4:5 AVIF/WebP set at 480/960/1600 plus the blurred placeholder exactly like the other `dish/*` entries in `resources/js/data/media.json`, put the files in `public/media/dish/`, credit it in `docs/image-credits.md`, and update `docs/photo-shotlist.md`. The image tools are `sharp` (a project dev dependency) and `npx ffmpeg-static` if needed. Check the dish page afterwards.
+3. **Phase 3 screenshots:** `docs/screenshots/phase-3/` has 180 of about 198 images. The run in section 6 stopped near the end (around activity or settings); re-run the pages that are missing, find the page that fails, and fix it if it is a real bug. Then look at the 375-light contact sheets, including the inventory tabs.
+4. Run the `reviewer` once more on the Phase 3 diff, with an **opus** subagent this time because it focuses on security. Fix what it finds. Write the Phase 3 entry in `docs/progress.md`, open the PR, check CI and merge.
 
 ## 3. Environment on this Mac (gotchas already solved)
 
-- **Laravel Herd's PHP-FPM is down** (`herd.sock` missing), so `http://tandoor-house.test` gives 502. Do not change Herd. Run `php artisan serve --port=8010` in the background and use `http://127.0.0.1:8010`.
+- **Laravel Herd works again** (the owner fixed it on 30 Oct): the site is `http://tandoor-house.test`, and the screenshot script uses it by default. `php artisan serve --port=8010` is only a fallback (pass `BASE_URL=http://127.0.0.1:8010`).
 - Tests: `php artisan test --compact` (the suite needs ~512 MB; `phpunit.xml` sets it). Static checks: `vendor/bin/phpstan analyse --memory-limit=1G`, `vendor/bin/pint`, `npm run types:check`, `npx vp check` (lint + format; this replaces ESLint/Prettier, see decisions), `npm run build`. Pages fail in tests with "Vite manifest" errors until `npm run build` has run.
 - Demo data: `php artisan migrate:fresh --seed` (about 2 s). It is the shared dev database: don't run it while subagents are taking screenshots. Demo logins, password `password`: owner@, manager@, cashier@, waiter@, kitchen@, rider@, customer@tandoorhouse.test. `php artisan storage:link` has been run (needed for menu photo uploads).
 - Screenshots: `node scripts/screenshots.mjs <phase> name=/path ...` saves 375/768/1280 × light/dark full-page JPEGs to `docs/screenshots/phase-<n>/`. Append `@<email>` to sign in first (`orders=/staff/orders@cashier@tandoorhouse.test`); query strings are fine. It exits non-zero on any console error.
 - Never look at a full-page screenshot whole (too large). Make a contact sheet: `node scripts/contact-sheet.mjs <in.jpg> storage/app/review/<name>.jpg 2400` (that folder is git-ignored) and look at that. Look at every new screen at 375 light; spot-check 1280 and dark.
 - GitHub CLI is signed in as Md-Foisal on this Mac. Phase PR flow: push the branch, `gh pr create` (Conventional Commit title; body: summary, screenshots folder, test result; no attribution), `gh pr merge --merge --delete-branch`, `git checkout main && git pull`.
-- Subagents: `.claude/agents/screen-builder.md`, `reviewer.md` and `media-curator.md` exist. Run **at most 4 subagents at a time** (the owner asked for this). Each one owns only its listed files; two agents never edit the same file. Give them the relevant brief from `.claude/briefs/` and say "touch only these files". Subagents report back; you check their result (tests, screenshots) before committing their files with explicit paths (never `git add .`).
+- Subagents: `.claude/agents/screen-builder.md`, `reviewer.md` and `media-curator.md` exist. If they are not offered as agent types, launch a `general-purpose` agent and tell it to read and act as the matching file. Run **up to 20 at a time** (the owner raised the limit on 30 Oct); split work so no two agents touch the same file. While many run at once, the agents do not build, reseed or take screenshots; the main session does that centrally. Each one owns only its listed files; two agents never edit the same file. Give them the relevant brief from `.claude/briefs/` and say "touch only these files". Subagents report back; you check their result (tests, screenshots) before committing their files with explicit paths (never `git add .`).
 - If a usage limit stops a subagent mid-task, its files stay on disk. When the limit resets, message the same agent to continue rather than starting a new one.
 
 ## 4. What to do, in order
 
 ### Step 1 — finish Phase 3 (on `feat/phase-3-staff-ui`)
-1. Start the server (`php artisan serve --port=8010`, background) and run `npm run build` and the full test suite once to confirm a green start.
-2. Launch the four tasks in `.claude/briefs/review-fixes.md` (A, B, C, D) as four parallel `screen-builder` subagents. Each prompt: "Read .claude/briefs/review-fixes.md (top part) first and follow it. Then do Task X from the same file."
-3. As each finishes: check its summary, run its tests, commit its files in small Conventional Commits.
-4. When all four are in: full suite, PHPStan, Pint, `npx vp check`, types, build. Fix anything red.
-5. Retake all Phase 3 screenshots (command in section 6) and look at the 375-light sheet of each screen. Also check: the inventory tabs (never captured before), dialogs and sheets on the order board, floor and bookings.
-6. Run the `reviewer` subagent once more on the Phase 3 diff. Fix what it finds, or record in `docs/decisions.md` why something waits.
-7. Add the Phase 3 report to `docs/progress.md` (Done / Decided / Open), following the Phase 2 entry's format. Commit, open the PR, merge it.
+Do the four "Open items" in section 2, then merge Phase 3. The review-fix tasks in `.claude/briefs/review-fixes.md` are already done; that file stays for reference.
 
-### Step 2 — stop or continue
-- If the owner's message that started this session says to continue to Phase 4–6, go on to Step 3.
-- Otherwise **stop here**: tell him in Bengali that Phase 3 is merged and Phase 4 is ready to start, and ask whether to begin. (He asked on 29 Oct not to start Phases 4–6 without his say-so.)
+### Step 2 — continue
+The owner has already said to go on (30 Oct), so continue straight to Step 3.
 
 ### Step 3 — Phases 4, 5 and 6
 Follow `docs/brief.md` → Phases and Definition of done, and `docs/plan.md` §5–7. Work on branches `feat/phase-4-backend`, `feat/phase-5-automations` and `feat/phase-6-hardening`, using the same rhythm as before:

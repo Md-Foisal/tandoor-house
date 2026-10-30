@@ -1,7 +1,7 @@
 /*
  * Saves full-page screenshots of the given paths at 375, 768 and 1280px in
  * light and dark: node scripts/screenshots.mjs <phase> <name>=<path> ...
- * BASE_URL defaults to http://127.0.0.1:8010. Pages are scrolled to the end
+ * BASE_URL defaults to http://tandoor-house.test (Laravel Herd). Pages are scrolled to the end
  * first so every in-view animation has played. Append @<email> to a path to
  * sign in as that demo user first (password "password"):
  * account=/account@customer@tandoorhouse.test
@@ -10,7 +10,7 @@ import { mkdir } from 'node:fs/promises';
 import { chromium } from '@playwright/test';
 
 const [phase, ...pages] = process.argv.slice(2);
-const baseUrl = process.env.BASE_URL ?? 'http://127.0.0.1:8010';
+const baseUrl = process.env.BASE_URL ?? 'http://tandoor-house.test';
 const widths = [375, 768, 1280];
 const themes = ['light', 'dark'];
 const outDir = `docs/screenshots/phase-${phase}`;
