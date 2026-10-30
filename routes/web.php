@@ -19,6 +19,7 @@ use App\Http\Controllers\ReservationController;
 use App\Http\Controllers\ReservationPaymentController;
 use App\Http\Controllers\StyleguideController;
 use App\Http\Controllers\TableOrderingController;
+use App\Http\Controllers\TablePaymentController;
 use Illuminate\Foundation\Http\Middleware\ValidateCsrfToken;
 use Illuminate\Support\Facades\Route;
 
@@ -76,6 +77,9 @@ Route::controller(TableOrderingController::class)->prefix('t/{table:qr_token}')-
     Route::post('requests', 'request')->middleware('throttle:table')->name('request');
     Route::get('bill', 'bill')->name('bill');
     Route::post('order', 'order')->middleware('throttle:table')->name('order');
+    Route::post('pay', [TablePaymentController::class, 'store'])->middleware('throttle:table')->name('pay.store');
+    Route::get('pay/{payment}', [TablePaymentController::class, 'show'])->name('pay.show');
+    Route::post('pay/{payment}/confirm', [TablePaymentController::class, 'confirm'])->middleware('throttle:table')->name('pay.confirm');
 });
 
 Route::middleware(['auth', 'verified'])->prefix('account')->name('account.')->group(function () {

@@ -80,7 +80,10 @@ export type BillProps = {
         service_included: boolean;
         vat_total: number;
         total: number;
+        paid: number;
+        left: number;
     };
+    tip_presets: number[];
     service_rate: number;
     options: {
         service: boolean;

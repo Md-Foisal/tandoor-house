@@ -4,9 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Actions\PlaceTableOrder;
 use App\Actions\SplitBill;
+use App\Actions\TableBill;
 use App\Enums\OrderChannel;
-use App\Enums\OrderStatus;
-use App\Enums\PaymentStatus;
 use App\Enums\TableRequestType;
 use App\Events\TableRequestRaised;
 use App\Http\Requests\Table\BillRequest;
@@ -35,6 +34,7 @@ class TableOrderingController extends Controller
     public function __construct(
         private readonly CartService $cart,
         private readonly Settings $settings,
+        private readonly TableBill $bill,
     ) {}
 
     public function show(DiningTable $table): Response|RedirectResponse
@@ -78,7 +78,7 @@ class TableOrderingController extends Controller
                 'has_alcohol' => $summary['has_alcohol'],
             ],
             'service_rate' => (int) $this->settings->get('service_charge_rate'),
-            'orders' => fn () => $this->visit($table)->map(fn (Order $order) => $this->orderData($order))->values()->all(),
+            'orders' => fn () => $this->bill->visit($table)->map(fn (Order $order) => $this->orderData($order))->values()->all(),
             'requests' => fn () => $this->openRequests($table),
         ]);
     }
@@ -114,12 +114,14 @@ class TableOrderingController extends Controller
             return redirect()->route('table.bill', $lead->qr_token);
         }
 
-        $orders = $this->visit($table);
+        $orders = $this->bill->visit($table);
         $units = $this->units($orders);
         $food = array_sum(array_column($units, 'price'));
+        $position = $this->bill->position($table, $orders);
         $serviceCharge = (int) $orders->sum('service_charge');
         $includeService = $request->boolean('service', true);
-        $total = (int) $orders->sum('total') - ($includeService ? 0 : $serviceCharge);
+        $total = $position['gross'] - ($includeService ? 0 : $serviceCharge);
+        $left = $this->bill->payable($position, $includeService);
 
         $mode = $request->string('mode')->toString() ?: 'none';
         $people = $request->integer('people', 2);
@@ -131,8 +133,8 @@ class TableOrderingController extends Controller
             ->all();
 
         $split = match ($mode) {
-            'even' => ['shares' => $splitter->evenly($total, $people), 'unclaimed' => 0],
-            'items' => $splitter->byItems($total, $food, $this->guestFood($units, $claims, $guests)),
+            'even' => ['shares' => $splitter->evenly($left, $people), 'unclaimed' => 0],
+            'items' => $splitter->byItems($left, $food, $this->guestFood($units, $claims, $guests)),
             default => null,
         };
 
@@ -146,7 +148,10 @@ class TableOrderingController extends Controller
                 'service_included' => $includeService,
                 'vat_total' => (int) $orders->sum('vat_total'),
                 'total' => $total,
+                'paid' => max(0, $total - $left),
+                'left' => $left,
             ],
+            'tip_presets' => array_values((array) $this->settings->get('tip_presets')),
             'service_rate' => (int) $this->settings->get('service_charge_rate'),
             'options' => [
                 'service' => $includeService,
@@ -188,26 +193,6 @@ class TableOrderingController extends Controller
         }
 
         return $table;
-    }
-
-    /**
-     * Orders for the table (and any tables merged into it) placed today that
-     * are not yet paid or closed: the current visit.
-     *
-     * @return Collection<int, Order>
-     */
-    private function visit(DiningTable $table): Collection
-    {
-        $ids = DiningTable::query()->where('merged_into_id', $table->id)->pluck('id')->push($table->id);
-
-        return Order::query()
-            ->whereIn('dining_table_id', $ids)
-            ->where('placed_at', '>=', now('Europe/London')->startOfDay())
-            ->whereNotIn('status', [OrderStatus::Completed, OrderStatus::Rejected, OrderStatus::Cancelled])
-            ->where('payment_status', '!=', PaymentStatus::Paid)
-            ->with('lines')
-            ->orderBy('placed_at')
-            ->get();
     }
 
     /**

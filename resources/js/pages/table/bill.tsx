@@ -2,6 +2,7 @@ import { Head, Link, router } from '@inertiajs/react';
 import { useState } from 'react';
 import { EmberLine } from '@/components/brand/ember-line';
 import { EmptyState, ErrorState, useOnline } from '@/components/brand/states';
+import { BillPay } from '@/components/table/bill-pay';
 import { BillSplit } from '@/components/table/bill-split';
 import { HelpButtons } from '@/components/table/help-buttons';
 import type { BillProps } from '@/components/table/types';
@@ -10,12 +11,14 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Switch } from '@/components/ui/switch';
 import { useT } from '@/lib/i18n';
 import { formatMoney } from '@/lib/money';
+import { events, useLive } from '@/lib/realtime';
 
 export default function TableBill({
     table,
     orders,
     units,
     totals,
+    tip_presets: tipPresets,
     service_rate: serviceRate,
     options,
     split,
@@ -25,6 +28,11 @@ export default function TableBill({
     const online = useOnline();
     const [failed, setFailed] = useState(false);
     const [loading, setLoading] = useState(false);
+
+    useLive(['orders', 'totals', 'units', 'split', 'requests'], {
+        channel: null,
+        events: [events.tableRequestRaised],
+    });
 
     const toggleService = (include: boolean) => {
         const query: Record<string, unknown> = {
@@ -193,6 +201,24 @@ export default function TableBill({
                                             {formatMoney(totals.total)}
                                         </dd>
                                     </div>
+                                    {totals.paid > 0 && (
+                                        <>
+                                            <div className="flex justify-between gap-4">
+                                                <dt className="text-ink-muted">
+                                                    {t('table.bill.paid')}
+                                                </dt>
+                                                <dd className="tabular-nums">
+                                                    {formatMoney(totals.paid)}
+                                                </dd>
+                                            </div>
+                                            <div className="flex justify-between gap-4 font-semibold text-ink">
+                                                <dt>{t('table.bill.left')}</dt>
+                                                <dd className="tabular-nums">
+                                                    {formatMoney(totals.left)}
+                                                </dd>
+                                            </div>
+                                        </>
+                                    )}
                                 </dl>
                             )}
                             {totals.service_charge > 0 && (
@@ -225,20 +251,13 @@ export default function TableBill({
                             split={split}
                         />
 
-                        <section
-                            aria-labelledby="pay-title"
-                            className="flex flex-col gap-2"
-                        >
-                            <h2
-                                id="pay-title"
-                                className="font-display text-display-md text-ink"
-                            >
-                                {t('table.bill.pay_title')}
-                            </h2>
-                            <p className="max-w-[56ch] text-ink-muted">
-                                {t('table.bill.pay_body')}
-                            </p>
-                        </section>
+                        <BillPay
+                            token={table.token}
+                            totals={totals}
+                            options={options}
+                            split={split}
+                            tipPresets={tipPresets}
+                        />
                     </div>
                 )}
             </div>
