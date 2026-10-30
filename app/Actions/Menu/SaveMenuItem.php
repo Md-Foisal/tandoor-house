@@ -3,6 +3,7 @@
 namespace App\Actions\Menu;
 
 use App\Http\Controllers\MenuController;
+use App\Jobs\ConvertMenuPhoto;
 use App\Models\ItemVariant;
 use App\Models\MenuItem;
 use App\Models\Modifier;
@@ -29,14 +30,15 @@ class SaveMenuItem
      *
      * @param  array<string, mixed>  $data  validated request data
      */
-    public function handle(array $data, User $by, ?MenuItem $item = null, ?UploadedFile $photo = null): MenuItem
+    public function handle(array $data, User $by, ?MenuItem $item = null, ?UploadedFile $photo = null, bool $removePhoto = false): MenuItem
     {
         $creating = $item === null;
 
-        $item = DB::transaction(function () use ($data, $by, $item, $photo, $creating) {
+        $item = DB::transaction(function () use ($data, $by, $item, $photo, $creating, $removePhoto) {
             $item ??= new MenuItem(['position' => (int) MenuItem::query()->where('category_id', $data['category_id'])->max('position') + 1]);
             $oldPrice = $item->exists ? $item->price : null;
             $oldImage = $item->image;
+            $oldDerived = $item->photoPaths();
 
             $item->fill([
                 'category_id' => $data['category_id'],
@@ -59,14 +61,22 @@ class SaveMenuItem
                 'service_periods' => ($data['service_periods'] ?? []) === [] ? null : array_values($data['service_periods']),
             ]);
 
+            $replacing = $photo !== null || ($removePhoto && $item->image !== null);
+
             if ($photo !== null) {
                 $item->image = $photo->store('menu', 'public') ?: null;
+            } elseif ($removePhoto) {
+                $item->image = null;
+            }
+
+            if ($replacing) {
+                $item->photo = null;
             }
 
             $item->save();
 
-            if ($photo !== null && $oldImage !== null) {
-                Storage::disk('public')->delete($oldImage);
+            if ($replacing) {
+                Storage::disk('public')->delete(array_filter([$oldImage, ...$oldDerived]));
             }
 
             if ($oldPrice !== null && $oldPrice !== $item->price) {
@@ -87,6 +97,10 @@ class SaveMenuItem
         });
 
         Cache::forget(MenuController::CACHE_KEY);
+
+        if ($photo !== null && $item->image !== null) {
+            ConvertMenuPhoto::dispatch($item->id, $item->image);
+        }
 
         return $item;
     }

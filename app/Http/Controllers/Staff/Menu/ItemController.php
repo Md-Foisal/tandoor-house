@@ -31,7 +31,7 @@ class ItemController extends Controller
 
     public function store(SaveItemRequest $request, SaveMenuItem $action): RedirectResponse
     {
-        $item = $action->handle($this->data($request), $request->user(), null, $request->file('photo'));
+        $item = $action->handle($this->data($request), $request->user(), null, $request->file('photo'), $request->boolean('remove_photo'));
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __('staff_menu.flash.item_created', ['name' => $item->name])]);
 
@@ -40,7 +40,7 @@ class ItemController extends Controller
 
     public function update(SaveItemRequest $request, MenuItem $item, SaveMenuItem $action): RedirectResponse
     {
-        $action->handle($this->data($request), $request->user(), $item, $request->file('photo'));
+        $action->handle($this->data($request), $request->user(), $item, $request->file('photo'), $request->boolean('remove_photo'));
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __('staff_menu.flash.item_updated', ['name' => $item->name])]);
 
@@ -52,7 +52,7 @@ class ItemController extends Controller
      */
     private function data(SaveItemRequest $request): array
     {
-        return collect($request->validated())->except(['photo', 'allergens_checked'])->all();
+        return collect($request->validated())->except(['photo', 'remove_photo', 'allergens_checked'])->all();
     }
 
     private function form(?MenuItem $item, Settings $settings): Response

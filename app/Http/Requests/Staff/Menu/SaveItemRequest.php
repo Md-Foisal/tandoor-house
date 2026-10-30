@@ -63,6 +63,7 @@ class SaveItemRequest extends FormRequest
             'is_available' => ['required', 'boolean'],
             'service_periods' => ['nullable', 'array'],
             'service_periods.*' => ['distinct', Rule::enum(ServicePeriod::class)],
+            'remove_photo' => ['nullable', 'boolean'],
             'photo' => ['nullable', 'file', 'mimes:jpg,jpeg,png,webp', 'mimetypes:image/jpeg,image/png,image/webp', 'max:5120', 'dimensions:min_width=800,min_height=600'],
 
             'variants' => ['nullable', 'array', 'max:8'],

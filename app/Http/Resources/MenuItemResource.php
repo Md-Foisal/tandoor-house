@@ -46,7 +46,7 @@ class MenuItemResource extends JsonResource
                 ->diff($this->allergens->map(fn (Allergen $allergen) => $allergen->value))
                 ->unique()
                 ->values(), []),
-            'image' => 'dish/'.$this->slug,
+            'image' => $this->imagePayload(),
             'has_options' => ($variants?->isNotEmpty() ?? false) || ($groups?->isNotEmpty() ?? false),
             'variants' => $this->whenLoaded('variants', fn () => $this->variants->map(fn (ItemVariant $variant) => [
                 'id' => $variant->id,
