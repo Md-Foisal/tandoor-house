@@ -15,7 +15,7 @@ import StyleguideLayout from '@/layouts/styleguide-layout';
 const appName = import.meta.env.VITE_APP_NAME || 'Tandoor House';
 
 void createInertiaApp({
-    title: (title) => (title ? `${title} - ${appName}` : appName),
+    title: (title) => (title ? `${title} · ${appName}` : appName),
     layout: (name) => {
         switch (true) {
             case name.startsWith('staff/kitchen'):

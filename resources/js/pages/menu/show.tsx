@@ -166,7 +166,11 @@ export default function MenuShow({ item, category, related }: Props) {
     return (
         <>
             <Head title={item.name}>
-                <meta name="description" content={item.description} />
+                <meta
+                    head-key="description"
+                    name="description"
+                    content={item.description}
+                />
             </Head>
 
             <div className="container-page pt-4 pb-40 md:pt-8 md:pb-16">

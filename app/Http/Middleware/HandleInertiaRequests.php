@@ -5,6 +5,7 @@ namespace App\Http\Middleware;
 use App\Enums\StaffArea;
 use App\Services\CartService;
 use App\Services\OpeningHours;
+use App\Support\Seo;
 use App\Support\Settings;
 use App\Support\Translations;
 use Illuminate\Http\Request;
@@ -57,6 +58,7 @@ class HandleInertiaRequests extends Middleware
                     ? (int) $rating
                     : $rating,
             ]),
+            'seo' => fn () => Seo::for($request),
             'translations' => Inertia::once(fn () => Translations::forLocale(app()->getLocale())),
             'auth' => [
                 'user' => $request->user(),

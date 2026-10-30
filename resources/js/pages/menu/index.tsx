@@ -109,7 +109,11 @@ export default function MenuIndex({ categories }: Props) {
     return (
         <>
             <Head title={t('menu.title')}>
-                <meta name="description" content={t('menu.meta_description')} />
+                <meta
+                    head-key="description"
+                    name="description"
+                    content={t('menu.meta_description')}
+                />
             </Head>
 
             <div className="container-page flex flex-col gap-3 pt-6 pb-5 md:pt-10">
