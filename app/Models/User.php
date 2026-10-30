@@ -116,6 +116,14 @@ class User extends Authenticatable implements MustVerifyEmail, PasskeyUser
     }
 
     /**
+     * @return HasMany<TipAllocation, $this>
+     */
+    public function tipAllocations(): HasMany
+    {
+        return $this->hasMany(TipAllocation::class);
+    }
+
+    /**
      * @return HasMany<Attendance, $this>
      */
     public function attendances(): HasMany
