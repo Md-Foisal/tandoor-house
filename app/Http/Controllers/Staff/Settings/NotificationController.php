@@ -16,7 +16,7 @@ class NotificationController extends Controller
         $changed = SettingsChange::save($request->user(), 'notifications', [
             'notification_channels' => ['mail' => (bool) $data['mail'], 'sms' => (bool) $data['sms'], 'whatsapp' => false],
             'owner_email' => trim((string) ($data['owner_email'] ?? '')),
-        ], 'Changed notification settings');
+        ], __('staff_settings.log.notifications'));
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __($changed ? 'staff_settings.toast.notifications' : 'staff_settings.toast.unchanged')]);
 

@@ -21,7 +21,7 @@ class TaxController extends Controller
             'tip_presets' => $presets,
             'reservation.deposit_per_head' => (int) $data['deposit_per_head'],
             'reservation.deposit_from_party' => (int) $data['deposit_from_party'],
-        ], 'Changed tax and charges');
+        ], __('staff_settings.log.tax'));
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __($changed ? 'staff_settings.toast.tax' : 'staff_settings.toast.unchanged')]);
 

@@ -2,20 +2,27 @@
 
 namespace App\Actions\Menu;
 
+use App\Http\Controllers\MenuController;
 use App\Models\ItemVariant;
 use App\Models\MenuItem;
 use App\Models\Modifier;
 use App\Models\ModifierGroup;
 use App\Models\PriceChange;
 use App\Models\User;
+use App\Support\ActivityRecorder;
 use App\Support\Money;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 
 class SaveMenuItem
 {
+    public function __construct(private readonly ActivityRecorder $activity) {}
+
     /**
      * Creates or updates a dish with its variants and option groups in one
      * transaction, recording price changes and the activity log.
@@ -26,7 +33,7 @@ class SaveMenuItem
     {
         $creating = $item === null;
 
-        return DB::transaction(function () use ($data, $by, $item, $photo, $creating) {
+        $item = DB::transaction(function () use ($data, $by, $item, $photo, $creating) {
             $item ??= new MenuItem(['position' => (int) MenuItem::query()->where('category_id', $data['category_id'])->max('position') + 1]);
             $oldPrice = $item->exists ? $item->price : null;
             $oldImage = $item->image;
@@ -69,15 +76,19 @@ class SaveMenuItem
             $this->syncVariants($item, $data['variants'] ?? [], $by);
             $this->syncGroups($item, $data['modifier_groups'] ?? []);
 
-            RecordMenuChange::record(
+            $this->activity->record(
                 $creating ? 'menu.item.created' : 'menu.item.updated',
-                $item,
-                $by,
                 __($creating ? 'staff_menu.log.item_created' : 'staff_menu.log.item_updated', ['name' => $item->name]),
+                $item,
+                by: $by,
             );
 
             return $item;
         });
+
+        Cache::forget(MenuController::CACHE_KEY);
+
+        return $item;
     }
 
     /**
@@ -115,17 +126,36 @@ class SaveMenuItem
             'user_id' => $by->id,
         ]);
 
-        RecordMenuChange::record(
+        $this->activity->record(
             'menu.price.changed',
-            $item,
-            $by,
             __('staff_menu.log.price_changed', [
                 'name' => $variant ? "{$item->name} ({$variant->name})" : $item->name,
                 'old' => Money::format($old),
                 'new' => Money::format($new),
             ]),
+            $item,
             ['old' => $old, 'new' => $new, 'variant' => $variant?->name],
+            $by,
         );
+    }
+
+    /**
+     * A submitted id must be one of this dish's own rows; anything else is
+     * another dish's data and the whole save is refused.
+     *
+     * @template TModel of \Illuminate\Database\Eloquent\Model
+     *
+     * @param  Collection<int|string, TModel>  $existing
+     * @return TModel|null
+     */
+    private function owned(Collection $existing, mixed $id, string $field): mixed
+    {
+        if ($id === null || $id === '') {
+            return null;
+        }
+
+        return $existing->get($id)
+            ?? throw ValidationException::withMessages([$field => __('staff_menu.errors.foreign_row')]);
     }
 
     /**
@@ -137,7 +167,7 @@ class SaveMenuItem
         $keep = [];
 
         foreach (array_values($rows) as $position => $row) {
-            $variant = isset($row['id']) ? $existing->get($row['id']) : null;
+            $variant = $this->owned($existing, $row['id'] ?? null, 'variants');
             $oldPrice = $variant?->price;
             $variant ??= new ItemVariant;
             $variant->fill([
@@ -167,8 +197,7 @@ class SaveMenuItem
         $keep = [];
 
         foreach (array_values($rows) as $position => $row) {
-            $group = isset($row['id']) ? $existing->get($row['id']) : null;
-            $group ??= new ModifierGroup;
+            $group = $this->owned($existing, $row['id'] ?? null, 'modifier_groups') ?? new ModifierGroup;
             $group->fill([
                 'name' => $row['name'],
                 'min_select' => $row['min'],
@@ -194,8 +223,7 @@ class SaveMenuItem
         $keep = [];
 
         foreach (array_values($rows) as $position => $row) {
-            $modifier = isset($row['id']) ? $existing->get($row['id']) : null;
-            $modifier ??= new Modifier;
+            $modifier = $this->owned($existing, $row['id'] ?? null, 'modifier_groups') ?? new Modifier;
             $modifier->fill([
                 'name' => $row['name'],
                 'price' => $row['price'],

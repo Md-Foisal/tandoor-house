@@ -21,7 +21,7 @@ class BankHolidayController extends Controller
 
     public function update(HolidaysRequest $request): RedirectResponse
     {
-        $changed = SettingsChange::save($request->user(), 'holidays', ['bank_holidays' => $request->dates()], 'Changed the closure dates');
+        $changed = SettingsChange::save($request->user(), 'holidays', ['bank_holidays' => $request->dates()], __('staff_settings.log.holidays'));
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __($changed ? 'staff_settings.toast.holidays' : 'staff_settings.toast.unchanged')]);
 
@@ -33,7 +33,7 @@ class BankHolidayController extends Controller
         $merged = array_values(array_unique([...array_map('strval', (array) $settings->get('bank_holidays', [])), ...self::NEXT_YEAR_DATES]));
         sort($merged);
 
-        SettingsChange::save($request->user(), 'holidays', ['bank_holidays' => $merged], 'Added the '.self::NEXT_YEAR.' bank holidays');
+        SettingsChange::save($request->user(), 'holidays', ['bank_holidays' => $merged], __('staff_settings.log.holidays_year', ['year' => self::NEXT_YEAR]));
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __('staff_settings.toast.holidays_year', ['year' => self::NEXT_YEAR])]);
 

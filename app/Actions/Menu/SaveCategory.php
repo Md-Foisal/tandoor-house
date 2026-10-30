@@ -2,12 +2,17 @@
 
 namespace App\Actions\Menu;
 
+use App\Http\Controllers\MenuController;
 use App\Models\Category;
 use App\Models\User;
+use App\Support\ActivityRecorder;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 
 class SaveCategory
 {
+    public function __construct(private readonly ActivityRecorder $activity) {}
+
     /**
      * @param  array<string, mixed>  $data
      */
@@ -28,12 +33,13 @@ class SaveCategory
 
         $category->save();
 
-        RecordMenuChange::record(
+        $this->activity->record(
             $creating ? 'menu.category.created' : 'menu.category.updated',
-            $category,
-            $by,
             __($creating ? 'staff_menu.log.category_created' : 'staff_menu.log.category_updated', ['name' => $category->name]),
+            $category,
+            by: $by,
         );
+        Cache::forget(MenuController::CACHE_KEY);
 
         return $category;
     }

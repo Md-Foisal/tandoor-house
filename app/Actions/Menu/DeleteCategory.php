@@ -2,12 +2,17 @@
 
 namespace App\Actions\Menu;
 
+use App\Http\Controllers\MenuController;
 use App\Models\Category;
 use App\Models\User;
+use App\Support\ActivityRecorder;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Validation\ValidationException;
 
 class DeleteCategory
 {
+    public function __construct(private readonly ActivityRecorder $activity) {}
+
     public function handle(Category $category, User $by): void
     {
         if ($category->items()->exists()) {
@@ -17,6 +22,7 @@ class DeleteCategory
         $name = $category->name;
         $category->delete();
 
-        RecordMenuChange::record('menu.category.deleted', $category, $by, __('staff_menu.log.category_deleted', ['name' => $name]));
+        $this->activity->record('menu.category.deleted', __('staff_menu.log.category_deleted', ['name' => $name]), $category, by: $by);
+        Cache::forget(MenuController::CACHE_KEY);
     }
 }

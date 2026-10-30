@@ -13,7 +13,7 @@ class ReceiptController extends Controller
     {
         $footer = trim((string) $request->validated('footer'));
 
-        $changed = SettingsChange::save($request->user(), 'receipts', ['receipt_footer' => $footer], 'Changed the receipt footer');
+        $changed = SettingsChange::save($request->user(), 'receipts', ['receipt_footer' => $footer], __('staff_settings.log.receipts'));
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __($changed ? 'staff_settings.toast.receipts' : 'staff_settings.toast.unchanged')]);
 

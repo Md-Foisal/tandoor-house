@@ -8,7 +8,7 @@ class ItemFlagRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return true;
+        return $this->user()?->can('staff.menu') ?? false;
     }
 
     /**

@@ -16,7 +16,7 @@ class AutomationController extends Controller
         $after = array_map(fn ($value) => (bool) $value, $request->validated());
         $flipped = array_keys(array_filter($after, fn (bool $on, string $key) => $on !== $before[$key], ARRAY_FILTER_USE_BOTH));
 
-        $changed = SettingsChange::save($request->user(), 'automations', ['automations' => $after], 'Changed automations: '.implode(', ', $flipped));
+        $changed = SettingsChange::save($request->user(), 'automations', ['automations' => $after], __('staff_settings.log.automations', ['changes' => implode(', ', $flipped)]));
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __($changed ? 'staff_settings.toast.automations' : 'staff_settings.toast.unchanged')]);
 

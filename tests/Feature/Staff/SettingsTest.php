@@ -178,9 +178,42 @@ it('lets managers edit a zone but never its fee or minimum, or add one', functio
     $this->patch("/staff/settings/zones/{$zone->id}", zonePayload(['prefixes' => 'E3', 'fee' => 100]))->assertForbidden();
     $this->patch("/staff/settings/zones/{$zone->id}", zonePayload(['prefixes' => 'E3', 'fee' => 249, 'minimum_order' => 900]))->assertForbidden();
 
-    $this->patch("/staff/settings/zones/{$zone->id}", zonePayload(['name' => 'Bow', 'prefixes' => 'E3', 'fee' => 249, 'eta_minutes' => 45, 'is_active' => false]))
+    $this->patch("/staff/settings/zones/{$zone->id}", zonePayload(['name' => 'Bow', 'prefixes' => 'E3', 'fee' => 249, 'eta_minutes' => 45, 'is_active' => true]))
         ->assertRedirect();
-    expect($zone->fresh())->name->toBe('Bow')->eta_minutes->toBe(45)->is_active->toBeFalse()->fee->toBe(249);
+    expect($zone->fresh())->name->toBe('Bow')->eta_minutes->toBe(45)->is_active->toBeTrue()->fee->toBe(249);
+});
+
+it('keeps pausing and removing a delivery zone with the owner', function () {
+    $zone = DeliveryZone::factory()->create(['fee' => 249, 'minimum_order' => 1500, 'postcode_prefixes' => ['E3'], 'is_active' => true]);
+    $this->actingAs(settingsUser(Role::Manager));
+
+    $this->patch("/staff/settings/zones/{$zone->id}", zonePayload(['prefixes' => 'E3', 'fee' => 249, 'minimum_order' => 1500, 'is_active' => false]))->assertForbidden();
+    $this->delete("/staff/settings/zones/{$zone->id}")->assertForbidden();
+    expect($zone->fresh()->is_active)->toBeTrue();
+
+    $this->actingAs(settingsUser(Role::Owner))
+        ->patch("/staff/settings/zones/{$zone->id}", zonePayload(['prefixes' => 'E3', 'fee' => 249, 'minimum_order' => 1500, 'is_active' => false]))
+        ->assertRedirect();
+    expect($zone->fresh()->is_active)->toBeFalse();
+});
+
+it('lets a manager switch a paused zone back on', function () {
+    $zone = DeliveryZone::factory()->create(['fee' => 249, 'minimum_order' => 1500, 'postcode_prefixes' => ['E3'], 'is_active' => false]);
+
+    $this->actingAs(settingsUser(Role::Manager))
+        ->patch("/staff/settings/zones/{$zone->id}", zonePayload(['prefixes' => 'E3', 'fee' => 249, 'minimum_order' => 1500, 'is_active' => true]))
+        ->assertRedirect();
+    expect($zone->fresh()->is_active)->toBeTrue();
+});
+
+it('writes a setting and its log entry together, with a translated description', function () {
+    $this->actingAs(settingsUser(Role::Owner))
+        ->put('/staff/settings/receipts', ['footer' => 'See you soon'])
+        ->assertRedirect();
+
+    $log = ActivityLog::where('event', 'settings.receipts')->sole();
+    expect($log->description)->toBe(__('staff_settings.log.receipts'))
+        ->and(app(Settings::class)->get('receipt_footer'))->toBe('See you soon');
 });
 
 it('deletes an unused zone and deactivates one orders reference', function () {

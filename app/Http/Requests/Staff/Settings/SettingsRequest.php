@@ -4,13 +4,12 @@ namespace App\Http\Requests\Staff\Settings;
 
 use App\Enums\Role;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Support\Facades\Gate;
 
 abstract class SettingsRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return Gate::allows('staff.settings');
+        return $this->user()?->can('staff.settings') ?? false;
     }
 
     protected function isOwner(): bool

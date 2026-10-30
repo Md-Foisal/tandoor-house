@@ -2,12 +2,17 @@
 
 namespace App\Actions\Menu;
 
+use App\Http\Controllers\MenuController;
 use App\Models\Category;
 use App\Models\User;
+use App\Support\ActivityRecorder;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
 class MoveCategory
 {
+    public function __construct(private readonly ActivityRecorder $activity) {}
+
     public function handle(Category $category, string $direction, User $by): void
     {
         DB::transaction(function () use ($category, $direction, $by) {
@@ -33,7 +38,9 @@ class MoveCategory
                 }
             }
 
-            RecordMenuChange::record('menu.category.moved', $category, $by, __('staff_menu.log.category_moved', ['name' => $category->name]));
+            $this->activity->record('menu.category.moved', __('staff_menu.log.category_moved', ['name' => $category->name]), $category, by: $by);
         });
+
+        Cache::forget(MenuController::CACHE_KEY);
     }
 }

@@ -227,6 +227,7 @@ function ZoneDialog({
                         <Switch
                             id="zone-active"
                             checked={data.is_active}
+                            disabled={moneyLocked && zone?.is_active === true}
                             onCheckedChange={(v) => setData('is_active', v)}
                         />
                         <label htmlFor="zone-active" className="font-semibold">
@@ -304,17 +305,19 @@ export function ZonesSection({
             >
                 <Pencil aria-hidden="true" />
             </Button>
-            <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                aria-label={t('staff_settings.zones.remove', {
-                    name: zone.name,
-                })}
-                onClick={() => setRemoving(zone)}
-            >
-                <Trash2 aria-hidden="true" />
-            </Button>
+            {context.canEditMoney && (
+                <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    aria-label={t('staff_settings.zones.remove', {
+                        name: zone.name,
+                    })}
+                    onClick={() => setRemoving(zone)}
+                >
+                    <Trash2 aria-hidden="true" />
+                </Button>
+            )}
         </div>
     );
 

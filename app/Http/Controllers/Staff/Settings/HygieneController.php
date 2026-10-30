@@ -14,7 +14,7 @@ class HygieneController extends Controller
         $changed = SettingsChange::save($request->user(), 'hygiene', [
             'hygiene_rating' => $request->rating(),
             'opened_year' => (int) $request->validated('opened_year'),
-        ], 'Changed the food hygiene rating and opening year');
+        ], __('staff_settings.log.hygiene'));
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __($changed ? 'staff_settings.toast.hygiene' : 'staff_settings.toast.unchanged')]);
 

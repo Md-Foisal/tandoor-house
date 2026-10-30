@@ -21,7 +21,11 @@ class SaveItemRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        if ($this->user()?->role === Role::Owner || ! $this->has('vat_rate')) {
+        if (! ($this->user()?->can('staff.menu') ?? false)) {
+            return false;
+        }
+
+        if ($this->user()->role === Role::Owner || ! $this->has('vat_rate')) {
             return true;
         }
 
@@ -35,6 +39,7 @@ class SaveItemRequest extends FormRequest
     {
         $item = $this->route('item');
         $item = $item instanceof MenuItem ? $item : null;
+        $groupIds = $item === null ? [0] : ($item->modifierGroups()->pluck('id')->all() ?: [0]);
 
         return [
             'name' => ['required', 'string', 'max:120'],
@@ -61,18 +66,18 @@ class SaveItemRequest extends FormRequest
             'photo' => ['nullable', 'file', 'mimes:jpg,jpeg,png,webp', 'mimetypes:image/jpeg,image/png,image/webp', 'max:5120', 'dimensions:min_width=800,min_height=600'],
 
             'variants' => ['nullable', 'array', 'max:8'],
-            'variants.*.id' => ['nullable', 'integer'],
+            'variants.*.id' => ['nullable', 'integer', Rule::exists('item_variants', 'id')->where('menu_item_id', $item instanceof MenuItem ? $item->id : 0)],
             'variants.*.name' => ['required', 'string', 'max:60'],
             'variants.*.price' => ['required', 'integer', 'min:0', 'max:100000'],
             'variants.*.kcal' => ['nullable', 'integer', 'min:0', 'max:5000'],
 
             'modifier_groups' => ['nullable', 'array', 'max:8'],
-            'modifier_groups.*.id' => ['nullable', 'integer'],
+            'modifier_groups.*.id' => ['nullable', 'integer', Rule::exists('modifier_groups', 'id')->where('menu_item_id', $item instanceof MenuItem ? $item->id : 0)],
             'modifier_groups.*.name' => ['required', 'string', 'max:60'],
             'modifier_groups.*.min' => ['required', 'integer', 'min:0', 'max:20'],
             'modifier_groups.*.max' => ['required', 'integer', 'min:1', 'max:20', 'gte:modifier_groups.*.min'],
             'modifier_groups.*.modifiers' => ['required', 'array', 'min:1', 'max:30'],
-            'modifier_groups.*.modifiers.*.id' => ['nullable', 'integer'],
+            'modifier_groups.*.modifiers.*.id' => ['nullable', 'integer', Rule::exists('modifiers', 'id')->whereIn('modifier_group_id', $groupIds)],
             'modifier_groups.*.modifiers.*.name' => ['required', 'string', 'max:60'],
             'modifier_groups.*.modifiers.*.price' => ['required', 'integer', 'min:0', 'max:100000'],
             'modifier_groups.*.modifiers.*.allergens' => ['nullable', 'array'],

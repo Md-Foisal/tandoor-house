@@ -371,3 +371,47 @@ it('shows the editor with the default VAT and who may change it', function () {
     $this->actingAs(menuStaff(Role::Owner))->get('/staff/menu/items/create')
         ->assertInertia(fn ($page) => $page->where('can_change_vat', true));
 });
+
+it('refuses variant, group and modifier ids that belong to another dish', function () {
+    $category = Category::factory()->create();
+    $mine = MenuItem::factory()->create(['category_id' => $category->id]);
+    $other = MenuItem::factory()->create(['category_id' => $category->id]);
+    $foreignVariant = $other->variants()->create(['name' => 'Large', 'price' => 1200, 'position' => 0]);
+    $foreignGroup = $other->modifierGroups()->create(['name' => 'Sides', 'min_select' => 0, 'max_select' => 1, 'position' => 0]);
+    $foreignModifier = $foreignGroup->modifiers()->create(['name' => 'Rice', 'price' => 100, 'allergens' => [], 'position' => 0]);
+    $this->actingAs(menuStaff(Role::Manager));
+
+    $this->put("/staff/menu/items/{$mine->id}", itemPayload($category, ['variants' => [['id' => $foreignVariant->id, 'name' => 'Stolen', 'price' => 1, 'kcal' => null]]]))
+        ->assertSessionHasErrors('variants.0.id');
+    $this->put("/staff/menu/items/{$mine->id}", itemPayload($category, ['modifier_groups' => [['id' => $foreignGroup->id, 'name' => 'Stolen', 'min' => 0, 'max' => 1, 'modifiers' => [['name' => 'X', 'price' => 0]]]]]))
+        ->assertSessionHasErrors('modifier_groups.0.id');
+    $this->put("/staff/menu/items/{$mine->id}", itemPayload($category, ['modifier_groups' => [['name' => 'Mine', 'min' => 0, 'max' => 1, 'modifiers' => [['id' => $foreignModifier->id, 'name' => 'Stolen', 'price' => 0]]]]]))
+        ->assertSessionHasErrors('modifier_groups.0.modifiers.0.id');
+
+    expect($foreignVariant->fresh()->name)->toBe('Large')
+        ->and($foreignGroup->fresh()->name)->toBe('Sides')
+        ->and($foreignModifier->fresh()->name)->toBe('Rice');
+});
+
+it('refuses a modifier id taken from a different group of the same dish and rolls everything back', function () {
+    $category = Category::factory()->create();
+    $item = MenuItem::factory()->create(['category_id' => $category->id, 'name' => 'Keep me']);
+    $groupA = $item->modifierGroups()->create(['name' => 'A', 'min_select' => 0, 'max_select' => 1, 'position' => 0]);
+    $groupB = $item->modifierGroups()->create(['name' => 'B', 'min_select' => 0, 'max_select' => 1, 'position' => 1]);
+    $modifierB = $groupB->modifiers()->create(['name' => 'B1', 'price' => 0, 'allergens' => [], 'position' => 0]);
+    $this->actingAs(menuStaff(Role::Manager));
+
+    $this->put("/staff/menu/items/{$item->id}", itemPayload($category, ['name' => 'Changed', 'modifier_groups' => [
+        ['id' => $groupA->id, 'name' => 'A', 'min' => 0, 'max' => 1, 'modifiers' => [['id' => $modifierB->id, 'name' => 'Moved', 'price' => 0]]],
+    ]]))->assertSessionHasErrors('modifier_groups');
+
+    expect($item->fresh()->name)->toBe('Keep me')
+        ->and($modifierB->fresh()->name)->toBe('B1');
+});
+
+it('keeps menu writes behind the menu area even when a request is built by hand', function () {
+    $category = Category::factory()->create();
+    $this->actingAs(menuStaff(Role::Waiter))
+        ->post('/staff/menu/items', itemPayload($category))
+        ->assertForbidden();
+});

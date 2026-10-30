@@ -183,6 +183,7 @@ return [
         'photo_small' => 'The photo is too small. Use one at least 800 by 600 pixels.',
         'photo_large' => 'The photo is over 5 MB. Choose a smaller file.',
         'photo_type' => 'Use a JPEG, PNG or WebP photo.',
+        'foreign_row' => 'An option or size on this form belongs to a different dish. Reload the page and try again.',
         'failed' => 'That did not save. Check the highlighted fields and try again.',
     ],
     'log' => [
