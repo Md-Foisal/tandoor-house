@@ -80,7 +80,7 @@ it('moves an order through accept and cooking and logs the accept', function () 
 
 it('needs a reason to reject or cancel', function () {
     $order = orderWith();
-    $this->actingAs(staffAs(Role::Waiter));
+    $this->actingAs(staffAs(Role::Cashier));
 
     $this->post("/staff/orders/{$order->number}/status", ['status' => 'rejected'])->assertSessionHasErrors('reason');
     expect($order->refresh()->status)->toBe(OrderStatus::Placed);
@@ -211,11 +211,11 @@ it('shows the receipt with the right totals and downloads a pdf', function () {
         ->and(substr($pdf->getContent(), 0, 4))->toBe('%PDF');
 });
 
-it('assigns a rider to a delivery order only', function () {
+it('assigns a rider to a delivery order only, and only for managers and owners', function () {
     $rider = staffAs(Role::Rider);
     $delivery = Order::factory()->delivery()->live(OrderStatus::Ready)->create();
     $pickup = Order::factory()->create();
-    $this->actingAs(staffAs(Role::Cashier));
+    $this->actingAs(staffAs(Role::Manager));
 
     $this->patch("/staff/orders/{$delivery->number}/rider", ['rider_id' => $rider->id])->assertSessionHasNoErrors();
     expect($delivery->refresh()->rider_id)->toBe($rider->id);
@@ -255,4 +255,137 @@ it('shows the order detail with timeline, contact and abilities', function () {
             ->where('abilities.edit', true)
             ->where('abilities.refund', true)
             ->where('abilities.refund_limit', 5000));
+});
+
+it('lets only managers and owners assign riders from the board', function (Role $role, bool $allowed) {
+    $rider = staffAs(Role::Rider);
+    $delivery = Order::factory()->delivery()->live(OrderStatus::Ready)->create();
+
+    $response = $this->actingAs(staffAs($role))->patch("/staff/orders/{$delivery->number}/rider", ['rider_id' => $rider->id]);
+
+    $allowed ? $response->assertSessionHasNoErrors() : $response->assertForbidden();
+    expect($delivery->refresh()->rider_id)->toBe($allowed ? $rider->id : null);
+})->with([[Role::Manager, true], [Role::Owner, true], [Role::Cashier, false], [Role::Waiter, false]]);
+
+it('gives each role only its own steps', function (Role $role, string $to, int $status) {
+    $order = Order::factory()->live(OrderStatus::Placed)->create(['channel' => 'pickup']);
+    $this->actingAs(staffAs($role));
+
+    $response = $this->post("/staff/orders/{$order->number}/status", ['status' => $to, 'reason' => 'Because']);
+
+    $status === 403 ? $response->assertForbidden() : $response->assertSessionHasNoErrors();
+    expect($order->refresh()->status->value)->toBe($status === 403 ? 'placed' : $to);
+})->with([
+    'waiter accepts' => [Role::Waiter, 'accepted', 302],
+    'waiter cannot reject' => [Role::Waiter, 'rejected', 403],
+    'waiter cannot cancel' => [Role::Waiter, 'cancelled', 403],
+    'cashier rejects' => [Role::Cashier, 'rejected', 302],
+    'manager cancels' => [Role::Manager, 'cancelled', 302],
+    'owner rejects' => [Role::Owner, 'rejected', 302],
+]);
+
+it('keeps the delivery steps for managers and owners and needs a rider to send out', function (Role $role, bool $allowed) {
+    $order = Order::factory()->delivery()->live(OrderStatus::Ready)->create(['rider_id' => null]);
+    $this->actingAs(staffAs($role));
+
+    $response = $this->post("/staff/orders/{$order->number}/status", ['status' => 'out_for_delivery']);
+
+    if (! $allowed) {
+        $response->assertForbidden();
+
+        return;
+    }
+
+    $response->assertSessionHasErrors('status');
+    $order->update(['rider_id' => staffAs(Role::Rider)->id]);
+    $this->post("/staff/orders/{$order->number}/status", ['status' => 'out_for_delivery'])->assertSessionHasNoErrors();
+    expect($order->refresh()->status)->toBe(OrderStatus::OutForDelivery);
+})->with([[Role::Manager, true], [Role::Owner, true], [Role::Cashier, false], [Role::Waiter, false]]);
+
+it('shows each role only the buttons it may press', function () {
+    Order::factory()->delivery()->live(OrderStatus::Ready)->create();
+    Order::factory()->create();
+
+    $this->actingAs(staffAs(Role::Waiter))->get('/staff/orders')->assertInertia(fn ($page) => $page
+        ->where('orders', fn ($orders) => collect($orders)->every(fn ($o) => $o['can_reject'] === false && $o['can_cancel'] === false))
+        ->where('orders', fn ($orders) => collect($orders)->firstWhere('status', 'ready')['next'] === null));
+});
+
+it('refuses a refund once another refund has used up the limit', function () {
+    $order = orderWith(unitPrice: 4000, quantity: 3);
+    $this->actingAs(staffAs(Role::Cashier));
+
+    $this->post("/staff/orders/{$order->number}/refund", ['kind' => 'amount', 'amount' => 3000, 'reason' => 'First'])->assertSessionHasNoErrors();
+    $this->post("/staff/orders/{$order->number}/refund", ['kind' => 'amount', 'amount' => 2500, 'reason' => 'Second'])->assertForbidden();
+
+    expect(Payment::first()->refunded)->toBe(3000);
+});
+
+it('refunds lines at the price paid, with the discount shared out', function () {
+    $order = orderWith(unitPrice: 1000, quantity: 2, state: []);
+    $order->forceFill(['discount' => 400, 'total' => $order->total - 400])->save();
+    $order->payments()->update(['amount' => $order->total]);
+    $line = $order->lines()->first();
+    $this->actingAs(staffAs(Role::Manager));
+
+    $this->post("/staff/orders/{$order->number}/refund", ['kind' => 'lines', 'lines' => [$line->id => 2], 'reason' => 'All wrong'])->assertSessionHasNoErrors();
+    expect(Payment::first()->refunded)->toBe(1600);
+
+    $this->post("/staff/orders/{$order->number}/refund", ['kind' => 'lines', 'lines' => [$line->id => 1], 'reason' => 'Again'])->assertSessionHasErrors('lines');
+});
+
+it('never refunds lines above what is left', function () {
+    $order = orderWith(unitPrice: 1000, quantity: 2);
+    $line = $order->lines()->first();
+    $this->actingAs(staffAs(Role::Manager));
+
+    $this->post("/staff/orders/{$order->number}/refund", ['kind' => 'amount', 'amount' => $order->total - 500, 'reason' => 'Most of it'])->assertSessionHasNoErrors();
+    $this->post("/staff/orders/{$order->number}/refund", ['kind' => 'lines', 'lines' => [$line->id => 2], 'reason' => 'Rest'])->assertSessionHasNoErrors();
+
+    expect(Payment::first()->refunded)->toBe($order->total);
+});
+
+it('refunds the difference when a paid order is made smaller', function () {
+    $order = orderWith(unitPrice: 1000, quantity: 3);
+    $line = $order->lines()->first();
+
+    $this->actingAs(staffAs(Role::Manager))
+        ->patch("/staff/orders/{$order->number}/lines", ['lines' => [['id' => $line->id, 'quantity' => 1]]])
+        ->assertSessionHasNoErrors();
+
+    $order->refresh();
+    expect($order->payment_status)->toBe(PaymentStatus::PartiallyRefunded)
+        ->and(Payment::first()->refunded)->toBe(2000)
+        ->and(ActivityLog::where('event', 'order.refunded')->count())->toBe(1);
+});
+
+it('blocks a waiter from shrinking a paid order, with a message and no change', function () {
+    $order = orderWith(unitPrice: 1000, quantity: 3);
+    $line = $order->lines()->first();
+
+    $this->actingAs(staffAs(Role::Waiter))
+        ->patch("/staff/orders/{$order->number}/lines", ['lines' => [['id' => $line->id, 'quantity' => 1]]])
+        ->assertSessionHasErrors('lines');
+
+    expect($line->refresh()->quantity)->toBe(3)->and(Payment::first()->refunded)->toBe(0);
+});
+
+it('lists live orders oldest first, finished newest first, and caps only the finished', function () {
+    $a = Order::factory()->create(['placed_at' => now()->subHours(3)]);
+    $b = Order::factory()->create(['placed_at' => now()->subHour()]);
+    $done1 = Order::factory()->completed()->create(['placed_at' => now()->subMinutes(50)]);
+    $done2 = Order::factory()->completed()->create(['placed_at' => now()->subMinutes(10)]);
+
+    $numbers = collect($this->actingAs(staffAs(Role::Manager))->get('/staff/orders')->viewData('page')['props']['orders'])->pluck('number')->all();
+
+    expect($numbers)->toBe([$a->number, $b->number, $done2->number, $done1->number]);
+});
+
+it('finds an old finished order by search even when many newer ones exist', function () {
+    $target = Order::factory()->completed()->create(['placed_at' => now()->subDays(3), 'contact' => ['name' => 'Zed Findme', 'email' => 'z@example.test', 'phone' => '07000 000000']]);
+    Order::factory()->completed()->count(3)->create(['placed_at' => now()->subHour()]);
+
+    $numbers = collect($this->actingAs(staffAs(Role::Manager))->get('/staff/orders?q=findme')->viewData('page')['props']['orders'])->pluck('number')->all();
+
+    expect($numbers)->toBe([$target->number]);
 });

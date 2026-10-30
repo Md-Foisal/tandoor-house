@@ -6,6 +6,8 @@ use App\Enums\OrderStatus;
 use App\Models\Order;
 use App\Models\OrderLine;
 use App\Models\Payment;
+use App\Models\User;
+use App\Policies\Staff\OrderBoardPolicy;
 use App\Services\OrderStateMachine;
 use Illuminate\Support\Str;
 
@@ -17,14 +19,20 @@ class OrderData
 {
     private const ALLERGY_WORDS = '/allerg|intoleran|coeliac|celiac|anaphyla|\bnuts?\b|peanut|gluten|dairy|lactose|shellfish|sesame|\begg|soy|mustard|sulphite|sulfite/i';
 
-    public function __construct(private readonly OrderStateMachine $machine) {}
+    public function __construct(
+        private readonly OrderStateMachine $machine,
+        private readonly OrderBoardPolicy $policy,
+    ) {}
 
     /**
      * @return array<string, mixed>
      */
-    public function card(Order $order): array
+    public function card(Order $order, User $viewer): array
     {
-        $next = $this->machine->nextFor($order);
+        $next = array_values(array_filter(
+            $this->machine->nextFor($order),
+            fn (OrderStatus $to) => $this->policy->canMove($viewer, $order, $to),
+        ));
         $primary = collect($next)->first(fn (OrderStatus $s) => ! in_array($s, [OrderStatus::Rejected, OrderStatus::Cancelled], true));
         $noteText = collect([$order->notes, ...$order->lines->pluck('notes')])->filter()->implode(' ');
 
@@ -78,13 +86,13 @@ class OrderData
     /**
      * @return array<string, mixed>
      */
-    public function detail(Order $order): array
+    public function detail(Order $order, User $viewer): array
     {
         ['paid' => $paid, 'refunded' => $refunded] = self::paid($order);
         $address = $order->address;
 
         return [
-            ...$this->card($order),
+            ...$this->card($order, $viewer),
             'contact' => $order->contact,
             'address' => $address === null ? null : array_filter([
                 'line1' => $address['line1'] ?? null,

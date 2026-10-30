@@ -107,15 +107,19 @@ export default function OrderBoard({
         setChimeOn(readChime());
     }, []);
 
+    const pollRef = useRef(poll);
+    pollRef.current = poll;
+
     useEffect(() => {
+        const current = pollRef.current;
+
         if (online) {
-            poll.start();
+            current.start();
         } else {
-            poll.stop();
+            current.stop();
         }
 
-        return poll.stop;
-        // eslint-disable-next-line react-hooks/exhaustive-deps
+        return current.stop;
     }, [online]);
 
     useEffect(() => {
@@ -199,16 +203,21 @@ export default function OrderBoard({
         });
     };
 
+    const applyRef = useRef(apply);
+    applyRef.current = apply;
+
     useEffect(() => {
         if (query === filters.q) {
             return;
         }
 
-        const timer = window.setTimeout(() => apply({ q: query }), 300);
+        const timer = window.setTimeout(
+            () => applyRef.current({ q: query }),
+            300,
+        );
 
         return () => window.clearTimeout(timer);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [query]);
+    }, [query, filters.q]);
 
     const grouped = useMemo(() => {
         const byColumn = new Map<BoardColumnKey, OrderCardData[]>();
@@ -217,10 +226,7 @@ export default function OrderBoard({
             const items = orders.filter((order) =>
                 column.statuses.includes(order.status),
             );
-            byColumn.set(
-                column.key,
-                column.key === 'done' ? [...items].reverse() : items,
-            );
+            byColumn.set(column.key, items);
         }
 
         return byColumn;

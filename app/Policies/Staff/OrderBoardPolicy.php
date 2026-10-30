@@ -54,11 +54,53 @@ class OrderBoardPolicy
         return $this->refundLimit($user) !== 0;
     }
 
+    /**
+     * Which board steps each role may take. Reject and cancel are the
+     * cashier's and above; the two delivery steps belong to riders (through
+     * their own screen) and to managers.
+     *
+     * @return list<OrderStatus>
+     */
+    private function steps(User $user): array
+    {
+        $delivery = [OrderStatus::OutForDelivery, OrderStatus::Delivered];
+        $refusals = [OrderStatus::Rejected, OrderStatus::Cancelled];
+        $kitchenAndFloor = [OrderStatus::Accepted, OrderStatus::Cooking, OrderStatus::Ready, OrderStatus::Served, OrderStatus::Collected, OrderStatus::Completed];
+
+        return match ($user->role) {
+            Role::Manager, Role::Owner => [...$kitchenAndFloor, ...$refusals, ...$delivery],
+            Role::Cashier => [...$kitchenAndFloor, ...$refusals],
+            Role::Waiter => $kitchenAndFloor,
+            default => [],
+        };
+    }
+
+    public function canMove(User $user, Order $order, OrderStatus $to): bool
+    {
+        if (! in_array($to, $this->steps($user), true)) {
+            return false;
+        }
+
+        // Waiters close dine-in and pickup orders; a delivery is closed by
+        // whoever may hand it over.
+        return ! ($user->role === Role::Waiter && $to === OrderStatus::Completed && $order->channel === OrderChannel::Delivery);
+    }
+
+    public function transition(User $user, Order $order, OrderStatus $to): Response
+    {
+        if (! $this->canMove($user, $order, $to)) {
+            return Response::deny(__('staff_orders.transition.not_allowed'));
+        }
+
+        return Response::allow();
+    }
+
+    /** Only managers and owners hand deliveries to riders, once the food is ready. */
     public function canAssignRider(User $user, Order $order): bool
     {
-        return $user->role !== Role::Waiter
+        return $user->role->isManagement()
             && $order->channel === OrderChannel::Delivery
-            && ! in_array($order->status, [OrderStatus::Delivered, OrderStatus::Completed, OrderStatus::Rejected, OrderStatus::Cancelled], true);
+            && in_array($order->status, [OrderStatus::Ready, OrderStatus::OutForDelivery], true);
     }
 
     public function canEdit(Order $order): bool

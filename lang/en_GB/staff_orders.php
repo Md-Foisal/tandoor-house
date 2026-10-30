@@ -159,7 +159,8 @@ return [
         'too_late' => 'Cooking has started, so this order can no longer be edited.',
         'unknown_line' => 'One of those lines is not on this order.',
         'keep_one' => 'An order needs at least one dish. Cancel the order instead.',
-        'paid_only_down' => 'This order is already paid, so it can only get smaller. Refund the difference instead.',
+        'paid_only_down' => 'This order is already paid, so it can only get smaller.',
+        'refund_reason' => 'Order :number made smaller before cooking.',
         'note_prefix' => 'Staff: :note',
     ],
     'refund' => [
@@ -185,6 +186,10 @@ return [
         'blocked_pending' => 'Nothing to refund: this order has not been paid.',
         'blocked_role' => 'Only cashiers, managers and owners can refund.',
     ],
+    'transition' => [
+        'not_allowed' => 'Your role cannot make that change. Ask a cashier or manager.',
+        'needs_rider' => 'Assign a rider before sending this order out.',
+    ],
     'rider' => [
         'title' => 'Rider',
         'none' => 'No rider',
@@ -194,7 +199,7 @@ return [
     'toast' => [
         'moved' => ':number is now :status.',
         'edited' => 'Order updated.',
-        'edited_refund' => 'Order updated. The guest is owed :amount: refund it from the order.',
+        'edited_refund' => 'Order updated. :amount has been refunded.',
         'refunded' => ':amount refunded.',
         'rider' => 'Rider updated.',
     ],

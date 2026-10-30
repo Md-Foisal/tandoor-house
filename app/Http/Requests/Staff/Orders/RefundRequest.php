@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Staff\Orders;
 
+use App\Policies\Staff\OrderBoardPolicy;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -9,7 +10,7 @@ class RefundRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return $this->user()?->can('staff.orders') ?? false;
+        return ($this->user()?->can('staff.orders') ?? false) && app(OrderBoardPolicy::class)->canRefund($this->user());
     }
 
     /**

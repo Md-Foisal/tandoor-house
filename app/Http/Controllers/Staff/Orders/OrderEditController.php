@@ -10,6 +10,8 @@ use App\Models\Order;
 use App\Models\OrderLine;
 use App\Policies\Staff\OrderBoardPolicy;
 use App\Services\Pricing;
+use App\Support\ActivityRecorder;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -18,13 +20,16 @@ use Inertia\Inertia;
 
 class OrderEditController extends Controller
 {
-    public function __invoke(EditRequest $request, Order $order, Pricing $pricing): RedirectResponse
-    {
-        if (! (new OrderBoardPolicy)->canEdit($order)) {
-            throw ValidationException::withMessages(['order' => __('staff_orders.edit.too_late')]);
-        }
-
-        $order->load(['lines', 'deliveryZone', 'promoCode']);
+    public function __invoke(
+        EditRequest $request,
+        Order $order,
+        Pricing $pricing,
+        OrderBoardPolicy $policy,
+        RefundOrder $refund,
+        ActivityRecorder $activity,
+    ): RedirectResponse {
+        $user = $request->user();
+        $note = trim((string) $request->input('note'));
         /** @var Collection<int, int> $quantities */
         $quantities = collect();
 
@@ -32,41 +37,50 @@ class OrderEditController extends Controller
             $quantities[(int) $row['id']] = (int) $row['quantity'];
         }
 
-        if ($quantities->keys()->diff($order->lines->modelKeys())->isNotEmpty()) {
-            throw ValidationException::withMessages(['lines' => __('staff_orders.edit.unknown_line')]);
-        }
+        $refunded = 0;
 
-        $kept = $order->lines->filter(fn (OrderLine $line) => ($quantities[$line->id] ?? $line->quantity) > 0);
+        DB::transaction(function () use ($order, $quantities, $note, $user, $pricing, $policy, $refund, $activity, &$refunded) {
+            // Editability, lines and totals are all read again under the lock:
+            // the kitchen may have started cooking since the page loaded.
+            $locked = Order::query()->lockForUpdate()->whereKey($order->getKey())->firstOrFail();
 
-        if ($kept->isEmpty()) {
-            throw ValidationException::withMessages(['lines' => __('staff_orders.edit.keep_one')]);
-        }
+            if (! $policy->canEdit($locked)) {
+                throw ValidationException::withMessages(['order' => __('staff_orders.edit.too_late')]);
+            }
 
-        $priced = $kept->map(fn (OrderLine $line) => [
-            'total' => $line->unit_price * ($quantities[$line->id] ?? $line->quantity),
-            'vat_rate' => $line->vat_rate,
-        ])->values()->all();
+            $locked->load(['lines', 'deliveryZone', 'promoCode']);
 
-        $totals = $pricing->totals(
-            $priced,
-            $order->channel,
-            $order->deliveryZone,
-            $order->promoCode,
-            $order->tip,
-            $order->channel !== OrderChannel::DineIn || $order->service_charge > 0,
-        );
+            if ($quantities->keys()->diff($locked->lines->modelKeys())->isNotEmpty()) {
+                throw ValidationException::withMessages(['lines' => __('staff_orders.edit.unknown_line')]);
+            }
 
-        $paidOnline = in_array($order->payment_status, [PaymentStatus::Paid, PaymentStatus::PartiallyRefunded], true);
+            $kept = $locked->lines->filter(fn (OrderLine $line) => ($quantities[$line->id] ?? $line->quantity) > 0);
 
-        if ($paidOnline && $totals['total'] > $order->total) {
-            throw ValidationException::withMessages(['lines' => __('staff_orders.edit.paid_only_down')]);
-        }
+            if ($kept->isEmpty()) {
+                throw ValidationException::withMessages(['lines' => __('staff_orders.edit.keep_one')]);
+            }
 
-        $before = $order->total;
-        $note = trim((string) $request->input('note'));
+            $totals = $pricing->totals(
+                $kept->map(fn (OrderLine $line) => [
+                    'total' => $line->unit_price * ($quantities[$line->id] ?? $line->quantity),
+                    'vat_rate' => $line->vat_rate,
+                ])->values()->all(),
+                $locked->channel,
+                $locked->deliveryZone,
+                $locked->promoCode,
+                $locked->tip,
+                $locked->channel !== OrderChannel::DineIn || $locked->service_charge > 0,
+            );
 
-        DB::transaction(function () use ($order, $quantities, $totals, $note, $request, $before) {
-            foreach ($order->lines as $line) {
+            $paid = in_array($locked->payment_status, [PaymentStatus::Paid, PaymentStatus::PartiallyRefunded], true);
+
+            if ($paid && $totals['total'] > $locked->total) {
+                throw ValidationException::withMessages(['lines' => __('staff_orders.edit.paid_only_down')]);
+            }
+
+            $before = $locked->total;
+
+            foreach ($locked->lines as $line) {
                 $quantity = $quantities[$line->id] ?? $line->quantity;
 
                 if ($quantity === 0) {
@@ -76,32 +90,42 @@ class OrderEditController extends Controller
                 }
             }
 
-            $order->forceFill($totals);
+            $locked->forceFill($totals);
 
             if ($note !== '') {
-                $order->notes = trim(($order->notes ? $order->notes."\n" : '').__('staff_orders.edit.note_prefix', ['note' => $note]));
+                $locked->notes = trim(($locked->notes ? $locked->notes."\n" : '').__('staff_orders.edit.note_prefix', ['note' => $note]));
             }
 
-            $order->save();
+            $locked->save();
 
-            OrderActivity::record(
+            // A paid order that shrinks owes the guest the difference: it goes
+            // through the refund path so it is recorded, limited and logged.
+            if ($paid && $totals['total'] < $before) {
+                try {
+                    $refunded = $refund($locked, 'amount', $before - $totals['total'], [], __('staff_orders.edit.refund_reason', ['number' => $locked->number]), $user);
+                } catch (AuthorizationException $e) {
+                    throw ValidationException::withMessages(['lines' => $e->getMessage()]);
+                }
+            }
+
+            $activity->record(
                 'order.edited',
-                $order,
-                $request->user(),
                 __('staff_orders.log.edited', [
-                    'user' => $request->user()->name,
-                    'number' => $order->number,
+                    'user' => $user->name,
+                    'number' => $locked->number,
                     'from' => '£'.number_format($before / 100, 2),
                     'to' => '£'.number_format($totals['total'] / 100, 2),
                 ]),
+                $locked,
                 ['lines' => $quantities->all(), 'note' => $note, 'total_from' => $before, 'total_to' => $totals['total']],
+                $user,
             );
         });
 
         Inertia::flash('toast', [
             'type' => 'success',
-            'message' => $paidOnline && $totals['total'] < $before
-                ? __('staff_orders.toast.edited_refund', ['amount' => '£'.number_format(($before - $totals['total']) / 100, 2)])
+            'message' => $refunded > 0
+                ? __('staff_orders.toast.edited_refund', ['amount' => '£'.number_format($refunded / 100, 2)])
                 : __('staff_orders.toast.edited'),
         ]);
 

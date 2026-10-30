@@ -8,14 +8,9 @@ import { OrderStatusBadge } from '@/components/staff/status-badge';
 import { formatMoney } from '@/lib/money';
 import { useT } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
+import { formatTime } from './format';
 import { OrderActions } from './order-actions';
 import { isLive, type OrderCardData } from './types';
-
-const time = new Intl.DateTimeFormat('en-GB', {
-    hour: '2-digit',
-    minute: '2-digit',
-    timeZone: 'Europe/London',
-});
 
 export function PaymentLine({
     method,
@@ -63,7 +58,7 @@ export function OrderCard({
             ? order.postcode
             : order.channel === 'pickup' && order.pickup_at
               ? t('staff_orders.card.pickup_at', {
-                    time: time.format(new Date(order.pickup_at)),
+                    time: formatTime(order.pickup_at),
                 })
               : null;
 

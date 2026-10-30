@@ -8,7 +8,7 @@ import {
     Printer,
     RotateCcw,
 } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useOnline } from '@/components/brand/states';
 import { Elapsed } from '@/components/staff/elapsed';
 import { StaffPageHeader } from '@/components/staff/page-header';
@@ -37,14 +37,7 @@ import { useT } from '@/lib/i18n';
 import { formatMoney } from '@/lib/money';
 import { cn } from '@/lib/utils';
 import { AlertTriangle, IdCard } from 'lucide-react';
-
-const stamp = new Intl.DateTimeFormat('en-GB', {
-    day: 'numeric',
-    month: 'short',
-    hour: '2-digit',
-    minute: '2-digit',
-    timeZone: 'Europe/London',
-});
+import { formatStamp } from '@/components/staff-orders/format';
 
 function Panel({
     title,
@@ -89,15 +82,19 @@ export default function OrderShow({
         { autoStart: false },
     );
 
+    const pollRef = useRef(poll);
+    pollRef.current = poll;
+
     useEffect(() => {
+        const current = pollRef.current;
+
         if (online && !editing && !refunding) {
-            poll.start();
+            current.start();
         } else {
-            poll.stop();
+            current.stop();
         }
 
-        return poll.stop;
-        // eslint-disable-next-line react-hooks/exhaustive-deps
+        return current.stop;
     }, [online, editing, refunding]);
 
     const live = isLive(order.status);
@@ -484,7 +481,7 @@ export default function OrderShow({
                                         {t(`staff.status.${event.to}`)}
                                     </p>
                                     <p className="text-sm text-ink-muted">
-                                        {stamp.format(new Date(event.at))} ·{' '}
+                                        {formatStamp(event.at)} ·{' '}
                                         {event.by
                                             ? t('staff_orders.detail.by', {
                                                   name: event.by,

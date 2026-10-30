@@ -1,6 +1,6 @@
 import { router } from '@inertiajs/react';
 import { Minus, Plus, Trash2 } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useOnline } from '@/components/brand/states';
 import { Button } from '@/components/ui/button';
 import {
@@ -34,18 +34,20 @@ export function EditDialog({
     const [busy, setBusy] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
+    // Read through a ref so a poll refreshing the order does not wipe edits.
+    const linesRef = useRef(order.lines);
+    linesRef.current = order.lines;
+
     useEffect(() => {
         if (open) {
             setQuantities(
                 Object.fromEntries(
-                    order.lines.map((line) => [line.id, line.quantity]),
+                    linesRef.current.map((line) => [line.id, line.quantity]),
                 ),
             );
             setNote('');
             setError(null);
         }
-        // Only reset when the dialog opens, not on every poll.
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [open]);
 
     const subtotal = order.lines.reduce(
