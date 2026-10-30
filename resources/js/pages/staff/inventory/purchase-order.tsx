@@ -320,7 +320,8 @@ function PurchaseOrder({
                                                 quantity: suggested,
                                                 initial: suggested,
                                                 unit_cost:
-                                                    picked.cost_per_thousand,
+                                                    picked.cost_per_thousand ??
+                                                    0,
                                             },
                                         ]);
                                     }

@@ -52,9 +52,13 @@ export default function Ingredients({
     abilities: Abilities;
     lowCount: number;
     suppliers: { id: number; name: string }[];
-    summary: { count: number; low: number; value: number };
+    summary: { count: number; low: number; value?: number };
 }) {
     const t = useT();
+    const showValue = summary.value !== undefined;
+    const gridCols = showValue
+        ? 'md:grid-cols-[minmax(0,2fr)_minmax(0,1.6fr)_7rem_7rem_minmax(0,12rem)]'
+        : 'md:grid-cols-[minmax(0,2fr)_minmax(0,1.6fr)_7rem_minmax(0,12rem)]';
     const when = useWhen();
     const online = useOnline();
     const searchRef = useRef<HTMLInputElement>(null);
@@ -227,7 +231,12 @@ export default function Ingredients({
                 </div>
             }
         >
-            <div className="grid grid-cols-3 gap-3">
+            <div
+                className={cn(
+                    'grid gap-3',
+                    summary.value === undefined ? 'grid-cols-2' : 'grid-cols-3',
+                )}
+            >
                 <StatTile
                     label={t('staff_inventory.summary.ingredients')}
                     value={summary.count}
@@ -242,10 +251,12 @@ export default function Ingredients({
                             : t('staff_inventory.summary.low_none')
                     }
                 />
-                <StatTile
-                    label={t('staff_inventory.summary.value')}
-                    value={formatMoney(summary.value, { compact: true })}
-                />
+                {summary.value !== undefined && (
+                    <StatTile
+                        label={t('staff_inventory.summary.value')}
+                        value={formatMoney(summary.value, { compact: true })}
+                    />
+                )}
             </div>
 
             <Deferred data="ingredients" fallback={<RowsSkeleton />}>
@@ -291,16 +302,21 @@ export default function Ingredients({
                         aria-busy={loading}
                     >
                         <div
-                            className="sticky top-0 z-10 hidden grid-cols-[minmax(0,2fr)_minmax(0,1.6fr)_7rem_7rem_minmax(0,12rem)] gap-4 border-b border-line bg-clay px-4 py-2 text-label text-ink-muted uppercase md:grid"
+                            className={cn(
+                                'sticky top-0 z-10 hidden gap-4 border-b border-line bg-clay px-4 py-2 text-label text-ink-muted uppercase md:grid',
+                                gridCols,
+                            )}
                             aria-hidden="true"
                         >
                             <span>
                                 {t('staff_inventory.columns.ingredient')}
                             </span>
                             <span>{t('staff_inventory.columns.stock')}</span>
-                            <span className="text-right">
-                                {t('staff_inventory.columns.value')}
-                            </span>
+                            {showValue && (
+                                <span className="text-right">
+                                    {t('staff_inventory.columns.value')}
+                                </span>
+                            )}
                             <span>
                                 {t('staff_inventory.columns.last_movement')}
                             </span>
@@ -313,7 +329,8 @@ export default function Ingredients({
                                 <li
                                     key={row.id}
                                     className={cn(
-                                        'grid gap-3 px-4 py-3 md:grid-cols-[minmax(0,2fr)_minmax(0,1.6fr)_7rem_7rem_minmax(0,12rem)] md:items-center md:gap-4',
+                                        'grid gap-3 px-4 py-3 md:items-center md:gap-4',
+                                        gridCols,
                                         row.is_low && 'bg-chilli-soft/50',
                                     )}
                                 >
@@ -357,12 +374,16 @@ export default function Ingredients({
                                         </p>
                                         <StockBar ingredient={row} />
                                     </div>
-                                    <p className="flex justify-between text-sm tabular-nums md:block md:text-right">
-                                        <span className="text-ink-muted md:hidden">
-                                            {t('staff_inventory.columns.value')}
-                                        </span>
-                                        {formatMoney(row.value)}
-                                    </p>
+                                    {row.value !== undefined && (
+                                        <p className="flex justify-between text-sm tabular-nums md:block md:text-right">
+                                            <span className="text-ink-muted md:hidden">
+                                                {t(
+                                                    'staff_inventory.columns.value',
+                                                )}
+                                            </span>
+                                            {formatMoney(row.value)}
+                                        </p>
+                                    )}
                                     <p className="flex justify-between text-sm text-ink-muted md:block">
                                         <span className="md:hidden">
                                             {t(

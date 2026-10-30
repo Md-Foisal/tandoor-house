@@ -2,6 +2,7 @@
 
 use App\Actions\Inventory\PurchaseOrders;
 use App\Actions\Inventory\RecipeCosting;
+use App\Actions\Inventory\StockLedger;
 use App\Enums\PurchaseOrderStatus;
 use App\Enums\Role;
 use App\Enums\StockMovementType;
@@ -111,7 +112,7 @@ it('lists ingredients with low ones first and honours filters', function () {
     invIngredient(['name' => 'Cumin', 'supplier_id' => $supplier->id, 'stock' => 1500, 'low_threshold' => 2000]);
     invIngredient(['name' => 'Turmeric', 'stock' => 9000]);
 
-    $get = fn (string $query = '') => $this->actingAs(invUser(Role::Kitchen))->get('/staff/inventory'.$query);
+    $get = fn (string $query = '') => $this->actingAs(invUser(Role::Manager))->get('/staff/inventory'.$query);
 
     $get()->assertInertia(fn ($page) => $page->missing('ingredients')->loadDeferredProps(fn ($page) => $page
         ->has('ingredients', 3)
@@ -217,7 +218,7 @@ it('summarises this weeks waste and its cost', function () {
 
     $this->actingAs($kitchen)->post('/staff/inventory/waste', ['ingredient_id' => $ingredient->id, 'quantity' => 1500, 'reason' => 'dropped']);
 
-    $this->get('/staff/inventory/waste')->assertInertia(fn ($page) => $page
+    $this->actingAs(invUser(Role::Manager))->get('/staff/inventory/waste')->assertInertia(fn ($page) => $page
         ->where('summary.cost', 3000)
         ->where('summary.entries', 1)
         ->where('summary.top.0.name', 'Lamb')
@@ -513,7 +514,7 @@ it('sums stock value and counts low items in the database', function () {
     invIngredient(['stock' => 1000, 'low_threshold' => 1000, 'cost_per_thousand' => 500]);
     invIngredient(['stock' => 2500, 'low_threshold' => 100, 'cost_per_thousand' => 1000]);
 
-    $this->actingAs(invUser(Role::Kitchen))->get('/staff/inventory')->assertInertia(fn ($page) => $page
+    $this->actingAs(invUser(Role::Manager))->get('/staff/inventory')->assertInertia(fn ($page) => $page
         ->where('summary.count', 2)->where('summary.low', 1)->where('summary.value', 3000));
 });
 
@@ -524,7 +525,46 @@ it('pages the waste list and leaves the week summary unaffected', function () {
         invMovement(['ingredient_id' => $ingredient->id, 'type' => StockMovementType::Waste, 'quantity' => -100, 'reason' => 'Dropped', 'created_at' => now()->subMinutes($i)]);
     }
 
-    $this->actingAs(invUser(Role::Kitchen))->get('/staff/inventory/waste')->assertInertia(fn ($page) => $page
+    $this->actingAs(invUser(Role::Manager))->get('/staff/inventory/waste')->assertInertia(fn ($page) => $page
         ->where('summary.entries', 35)->where('summary.cost', 35 * 100)
         ->loadDeferredProps(fn ($page) => $page->has('entries.data', 30)->where('entries.last_page', 2)->where('entries.total', 35)));
+});
+
+it('keeps costs and stock value away from kitchen on every stock page', function () {
+    $ingredient = invIngredient(['name' => 'Ghee', 'stock' => 9000, 'cost_per_thousand' => 450]);
+    $kitchen = invUser(Role::Kitchen);
+    app(StockLedger::class)->waste($ingredient, 500, 'Spilt', $kitchen);
+
+    $this->actingAs($kitchen)->get('/staff/inventory')->assertInertia(fn ($page) => $page
+        ->missing('summary.value')
+        ->loadDeferredProps(fn ($page) => $page->has('ingredients', 1)->missing('ingredients.0.cost_per_thousand')->missing('ingredients.0.value')));
+
+    $this->actingAs($kitchen)->get('/staff/inventory/waste')->assertInertia(fn ($page) => $page
+        ->missing('summary.cost')
+        ->missing('summary.top.0.cost')
+        ->missing('ingredients.0.cost_per_thousand')
+        ->loadDeferredProps(fn ($page) => $page->has('entries.data', 1)->missing('entries.data.0.cost')));
+
+    $this->actingAs($kitchen)->get('/staff/inventory/movements')->assertInertia(fn ($page) => $page
+        ->missing('ingredients.0.cost_per_thousand')
+        ->loadDeferredProps(fn ($page) => $page->has('movements.data')->missing('movements.data.0.cost')));
+});
+
+it('still shows costs and stock value to managers', function () {
+    $ingredient = invIngredient(['name' => 'Ghee', 'stock' => 9000, 'cost_per_thousand' => 450]);
+    $manager = invUser(Role::Manager);
+    app(StockLedger::class)->waste($ingredient, 500, 'Spilt', $manager);
+
+    $this->actingAs($manager)->get('/staff/inventory')->assertInertia(fn ($page) => $page
+        ->has('summary.value')
+        ->loadDeferredProps(fn ($page) => $page->has('ingredients.0.cost_per_thousand')->has('ingredients.0.value')));
+
+    $this->actingAs($manager)->get('/staff/inventory/waste')->assertInertia(fn ($page) => $page
+        ->has('summary.cost')
+        ->has('ingredients.0.cost_per_thousand')
+        ->loadDeferredProps(fn ($page) => $page->has('entries.data.0.cost')));
+
+    $this->actingAs($manager)->get('/staff/inventory/movements')->assertInertia(fn ($page) => $page
+        ->has('ingredients.0.cost_per_thousand')
+        ->loadDeferredProps(fn ($page) => $page->has('movements.data.0.cost')));
 });

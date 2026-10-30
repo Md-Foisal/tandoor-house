@@ -23,9 +23,9 @@ class WasteController extends Controller
         return Inertia::render('staff/inventory/waste', [
             'abilities' => InventoryData::abilities($request->user()),
             'lowCount' => InventoryData::lowCount(),
-            'ingredients' => fn () => InventoryData::options(),
-            'summary' => fn () => $this->summary(),
-            'entries' => Inertia::defer(function () {
+            'ingredients' => fn () => InventoryData::options(InventoryData::seesCosts($request->user())),
+            'summary' => fn () => $this->summary(InventoryData::seesCosts($request->user())),
+            'entries' => Inertia::defer(function () use ($request) {
                 $page = StockMovement::query()
                     ->where('type', StockMovementType::Waste)
                     ->with(['ingredient:id,name,unit,cost_per_thousand', 'user:id,name', 'order:id,number'])
@@ -33,7 +33,7 @@ class WasteController extends Controller
                     ->paginate(self::PER_PAGE)->withQueryString();
 
                 return [
-                    'data' => $page->getCollection()->map(fn (StockMovement $m) => InventoryData::movement($m))->all(),
+                    'data' => $page->getCollection()->map(fn (StockMovement $m) => InventoryData::movement($m, InventoryData::seesCosts($request->user())))->all(),
                     'current_page' => $page->currentPage(),
                     'last_page' => $page->lastPage(),
                     'total' => $page->total(),
@@ -56,9 +56,9 @@ class WasteController extends Controller
     }
 
     /**
-     * @return array{cost: int, entries: int, top: array<int, array{name: string, cost: int}>, since: string}
+     * @return array{cost?: int, entries: int, top: array<int, array{name: string, cost?: int, entries?: int}>, since: string}
      */
-    private function summary(): array
+    private function summary(bool $costs): array
     {
         $since = Carbon::now()->startOfWeek();
 
@@ -73,6 +73,14 @@ class WasteController extends Controller
             ->map(fn (object $row) => ['name' => (string) $row->name, 'entries' => (int) $row->entries, 'cost' => (int) $row->cost])
             ->sortByDesc('cost')
             ->values();
+
+        if (! $costs) {
+            return [
+                'entries' => (int) $byIngredient->sum('entries'),
+                'top' => $byIngredient->sortByDesc('entries')->take(3)->map(fn (array $row) => ['name' => $row['name'], 'entries' => $row['entries']])->values()->all(),
+                'since' => $since->toIso8601String(),
+            ];
+        }
 
         return [
             'cost' => (int) $byIngredient->sum('cost'),

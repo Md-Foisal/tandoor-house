@@ -128,6 +128,7 @@ return [
         'submit' => 'Log waste',
         'incomplete' => 'Pick an ingredient, enter an amount and choose a reason.',
         'week_cost' => 'Wasted this week',
+        'week_count' => 'Waste logged this week',
         'week_entries' => ':count entry since Monday|:count entries since Monday',
         'biggest' => 'Biggest this week',
         'none_week' => 'Nothing logged yet this week.',

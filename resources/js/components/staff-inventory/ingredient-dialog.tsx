@@ -199,7 +199,7 @@ export function IngredientDialog({
                                 inputMode="decimal"
                                 autoComplete="off"
                                 defaultValue={
-                                    ingredient
+                                    ingredient?.cost_per_thousand !== undefined
                                         ? poundsFromCost(
                                               ingredient.cost_per_thousand,
                                           )

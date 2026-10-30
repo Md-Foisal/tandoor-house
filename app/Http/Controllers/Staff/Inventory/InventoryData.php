@@ -23,6 +23,12 @@ class InventoryData
         return ['manage' => app(InventoryPolicy::class)->manage($user)];
     }
 
+    /** Costs and stock value are supplier-side figures: managers and owners only. */
+    public static function seesCosts(User $user): bool
+    {
+        return app(InventoryPolicy::class)->manage($user);
+    }
+
     /** Shown on the Ingredients tab so the kitchen sees trouble from any tab. */
     public static function lowCount(): int
     {
@@ -43,7 +49,7 @@ class InventoryData
     /**
      * @return array<string, mixed>
      */
-    public static function ingredient(Ingredient $ingredient): array
+    public static function ingredient(Ingredient $ingredient, bool $costs): array
     {
         $last = $ingredient->getAttribute('last_movement_at');
 
@@ -54,12 +60,14 @@ class InventoryData
             'stock' => $ingredient->stock,
             'low_threshold' => $ingredient->low_threshold,
             'par_level' => $ingredient->par_level,
-            'cost_per_thousand' => $ingredient->cost_per_thousand,
             'supplier' => $ingredient->supplier ? ['id' => $ingredient->supplier->id, 'name' => $ingredient->supplier->name] : null,
             'is_low' => $ingredient->stock <= $ingredient->low_threshold,
-            'value' => self::value($ingredient->stock, $ingredient->cost_per_thousand),
             'last_movement_at' => $last ? Carbon::parse($last)->toIso8601String() : null,
             'last_movement_type' => $ingredient->getAttribute('last_movement_type'),
+            ...($costs ? [
+                'cost_per_thousand' => $ingredient->cost_per_thousand,
+                'value' => self::value($ingredient->stock, $ingredient->cost_per_thousand),
+            ] : []),
         ];
     }
 
@@ -74,7 +82,7 @@ class InventoryData
      *
      * @return array<int, array<string, mixed>>
      */
-    public static function options(): array
+    public static function options(bool $costs = true): array
     {
         return Ingredient::query()->orderBy('name')->get(['id', 'name', 'unit', 'stock', 'par_level', 'cost_per_thousand', 'supplier_id'])
             ->map(fn (Ingredient $i) => [
@@ -83,8 +91,8 @@ class InventoryData
                 'unit' => $i->unit,
                 'stock' => $i->stock,
                 'par_level' => $i->par_level,
-                'cost_per_thousand' => $i->cost_per_thousand,
                 'supplier_id' => $i->supplier_id,
+                ...($costs ? ['cost_per_thousand' => $i->cost_per_thousand] : []),
             ])->all();
     }
 
@@ -108,7 +116,7 @@ class InventoryData
     /**
      * @return array<string, mixed>
      */
-    public static function movement(StockMovement $movement): array
+    public static function movement(StockMovement $movement, bool $costs): array
     {
         return [
             'id' => $movement->id,
@@ -119,7 +127,7 @@ class InventoryData
             'user' => $movement->user?->name,
             'at' => $movement->created_at->toIso8601String(),
             'ingredient' => ['id' => $movement->ingredient->id, 'name' => $movement->ingredient->name, 'unit' => $movement->ingredient->unit],
-            'cost' => self::value(abs($movement->quantity), $movement->ingredient->cost_per_thousand),
+            ...($costs ? ['cost' => self::value(abs($movement->quantity), $movement->ingredient->cost_per_thousand)] : []),
         ];
     }
 }

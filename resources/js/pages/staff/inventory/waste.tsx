@@ -58,9 +58,9 @@ export default function Waste({
     };
     ingredients: IngredientOption[];
     summary: {
-        cost: number;
+        cost?: number;
         entries: number;
-        top: { name: string; cost: number }[];
+        top: { name: string; cost?: number; entries?: number }[];
     };
     lowCount: number;
 }) {
@@ -256,15 +256,27 @@ export default function Waste({
                 <div className="grid gap-4">
                     <div className="grid grid-cols-2 gap-3">
                         <StatTile
-                            label={t('staff_inventory.waste.week_cost')}
-                            value={formatMoney(summary.cost)}
+                            label={t(
+                                summary.cost === undefined
+                                    ? 'staff_inventory.waste.week_count'
+                                    : 'staff_inventory.waste.week_cost',
+                            )}
+                            value={
+                                summary.cost === undefined
+                                    ? summary.entries
+                                    : formatMoney(summary.cost)
+                            }
                             hint={choice(
                                 t('staff_inventory.waste.week_entries', {
                                     count: summary.entries,
                                 }),
                                 summary.entries,
                             )}
-                            tone={summary.cost > 0 ? 'warn' : 'plain'}
+                            tone={
+                                (summary.cost ?? summary.entries) > 0
+                                    ? 'warn'
+                                    : 'plain'
+                            }
                         />
                         <div className="rounded-lg border border-line bg-surface p-4">
                             <p className="text-label text-ink-muted">
@@ -285,7 +297,9 @@ export default function Waste({
                                                 {row.name}
                                             </span>
                                             <span className="tabular-nums">
-                                                {formatMoney(row.cost)}
+                                                {row.cost === undefined
+                                                    ? row.entries
+                                                    : formatMoney(row.cost)}
                                             </span>
                                         </li>
                                     ))}
@@ -344,9 +358,11 @@ export default function Waste({
                                                     · {when(entry.at)}
                                                 </p>
                                             </div>
-                                            <p className="shrink-0 text-sm font-semibold tabular-nums">
-                                                {formatMoney(entry.cost)}
-                                            </p>
+                                            {entry.cost !== undefined && (
+                                                <p className="shrink-0 text-sm font-semibold tabular-nums">
+                                                    {formatMoney(entry.cost)}
+                                                </p>
+                                            )}
                                         </li>
                                     ))}
                                 </ul>

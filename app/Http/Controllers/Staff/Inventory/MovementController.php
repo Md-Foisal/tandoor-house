@@ -30,8 +30,8 @@ class MovementController extends Controller
             ],
             'abilities' => InventoryData::abilities($request->user()),
             'lowCount' => InventoryData::lowCount(),
-            'ingredients' => fn () => InventoryData::options(),
-            'movements' => Inertia::defer(function () use ($type, $ingredient, $from, $to) {
+            'ingredients' => fn () => InventoryData::options(InventoryData::seesCosts($request->user())),
+            'movements' => Inertia::defer(function () use ($type, $ingredient, $from, $to, $request) {
                 $page = StockMovement::query()
                     ->with(['ingredient:id,name,unit,cost_per_thousand', 'user:id,name', 'order:id,number'])
                     ->when($type, fn ($query) => $query->where('type', $type))
@@ -42,7 +42,7 @@ class MovementController extends Controller
                     ->paginate(self::PER_PAGE)->withQueryString();
 
                 return [
-                    'data' => $page->getCollection()->map(fn (StockMovement $m) => InventoryData::movement($m))->all(),
+                    'data' => $page->getCollection()->map(fn (StockMovement $m) => InventoryData::movement($m, InventoryData::seesCosts($request->user())))->all(),
                     'current_page' => $page->currentPage(),
                     'last_page' => $page->lastPage(),
                     'total' => $page->total(),

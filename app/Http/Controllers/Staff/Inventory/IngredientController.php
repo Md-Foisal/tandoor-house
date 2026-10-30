@@ -27,8 +27,8 @@ class IngredientController extends Controller
             'abilities' => InventoryData::abilities($request->user()),
             'lowCount' => InventoryData::lowCount(),
             'suppliers' => fn () => Supplier::query()->orderBy('name')->get(['id', 'name']),
-            'summary' => fn () => $this->summary(),
-            'ingredients' => Inertia::defer(fn () => $this->rows($search, $low, $supplierId)),
+            'summary' => fn () => $this->summary(InventoryData::seesCosts($request->user())),
+            'ingredients' => Inertia::defer(fn () => $this->rows($search, $low, $supplierId, InventoryData::seesCosts($request->user()))),
         ]);
     }
 
@@ -61,19 +61,19 @@ class IngredientController extends Controller
     /**
      * @return array{count: int, low: int, value: int}
      */
-    private function summary(): array
+    private function summary(bool $costs): array
     {
         $totals = Ingredient::query()
             ->selectRaw('count(*) as total')
             ->selectRaw('coalesce(sum(case when stock <= low_threshold then 1 else 0 end), 0) as low')
-            ->selectRaw('coalesce(sum(round(stock * cost_per_thousand / 1000.0)), 0) as value')
+            ->when($costs, fn ($query) => $query->selectRaw('coalesce(sum(round(stock * cost_per_thousand / 1000.0)), 0) as value'))
             ->toBase()
             ->first();
 
         return [
             'count' => (int) ($totals->total ?? 0),
             'low' => (int) ($totals->low ?? 0),
-            'value' => (int) ($totals->value ?? 0),
+            ...($costs ? ['value' => (int) ($totals->value ?? 0)] : []),
         ];
     }
 
@@ -82,7 +82,7 @@ class IngredientController extends Controller
      *
      * @return array<int, array<string, mixed>>
      */
-    private function rows(string $search, bool $low, ?int $supplierId): array
+    private function rows(string $search, bool $low, ?int $supplierId, bool $costs): array
     {
         return InventoryData::ingredientsWithLastMovement()
             ->when($search !== '', fn ($query) => $query->where('name', 'like', "%{$search}%"))
@@ -91,7 +91,7 @@ class IngredientController extends Controller
             ->orderByRaw('case when ingredients.stock <= ingredients.low_threshold then 0 else 1 end')
             ->orderBy('name')
             ->get()
-            ->map(fn (Ingredient $i) => InventoryData::ingredient($i))
+            ->map(fn (Ingredient $i) => InventoryData::ingredient($i, $costs))
             ->all();
     }
 }

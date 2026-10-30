@@ -13,10 +13,10 @@ export type IngredientRow = {
     stock: number;
     low_threshold: number;
     par_level: number;
-    cost_per_thousand: number;
+    cost_per_thousand?: number;
     supplier: { id: number; name: string } | null;
     is_low: boolean;
-    value: number;
+    value?: number;
     last_movement_at: string | null;
     last_movement_type: MovementType | null;
 };
@@ -27,7 +27,7 @@ export type IngredientOption = {
     unit: Unit;
     stock: number;
     par_level: number;
-    cost_per_thousand: number;
+    cost_per_thousand?: number;
     supplier_id: number | null;
 };
 
@@ -51,7 +51,7 @@ export type MovementRow = {
     user: string | null;
     at: string;
     ingredient: { id: number; name: string; unit: Unit };
-    cost: number;
+    cost?: number;
 };
 
 export type RecipeLineRow = {
