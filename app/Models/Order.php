@@ -6,6 +6,7 @@ use App\Enums\OrderChannel;
 use App\Enums\OrderStatus;
 use App\Enums\PaymentMethod;
 use App\Enums\PaymentStatus;
+use App\Payments\Payable;
 use Carbon\CarbonImmutable;
 use Database\Factories\OrderFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -51,7 +52,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
  * @property CarbonImmutable|null $updated_at
  */
 #[Fillable(['number', 'channel', 'status', 'user_id', 'dining_table_id', 'rider_id', 'delivery_zone_id', 'promo_code_id', 'contact', 'address', 'postcode', 'pickup_at', 'subtotal', 'discount', 'delivery_fee', 'service_charge', 'tip', 'vat_total', 'total', 'payment_status', 'payment_method', 'cash_collected', 'notes', 'rejection_reason', 'age_confirmed', 'placed_at', 'accepted_at', 'ready_at', 'completed_at', 'estimated_ready_at'])]
-class Order extends Model
+class Order extends Model implements Payable
 {
     /** @use HasFactory<OrderFactory> */
     use HasFactory;
@@ -145,5 +146,40 @@ class Order extends Model
     public function review(): HasOne
     {
         return $this->hasOne(Review::class);
+    }
+
+    public function amountOwed(): int
+    {
+        return $this->total;
+    }
+
+    public function paymentDescription(): string
+    {
+        return __('payments.describe.order', ['number' => $this->number, 'restaurant' => config('restaurant.name')]);
+    }
+
+    public function paymentReference(): string
+    {
+        return $this->number;
+    }
+
+    public function paymentStatus(): PaymentStatus
+    {
+        return $this->payment_status;
+    }
+
+    public function markPaid(): void
+    {
+        $this->forceFill(['payment_status' => PaymentStatus::Paid])->save();
+    }
+
+    public function markPaymentFailed(): void
+    {
+        $this->forceFill(['payment_status' => PaymentStatus::Failed])->save();
+    }
+
+    public function markRefunded(bool $fully): void
+    {
+        $this->forceFill(['payment_status' => $fully ? PaymentStatus::Refunded : PaymentStatus::PartiallyRefunded])->save();
     }
 }

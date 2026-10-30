@@ -11,9 +11,11 @@ use App\Http\Controllers\HomeController;
 use App\Http\Controllers\MenuController;
 use App\Http\Controllers\OrderTrackingController;
 use App\Http\Controllers\PageController;
+use App\Http\Controllers\PaymentWebhookController;
 use App\Http\Controllers\ReservationController;
 use App\Http\Controllers\StyleguideController;
 use App\Http\Controllers\TableOrderingController;
+use Illuminate\Foundation\Http\Middleware\ValidateCsrfToken;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', HomeController::class)->name('home');
@@ -75,3 +77,8 @@ Route::controller(StyleguideController::class)->prefix('styleguide')->name('styl
 
 require __DIR__.'/settings.php';
 require __DIR__.'/staff.php';
+
+Route::post('webhooks/payments/{driver}', PaymentWebhookController::class)
+    ->withoutMiddleware(ValidateCsrfToken::class)
+    ->middleware('throttle:120,1')
+    ->name('webhooks.payments');

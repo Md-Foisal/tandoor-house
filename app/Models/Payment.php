@@ -4,17 +4,18 @@ namespace App\Models;
 
 use App\Enums\PaymentMethod;
 use App\Enums\PaymentStatus;
+use App\Payments\Payable;
 use Carbon\CarbonImmutable;
 use Database\Factories\PaymentFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\MorphTo;
 
 /**
  * @property int $id
  * @property int|null $order_id
- * @property string $payable
  * @property string|null $payable_type
  * @property int|null $payable_id
  * @property string $gateway
@@ -24,10 +25,11 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int $refunded
  * @property PaymentStatus $status
  * @property array<string, mixed>|null $meta
+ * @property-read Model|null $payable
  * @property CarbonImmutable|null $created_at
  * @property CarbonImmutable|null $updated_at
  */
-#[Fillable(['order_id', 'gateway', 'reference', 'method', 'amount', 'refunded', 'status', 'meta'])]
+#[Fillable(['order_id', 'payable_type', 'payable_id', 'gateway', 'reference', 'method', 'amount', 'refunded', 'status', 'meta'])]
 class Payment extends Model
 {
     /** @use HasFactory<PaymentFactory> */
@@ -48,5 +50,29 @@ class Payment extends Model
     public function order(): BelongsTo
     {
         return $this->belongsTo(Order::class);
+    }
+
+    /**
+     * @return MorphTo<Model, $this>
+     */
+    public function payable(): MorphTo
+    {
+        return $this->morphTo();
+    }
+
+    /**
+     * What this payment is for. Rows written before payments knew about
+     * payables only carry order_id.
+     */
+    public function payableModel(): (Payable&Model)|null
+    {
+        $payable = $this->payable_type !== null ? $this->payable : $this->order;
+
+        return $payable instanceof Payable ? $payable : null;
+    }
+
+    public function remaining(): int
+    {
+        return $this->amount - $this->refunded;
     }
 }
