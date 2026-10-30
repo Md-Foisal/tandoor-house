@@ -7,12 +7,16 @@ use App\Events\OrderPlaced;
 use App\Events\OrderStatusChanged;
 use App\Models\Order;
 use App\Notifications\Customer\OrderUpdate;
+use App\Notifications\NotificationChannels;
+use App\Support\Automation;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Notification;
 
 class NotifyCustomerOfOrder implements ShouldQueue
 {
+    public function __construct(private readonly Automation $automation) {}
+
     public function handleOrderPlaced(OrderPlaced $event): void
     {
         $this->notify($event->orderId, OrderStatus::Placed);
@@ -28,6 +32,10 @@ class NotifyCustomerOfOrder implements ShouldQueue
 
     private function notify(int $orderId, OrderStatus $stage): void
     {
+        if (! $this->automation->enabled(Automation::NOTIFICATIONS)) {
+            return;
+        }
+
         $order = Order::find($orderId);
 
         // The order may have moved on again before the queue got here.
@@ -54,5 +62,10 @@ class NotifyCustomerOfOrder implements ShouldQueue
         }
 
         $route->notify(new OrderUpdate($order, $stage));
+
+        $this->automation->log('automation.notification.sent', __('automations.notification_sent'), $order, [
+            'kind' => 'order.'.$stage->value,
+            'channels' => NotificationChannels::for('order'),
+        ]);
     }
 }
