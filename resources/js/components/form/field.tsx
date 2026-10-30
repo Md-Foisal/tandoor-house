@@ -16,6 +16,7 @@ type ControlProps = {
  */
 export function Field({
     name,
+    idPrefix = 'field',
     label,
     error,
     hint,
@@ -24,6 +25,7 @@ export function Field({
     children,
 }: {
     name: string;
+    idPrefix?: string;
     label: string;
     error?: string;
     hint?: string;
@@ -32,7 +34,7 @@ export function Field({
     children: (props: ControlProps) => ReactNode;
 }) {
     const t = useT();
-    const id = `field-${name}`;
+    const id = `${idPrefix}-${name}`;
     const describedBy =
         [hint ? `${id}-hint` : null, error ? `${id}-error` : null]
             .filter(Boolean)
