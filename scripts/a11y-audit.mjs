@@ -1,6 +1,6 @@
 /*
  * WCAG 2.2 AA audit: axe + target size + focus visibility + reduced motion.
- * node scripts/a11y-audit.mjs   (BASE_URL defaults to http://tandoor-house.test)
+ * node scripts/a11y-audit.mjs [--only=/visit,/checkout]   (BASE_URL defaults to http://tandoor-house.test)
  * Report: storage/app/review/a11y-report.md
  */
 import { mkdir, writeFile } from 'node:fs/promises';
@@ -18,6 +18,8 @@ const pages = [
     ...['', '/orders', '/kitchen', '/floor', '/reservations', '/deliveries', '/menu',
         '/inventory', '/team', '/reports', '/reviews', '/activity', '/settings'].map((p) => ['/staff' + p, OWNER]),
 ];
+const only = process.argv.find((a) => a.startsWith('--only='))?.slice(7).split(',').filter(Boolean);
+if (only?.length) pages.splice(0, pages.length, ...pages.filter(([p]) => only.includes(p)));
 const widths = [375, 1280];
 const schemes = ['light', 'dark'];
 const tags = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'];

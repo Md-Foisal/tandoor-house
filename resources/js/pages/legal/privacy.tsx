@@ -65,7 +65,7 @@ export default function Privacy({ updated, sections, email }: Props) {
                             <li key={section.id}>
                                 <a
                                     href={`#${section.id}`}
-                                    className="inline-flex min-h-11 items-center underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-ember"
+                                    className="inline-flex min-h-11 items-center underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-ember focus-visible:outline-solid"
                                 >
                                     {section.title}
                                 </a>

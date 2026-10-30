@@ -50,7 +50,7 @@ export function PartyPicker({
                                 className={cn(
                                     'grid h-12 min-w-12 cursor-pointer place-items-center rounded-md border border-line-strong bg-surface px-3 text-lg font-semibold text-ink tabular-nums transition-colors duration-150',
                                     'peer-checked:border-ember peer-checked:bg-ember peer-checked:text-ember-ink hover:bg-clay',
-                                    'peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-ember',
+                                    'peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-ember focus-visible:outline-solid',
                                 )}
                             >
                                 {more

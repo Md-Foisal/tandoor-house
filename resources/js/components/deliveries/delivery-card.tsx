@@ -195,7 +195,7 @@ export function DeliveryCard({
                                 href={mapsUrl(kind, card)}
                                 target="_blank"
                                 rel="noreferrer"
-                                aria-label={`${t('staff_deliveries.navigate.label', { address: card.address })} (${t(`staff_deliveries.navigate.${kind}`)})`}
+                                aria-label={`${t(`staff_deliveries.navigate.${kind}`)}, ${t('staff_deliveries.navigate.label', { address: card.address })}`}
                             >
                                 <Navigation aria-hidden="true" />
                                 {t(`staff_deliveries.navigate.${kind}`)}

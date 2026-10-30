@@ -44,7 +44,7 @@ export function AllergenMatrix({ groups }: { groups: MatrixGroup[] }) {
                 role="region"
                 tabIndex={0}
                 aria-label={t('pages.allergens.matrix.caption')}
-                className="max-h-[75vh] overflow-auto rounded-lg border border-line bg-surface focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ember"
+                className="max-h-[75vh] overflow-auto rounded-lg border border-line bg-surface focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ember focus-visible:outline-solid"
             >
                 <table
                     data-matrix

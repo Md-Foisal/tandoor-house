@@ -39,7 +39,7 @@ export default function AccountOrders({
                                     filter === key ? 'true' : undefined
                                 }
                                 className={cn(
-                                    'flex h-11 items-center rounded-full border border-line-strong px-4 font-semibold outline-hidden hover:bg-clay focus-visible:outline-2 focus-visible:outline-ember',
+                                    'flex h-11 items-center rounded-full border border-line-strong px-4 font-semibold outline-hidden hover:bg-clay focus-visible:outline-2 focus-visible:outline-ember focus-visible:outline-solid',
                                     filter === key &&
                                         'border-ink bg-ink text-paper hover:bg-ink',
                                 )}

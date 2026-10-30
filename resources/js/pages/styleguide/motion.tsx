@@ -179,7 +179,7 @@ function SharedPhoto({ item }: { item: MenuItem }) {
                 <button
                     type="button"
                     onClick={() => setOpen(true)}
-                    className="w-44 text-left outline-hidden focus-visible:outline-2 focus-visible:outline-ember"
+                    className="w-44 text-left outline-hidden focus-visible:outline-2 focus-visible:outline-ember focus-visible:outline-solid"
                 >
                     <motion.div layoutId="sg-shared" transition={spring.plate}>
                         <ArchFrame>
@@ -196,7 +196,7 @@ function SharedPhoto({ item }: { item: MenuItem }) {
                 <button
                     type="button"
                     onClick={() => setOpen(false)}
-                    className="block w-full outline-hidden focus-visible:outline-2 focus-visible:outline-ember"
+                    className="block w-full outline-hidden focus-visible:outline-2 focus-visible:outline-ember focus-visible:outline-solid"
                 >
                     <motion.div layoutId="sg-shared" transition={spring.plate}>
                         <ArchFrame
@@ -377,7 +377,7 @@ export default function MotionGuide({ items }: { items: MenuItem[] }) {
                                 >
                                     <button
                                         type="button"
-                                        className="h-14 w-full rounded-md border border-line-strong bg-surface font-semibold tabular-nums shadow-plate outline-hidden hover:border-ember focus-visible:outline-2 focus-visible:outline-ember"
+                                        className="h-14 w-full rounded-md border border-line-strong bg-surface font-semibold tabular-nums shadow-plate outline-hidden hover:border-ember focus-visible:outline-2 focus-visible:outline-ember focus-visible:outline-solid"
                                     >
                                         {time}
                                     </button>

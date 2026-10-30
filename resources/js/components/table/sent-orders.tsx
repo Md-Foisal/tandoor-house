@@ -64,7 +64,7 @@ export function SentOrders({
                     </ul>
                     <Link
                         href={`/t/${token}/bill`}
-                        className="mt-3 inline-flex min-h-11 items-center font-semibold text-ember underline underline-offset-4 outline-hidden focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ember"
+                        className="mt-3 inline-flex min-h-11 items-center font-semibold text-ember underline underline-offset-4 outline-hidden focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ember focus-visible:outline-solid"
                     >
                         {t('table.help.view_bill')}
                     </Link>

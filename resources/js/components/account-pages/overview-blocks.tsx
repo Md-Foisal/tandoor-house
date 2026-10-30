@@ -67,10 +67,7 @@ export function ActiveOrders({ orders }: { orders: ActiveOrder[] }) {
                         <li key={order.number}>
                             <Link
                                 href={`/orders/${order.number}`}
-                                aria-label={t('account.active.track', {
-                                    number: order.number,
-                                })}
-                                className="flex min-h-11 flex-wrap items-center justify-between gap-3 rounded-lg border border-turmeric/50 bg-turmeric-soft p-4 outline-hidden hover:border-turmeric focus-visible:outline-2 focus-visible:outline-ember"
+                                className="flex min-h-11 flex-wrap items-center justify-between gap-3 rounded-lg border border-turmeric/50 bg-turmeric-soft p-4 outline-hidden hover:border-turmeric focus-visible:outline-2 focus-visible:outline-ember focus-visible:outline-solid"
                             >
                                 <span className="flex flex-col">
                                     <span className="font-semibold">
@@ -141,7 +138,7 @@ export function RecentOrders({ orders }: { orders: RecentOrder[] }) {
                                     <div className="min-w-0 flex-1">
                                         <Link
                                             href={`/orders/${order.number}`}
-                                            className="font-semibold outline-hidden hover:text-ember focus-visible:outline-2 focus-visible:outline-ember"
+                                            className="font-semibold outline-hidden hover:text-ember focus-visible:outline-2 focus-visible:outline-ember focus-visible:outline-solid"
                                         >
                                             {order.number}
                                         </Link>
@@ -279,10 +276,7 @@ export function Reservations({
                         <li key={reservation.reference}>
                             <Link
                                 href={`/book/${reservation.reference}`}
-                                aria-label={t('account.bookings.view', {
-                                    reference: reservation.reference,
-                                })}
-                                className="flex min-h-11 flex-wrap items-center justify-between gap-3 rounded-lg border border-line bg-surface p-4 outline-hidden hover:border-ember focus-visible:outline-2 focus-visible:outline-ember"
+                                className="flex min-h-11 flex-wrap items-center justify-between gap-3 rounded-lg border border-line bg-surface p-4 outline-hidden hover:border-ember focus-visible:outline-2 focus-visible:outline-ember focus-visible:outline-solid"
                             >
                                 <span className="flex flex-col">
                                     <span className="font-semibold">

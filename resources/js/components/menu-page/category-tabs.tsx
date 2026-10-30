@@ -130,7 +130,7 @@ export function CategoryTabs({ tabs }: { tabs: Tab[] }) {
                                 onClick={(event) => go(event, tab.slug)}
                                 aria-current={current ? 'location' : undefined}
                                 className={cn(
-                                    'relative flex min-h-12 items-center px-3 text-base font-semibold whitespace-nowrap outline-hidden focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ember',
+                                    'relative flex min-h-12 items-center px-3 text-base font-semibold whitespace-nowrap outline-hidden focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ember focus-visible:outline-solid',
                                     current
                                         ? 'text-ink'
                                         : 'text-ink-muted hover:text-ink',

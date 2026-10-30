@@ -116,7 +116,7 @@ export function StatusCard({ order }: { order: TrackedOrder }) {
                                 {restaurant?.phone && (
                                     <a
                                         href={`tel:${restaurant.phone.replace(/\s+/g, '')}`}
-                                        className="inline-flex min-h-11 items-center gap-2 self-start rounded-md font-semibold text-ember underline underline-offset-4 outline-hidden focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ember"
+                                        className="inline-flex min-h-11 items-center gap-2 self-start rounded-md font-semibold text-ember underline underline-offset-4 outline-hidden focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ember focus-visible:outline-solid"
                                     >
                                         <Phone
                                             className="size-4"

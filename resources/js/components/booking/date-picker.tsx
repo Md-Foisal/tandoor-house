@@ -88,7 +88,7 @@ export function DatePicker({
                                     className={cn(
                                         'grid h-20 w-[4.5rem] cursor-pointer place-items-center content-center gap-0.5 rounded-md border border-line-strong bg-surface text-ink transition-colors duration-150',
                                         'peer-checked:border-ember peer-checked:bg-ember peer-checked:text-ember-ink hover:bg-clay',
-                                        'peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-ember',
+                                        'peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-ember focus-visible:outline-solid',
                                         'peer-disabled:cursor-not-allowed peer-disabled:border-line peer-disabled:bg-clay peer-disabled:text-ink-muted peer-disabled:hover:bg-clay',
                                     )}
                                 >

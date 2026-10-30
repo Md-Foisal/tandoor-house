@@ -98,7 +98,7 @@ export default function Profile({
                                             <Link
                                                 href={send()}
                                                 as="button"
-                                                className="min-h-11 font-semibold text-ember underline underline-offset-4 outline-hidden focus-visible:outline-2 focus-visible:outline-ember"
+                                                className="min-h-11 font-semibold text-ember underline underline-offset-4 outline-hidden focus-visible:outline-2 focus-visible:outline-ember focus-visible:outline-solid"
                                             >
                                                 {t(
                                                     'settings_pages.profile.resend',

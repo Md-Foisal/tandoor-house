@@ -4,7 +4,7 @@ import { useT } from '@/lib/i18n';
 import { formatMoney } from '@/lib/money';
 import { cn } from '@/lib/utils';
 import { StatusLabel, isOccupied, statusMeta } from './status';
-import { RequestBadges, tableAriaLabel } from './table-tile';
+import { RequestBadges, TableDescription } from './table-tile';
 import type { FloorTable } from './types';
 import { formatClock } from './use-now';
 
@@ -39,17 +39,18 @@ export function TableList({
                     <ul className="flex flex-col gap-2">
                         {area.tables.map((table) => (
                             <li key={table.id}>
+                                <TableDescription table={table} />
                                 <button
                                     type="button"
                                     onClick={() => onActivate(table)}
-                                    aria-label={tableAriaLabel(table, t)}
+                                    aria-describedby={`table-${table.id}-seats`}
                                     aria-pressed={
                                         selecting
                                             ? selectedIds.has(table.id)
                                             : undefined
                                     }
                                     className={cn(
-                                        'flex min-h-16 w-full items-center gap-3 rounded-lg border-2 p-3 text-left outline-hidden focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ember',
+                                        'flex min-h-16 w-full items-center gap-3 rounded-lg border-2 p-3 text-left outline-hidden focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ember focus-visible:outline-solid',
                                         statusMeta[table.status].tile,
                                         table.merged_into_id !== null &&
                                             'border-dashed',
