@@ -9,6 +9,7 @@ use App\Models\MenuItem;
 use App\Models\Order;
 use App\Models\OrderLine;
 use App\Models\User;
+use Illuminate\Support\Facades\DB;
 
 function rider(): User
 {
@@ -216,4 +217,49 @@ it('flags orders with alcohol for an age check', function () {
     OrderLine::factory()->for($order)->forItem(MenuItem::factory()->create(['is_alcoholic' => true]))->create();
 
     $this->actingAs($me)->get('/staff/deliveries')->assertInertia(fn ($page) => $page->where('deliveries.ready.0.age_check', true));
+});
+
+it('refuses a pickup from a rider removed from the run after authorisation', function () {
+    $me = rider();
+    $order = run($me);
+    $other = rider();
+    $swapped = false;
+    Order::retrieved(function (Order $o) use (&$swapped, $other) {
+        if (! $swapped) {
+            $swapped = true;
+            DB::table('orders')->where('id', $o->id)->update(['rider_id' => $other->id]);
+        }
+    });
+
+    $this->actingAs($me)->post("/staff/deliveries/{$order->number}/pickup")->assertForbidden();
+
+    expect($order->refresh()->status)->toBe(OrderStatus::Ready);
+});
+
+it('refuses to record delivery or cash from a rider removed from the run', function () {
+    $me = rider();
+    $order = cashRun($me);
+    $other = rider();
+    $swapped = false;
+    Order::retrieved(function (Order $o) use (&$swapped, $other) {
+        if (! $swapped) {
+            $swapped = true;
+            DB::table('orders')->where('id', $o->id)->update(['rider_id' => $other->id]);
+        }
+    });
+
+    $this->actingAs($me)->post("/staff/deliveries/{$order->number}/deliver", ['cash_collected' => $order->total])->assertForbidden();
+
+    expect($order->refresh()->status)->toBe(OrderStatus::OutForDelivery)
+        ->and($order->cash_collected)->toBeNull();
+});
+
+it('will not send an order out for delivery without a rider', function () {
+    $order = run(null);
+
+    $this->actingAs(User::factory()->role(Role::Manager)->create())
+        ->post("/staff/deliveries/{$order->number}/pickup")
+        ->assertSessionHasErrors('status');
+
+    expect($order->refresh()->status)->toBe(OrderStatus::Ready);
 });

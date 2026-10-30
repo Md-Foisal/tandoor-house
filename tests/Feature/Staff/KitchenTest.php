@@ -10,7 +10,9 @@ use App\Models\MenuItem;
 use App\Models\Order;
 use App\Models\OrderLine;
 use App\Models\User;
+use App\Services\OrderStateMachine;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Validation\ValidationException;
 
 function kitchenUser(Role $role = Role::Kitchen): User
 {
@@ -184,3 +186,19 @@ it('refuses bump-ticket from roles without kitchen access', function (Role $role
     $this->actingAs(kitchenUser($role))->post("/staff/kitchen/orders/{$order->id}/bump", ['station' => 'all'])->assertForbidden();
     expect($order->refresh()->status)->toBe(OrderStatus::Accepted);
 })->with([Role::Waiter, Role::Cashier, Role::Rider]);
+
+it('refuses to recall a line once the order has been served', function () {
+    $user = kitchenUser();
+    $order = railOrder(stations: [Station::Tandoor]);
+    $line = $order->lines->first();
+    $this->actingAs($user)->post("/staff/kitchen/lines/{$line->id}/bump");
+
+    $stale = $line->refresh()->loadMissing('order');
+    $order->forceFill(['status' => OrderStatus::Served])->save();
+
+    expect(fn () => app(OrderStateMachine::class)->recall($stale, $user))
+        ->toThrow(ValidationException::class);
+
+    expect($order->refresh()->status)->toBe(OrderStatus::Served)
+        ->and($line->refresh()->status)->toBe(LineStatus::Ready);
+});

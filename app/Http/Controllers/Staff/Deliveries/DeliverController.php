@@ -23,6 +23,8 @@ class DeliverController extends Controller
         DB::transaction(function () use ($request, $order, $machine, $policy) {
             $locked = Order::query()->lockForUpdate()->whereKey($order->getKey())->firstOrFail();
 
+            abort_unless($policy->act($request->user(), $locked), 403);
+
             $takesCash = $policy->collectsCash($locked);
             $tendered = $request->integer('cash_collected');
 

@@ -134,6 +134,13 @@ class OrderStateMachine
         }
 
         return DB::transaction(function () use ($line, $order, $by) {
+            $order = Order::query()->lockForUpdate()->findOrFail($order->getKey());
+            $line = OrderLine::query()->lockForUpdate()->findOrFail($line->getKey());
+
+            if ($line->status !== LineStatus::Ready || ! in_array($order->status, [OrderStatus::Cooking, OrderStatus::Ready], true)) {
+                throw ValidationException::withMessages(['line' => __('staff.kitchen.cannot_recall')]);
+            }
+
             $line->forceFill(['status' => LineStatus::Cooking, 'bumped_at' => null])->save();
 
             if ($order->status === OrderStatus::Ready) {
