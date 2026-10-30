@@ -431,11 +431,16 @@ export default function Checkout(props: CheckoutProps) {
                                     {last
                                         ? form.processing
                                             ? t('checkout.placing')
-                                            : t('checkout.place', {
-                                                  total: formatMoney(
-                                                      totals.total,
-                                                  ),
-                                              })
+                                            : t(
+                                                  payment_method === 'card'
+                                                      ? 'checkout.place_card'
+                                                      : 'checkout.place',
+                                                  {
+                                                      total: formatMoney(
+                                                          totals.total,
+                                                      ),
+                                                  },
+                                              )
                                         : t('checkout.continue')}
                                 </Button>
                             </div>

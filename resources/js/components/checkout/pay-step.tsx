@@ -1,4 +1,4 @@
-import { Banknote, CreditCard, Smartphone, Store } from 'lucide-react';
+import { Banknote, CreditCard, Store } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -12,8 +12,8 @@ import { tipPence } from './utils';
 
 const methodIcons = {
     card: CreditCard,
-    apple_pay: Smartphone,
-    google_pay: Smartphone,
+    apple_pay: CreditCard,
+    google_pay: CreditCard,
     pay_at_venue: Store,
     cash: Banknote,
 } satisfies Record<PaymentMethod, typeof CreditCard>;
@@ -31,13 +31,12 @@ export function PayStep({
     const { data, setData } = form;
     const methods: PaymentMethod[] = [
         'card',
-        'apple_pay',
-        'google_pay',
         data.channel === 'delivery' ? 'cash' : 'pay_at_venue',
     ];
     const online =
         data.payment_method !== 'cash' &&
         data.payment_method !== 'pay_at_venue';
+    const testMode = props.paymentDriver === 'fake';
     const base = props.summary.subtotal - props.summary.discount;
 
     return (
@@ -176,18 +175,26 @@ export function PayStep({
                 >
                     <p className="font-semibold text-ink">
                         {online
-                            ? t('checkout.pay.test_title')
+                            ? t('checkout.pay.online_title')
                             : t('checkout.pay.later_title')}
                     </p>
                     <p className="mt-1 text-ink-muted">
                         {online
-                            ? t('checkout.pay.test_body')
+                            ? t('checkout.pay.online_body')
                             : t(
                                   data.payment_method === 'cash'
                                       ? 'checkout.pay.cash_body'
                                       : 'checkout.pay.venue_body',
                               )}
                     </p>
+                    {online && testMode && (
+                        <p className="mt-2 text-ink-muted">
+                            <span className="font-semibold text-ink">
+                                {t('checkout.pay.test_title')}.
+                            </span>{' '}
+                            {t('checkout.pay.test_body')}
+                        </p>
+                    )}
                 </div>
             </fieldset>
 

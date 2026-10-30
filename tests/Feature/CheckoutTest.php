@@ -59,7 +59,7 @@ it('places a guest delivery order', function () {
     $response = $this->post(route('checkout.store'), details());
 
     $order = Order::with(['lines', 'events'])->firstOrFail();
-    $response->assertRedirect(route('orders.show', $order->number));
+    $response->assertRedirect(route('orders.pay', $order->number));
 
     expect($order->number)->toMatch('/^TH-[A-Z2-9]{5}$/')
         ->and($order->channel)->toBe(OrderChannel::Delivery)

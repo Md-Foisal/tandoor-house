@@ -27,6 +27,7 @@ use Illuminate\Broadcasting\BroadcastManager;
 use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
@@ -132,7 +133,7 @@ it('announces orders placed at checkout and from the table', function () {
         'line1' => '5 Fournier Street',
         'city' => 'London',
         'postcode' => 'E1 6QR',
-        'payment_method' => 'card',
+        'payment_method' => 'cash',
     ])->assertSessionHasNoErrors();
 
     $table = DiningTable::factory()->create();
@@ -215,6 +216,7 @@ it('never puts personal details in a broadcast payload', function () {
 it('broadcasts through the real queue and broadcaster to the log', function () {
     config(['broadcasting.default' => 'log']);
     app(BroadcastManager::class)->forgetDrivers();
+    Notification::fake();
     Log::spy();
     $order = realtimeOrder();
 

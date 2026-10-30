@@ -9,9 +9,12 @@ use App\Http\Controllers\CartLineController;
 use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\MenuController;
+use App\Http\Controllers\OrderCancellationController;
+use App\Http\Controllers\OrderPaymentController;
 use App\Http\Controllers\OrderTrackingController;
 use App\Http\Controllers\PageController;
 use App\Http\Controllers\PaymentWebhookController;
+use App\Http\Controllers\ReservationCancellationController;
 use App\Http\Controllers\ReservationController;
 use App\Http\Controllers\StyleguideController;
 use App\Http\Controllers\TableOrderingController;
@@ -46,6 +49,12 @@ Route::controller(CheckoutController::class)->prefix('checkout')->name('checkout
 });
 
 Route::get('orders/{order:number}', [OrderTrackingController::class, 'show'])->middleware('throttle:lookup')->name('orders.show');
+Route::controller(OrderPaymentController::class)->prefix('orders/{order:number}/pay')->name('orders.pay')->group(function () {
+    Route::get('/', 'show')->middleware('throttle:lookup')->name('');
+    Route::post('confirm', 'confirm')->middleware('throttle:checkout')->name('.confirm');
+    Route::post('venue', 'venue')->middleware('throttle:checkout')->name('.venue');
+});
+Route::post('orders/{order:number}/cancel', OrderCancellationController::class.'@store')->middleware('throttle:10,1')->name('orders.cancel');
 
 Route::controller(ReservationController::class)->prefix('book')->name('book.')->group(function () {
     Route::get('/', 'create')->name('create');
@@ -53,6 +62,8 @@ Route::controller(ReservationController::class)->prefix('book')->name('book.')->
     Route::post('/', 'store')->middleware('throttle:booking')->name('store');
     Route::get('{reservation:reference}', 'show')->name('show');
 });
+
+Route::post('book/{reservation:reference}/cancel', ReservationCancellationController::class.'@store')->middleware('throttle:10,1')->name('book.cancel');
 
 Route::controller(TableOrderingController::class)->prefix('t/{table:qr_token}')->name('table.')->group(function () {
     Route::get('/', 'show')->name('show');

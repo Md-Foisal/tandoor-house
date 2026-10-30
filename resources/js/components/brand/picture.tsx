@@ -59,11 +59,7 @@ export function Picture({
             }}
         >
             {avif.length > 0 && (
-                <source
-                    type="image/avif"
-                    srcSet={srcSet(avif)}
-                    sizes={sizes}
-                />
+                <source type="image/avif" srcSet={srcSet(avif)} sizes={sizes} />
             )}
             <source
                 type="image/webp"
