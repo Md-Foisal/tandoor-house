@@ -2,8 +2,7 @@
 
 namespace App\Http\Requests\Staff\Orders;
 
-use App\Models\Order;
-use App\Policies\Staff\OrderBoardPolicy;
+use App\Models\Payment;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -11,11 +10,7 @@ class TakePaymentRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        $order = $this->route('order');
-
-        return ($this->user()?->can('staff.orders') ?? false)
-            && $order instanceof Order
-            && app(OrderBoardPolicy::class)->takePayment($this->user(), $order)->allowed();
+        return $this->user()?->can('create', [Payment::class, $this->route('order')]) ?? false;
     }
 
     /**

@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Staff\Team;
 
 use App\Actions\Team\WeekRange;
+use App\Models\TipAllocation;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -10,7 +11,7 @@ class RecordTipsRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return $this->user()?->can('staff.team') ?? false;
+        return $this->user()?->can('record', TipAllocation::class) ?? false;
     }
 
     /**

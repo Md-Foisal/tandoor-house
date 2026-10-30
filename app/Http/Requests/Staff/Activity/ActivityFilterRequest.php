@@ -2,13 +2,14 @@
 
 namespace App\Http\Requests\Staff\Activity;
 
+use App\Models\ActivityLog;
 use Illuminate\Foundation\Http\FormRequest;
 
 class ActivityFilterRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return $this->user()?->can('staff.activity') ?? false;
+        return $this->user()?->can('viewAny', ActivityLog::class) ?? false;
     }
 
     /**

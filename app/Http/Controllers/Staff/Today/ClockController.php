@@ -10,6 +10,7 @@ use App\Support\ActivityRecorder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 
 class ClockController extends Controller
@@ -18,6 +19,8 @@ class ClockController extends Controller
 
     public function in(Request $request): RedirectResponse
     {
+        Gate::authorize('clock', Attendance::class);
+
         $user = $this->user($request);
 
         $attendance = $this->locked($user, function () use ($user) {
@@ -54,6 +57,8 @@ class ClockController extends Controller
 
     public function out(Request $request): RedirectResponse
     {
+        Gate::authorize('clock', Attendance::class);
+
         $user = $this->user($request);
 
         $attendance = $this->locked($user, function () use ($user) {

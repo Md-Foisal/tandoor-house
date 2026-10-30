@@ -10,7 +10,7 @@ class TransitionRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return $this->user()?->can('staff.orders') ?? false;
+        return $this->user()?->can('staff.orders.move', $this->route('order')) ?? false;
     }
 
     /**

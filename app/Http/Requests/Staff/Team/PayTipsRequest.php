@@ -3,7 +3,7 @@
 namespace App\Http\Requests\Staff\Team;
 
 use App\Actions\Team\WeekRange;
-use App\Enums\Role;
+use App\Models\TipAllocation;
 use Illuminate\Foundation\Http\FormRequest;
 
 class PayTipsRequest extends FormRequest
@@ -11,7 +11,7 @@ class PayTipsRequest extends FormRequest
     /** Handing over money is the owner's call. */
     public function authorize(): bool
     {
-        return $this->user()?->role === Role::Owner && $this->user()->can('staff.team');
+        return $this->user()?->can('pay', TipAllocation::class) ?? false;
     }
 
     /**

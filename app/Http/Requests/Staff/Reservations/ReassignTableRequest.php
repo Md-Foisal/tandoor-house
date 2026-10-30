@@ -8,7 +8,7 @@ class ReassignTableRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return $this->user()?->can('staff.reservations') ?? false;
+        return $this->user()?->can('staff.reservations.reassign', $this->route('reservation')) ?? false;
     }
 
     /**

@@ -9,16 +9,21 @@ use App\Support\Settings;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Gate;
 
 class OrderReceiptController extends Controller
 {
     public function show(Order $order, Settings $settings): View
     {
+        Gate::authorize('staff.orders.receipt', $order);
+
         return view('pdf.receipt', $this->data($order, $settings) + ['printable' => true]);
     }
 
     public function download(Order $order, Settings $settings): Response
     {
+        Gate::authorize('staff.orders.receipt', $order);
+
         $data = $this->data($order, $settings) + ['printable' => false];
         $height = 520 + 34 * count($data['lines']);
 

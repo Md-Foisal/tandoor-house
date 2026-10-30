@@ -10,8 +10,7 @@ class DeliverRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return ($this->user()?->can('staff.deliveries') ?? false)
-            && app(DeliveryPolicy::class)->act($this->user(), $this->order());
+        return $this->user()?->can('staff.deliveries.act', $this->order()) ?? false;
     }
 
     /**

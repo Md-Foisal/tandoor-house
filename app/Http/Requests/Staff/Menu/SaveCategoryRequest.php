@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Staff\Menu;
 
 use App\Enums\ServicePeriod;
+use App\Models\Category;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -10,7 +11,9 @@ class SaveCategoryRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return $this->user()?->can('staff.menu') ?? false;
+        return ($category = $this->route('category')) instanceof Category
+            ? ($this->user()?->can('update', $category) ?? false)
+            : ($this->user()?->can('create', Category::class) ?? false);
     }
 
     /**

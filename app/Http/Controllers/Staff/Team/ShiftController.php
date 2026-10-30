@@ -14,6 +14,7 @@ use App\Support\ActivityRecorder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 
 class ShiftController extends Controller
@@ -30,6 +31,7 @@ class ShiftController extends Controller
 
     public function destroy(Request $request, Shift $shift, ActivityRecorder $activity): RedirectResponse
     {
+        Gate::authorize('delete', $shift);
         $actor = $request->user() ?? abort(403);
 
         DB::transaction(function () use ($actor, $shift, $activity) {

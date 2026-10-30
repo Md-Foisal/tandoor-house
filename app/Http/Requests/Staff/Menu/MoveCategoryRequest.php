@@ -8,7 +8,7 @@ class MoveCategoryRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return $this->user()?->can('staff.menu') ?? false;
+        return $this->user()?->can('reorder', $this->route('category')) ?? false;
     }
 
     /**

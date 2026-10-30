@@ -11,6 +11,7 @@ use App\Http\Requests\Staff\Team\UpdateStaffRequest;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 
 class PeopleController extends Controller
@@ -35,6 +36,8 @@ class PeopleController extends Controller
 
     public function destroy(Request $request, User $user, RemoveFromTeam $remove): RedirectResponse
     {
+        Gate::authorize('delete', $user);
+
         $remove($request->user(), $user);
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __('staff_team.toast.removed', ['name' => $user->name])]);

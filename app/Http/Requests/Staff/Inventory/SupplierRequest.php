@@ -2,16 +2,16 @@
 
 namespace App\Http\Requests\Staff\Inventory;
 
-use App\Policies\InventoryPolicy;
+use App\Models\Supplier;
 use Illuminate\Foundation\Http\FormRequest;
 
 class SupplierRequest extends FormRequest
 {
-    public function authorize(InventoryPolicy $policy): bool
+    public function authorize(): bool
     {
-        $user = $this->user();
-
-        return $user !== null && $user->can('staff.inventory') && $policy->manage($user);
+        return ($supplier = $this->route('supplier')) instanceof Supplier
+            ? ($this->user()?->can('update', $supplier) ?? false)
+            : ($this->user()?->can('create', Supplier::class) ?? false);
     }
 
     /**

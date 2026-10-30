@@ -2,13 +2,14 @@
 
 namespace App\Http\Requests\Staff\Floor;
 
+use App\Models\DiningTable;
 use Illuminate\Foundation\Http\FormRequest;
 
 class MergeTablesRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return $this->user()?->can('staff.floor') ?? false;
+        return $this->user()?->can('merge', DiningTable::class) ?? false;
     }
 
     /**

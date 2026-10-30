@@ -19,6 +19,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -121,6 +122,8 @@ class TipsController extends Controller
 
     public function export(Request $request, TipSplit $tips, WeekReport $report): StreamedResponse
     {
+        Gate::authorize('export', TipAllocation::class);
+
         $week = WeekRange::from($request->query('week') === null ? null : (string) $request->query('week'));
         $recorded = self::recorded($week);
 

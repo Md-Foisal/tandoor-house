@@ -10,17 +10,17 @@ use App\Http\Requests\Staff\Inventory\PurchaseOrderStoreRequest;
 use App\Models\PurchaseOrder;
 use App\Models\PurchaseOrderLine;
 use App\Models\Supplier;
-use App\Policies\InventoryPolicy;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class PurchaseOrderController extends Controller
 {
-    public function index(Request $request, InventoryPolicy $policy): Response
+    public function index(Request $request): Response
     {
-        abort_unless($policy->manage($request->user()), 403);
+        Gate::authorize('viewAny', PurchaseOrder::class);
 
         $status = PurchaseOrderStatus::tryFrom((string) $request->query('status'));
 
@@ -64,9 +64,9 @@ class PurchaseOrderController extends Controller
         return to_route('staff.inventory.purchase-orders.show', $order);
     }
 
-    public function show(Request $request, PurchaseOrder $purchaseOrder, InventoryPolicy $policy): Response
+    public function show(Request $request, PurchaseOrder $purchaseOrder): Response
     {
-        abort_unless($policy->manage($request->user()), 403);
+        Gate::authorize('view', $purchaseOrder);
 
         $purchaseOrder->load(['supplier', 'lines.ingredient']);
 

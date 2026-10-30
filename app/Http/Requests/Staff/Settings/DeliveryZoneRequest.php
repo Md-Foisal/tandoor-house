@@ -3,11 +3,20 @@
 namespace App\Http\Requests\Staff\Settings;
 
 use App\Models\DeliveryZone;
+use App\Models\Setting;
 use Illuminate\Validation\Validator;
 
 class DeliveryZoneRequest extends SettingsRequest
 {
     private const OUTWARD = '/^[A-Z]{1,2}[0-9][A-Z0-9]?$/';
+
+    /** Adding a zone sets new fees, so it is the owner's; edits are checked field by field in the controller. */
+    public function authorize(): bool
+    {
+        return $this->route('zone') instanceof DeliveryZone
+            ? parent::authorize()
+            : ($this->user()?->can('updateMoney', Setting::class) ?? false);
+    }
 
     protected function prepareForValidation(): void
     {

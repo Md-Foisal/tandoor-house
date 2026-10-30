@@ -8,7 +8,7 @@ class UnmergeTableRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return $this->user()?->can('staff.floor') ?? false;
+        return $this->user()?->can('unmerge', $this->route('table')) ?? false;
     }
 
     /**

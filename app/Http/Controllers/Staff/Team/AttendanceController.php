@@ -12,6 +12,7 @@ use App\Support\Csv;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
@@ -29,6 +30,8 @@ class AttendanceController extends Controller
 
     public function export(Request $request, WeekReport $report): StreamedResponse
     {
+        Gate::authorize('export', Attendance::class);
+
         $week = WeekRange::from($request->query('week') === null ? null : (string) $request->query('week'));
         $people = $report->build($week);
 

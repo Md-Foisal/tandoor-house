@@ -10,6 +10,7 @@ use App\Support\ActivityRecorder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 
 class ReviewModerationController extends Controller
@@ -18,6 +19,8 @@ class ReviewModerationController extends Controller
 
     public function publish(Request $request, Review $review): RedirectResponse
     {
+        Gate::authorize('moderate', Review::class);
+
         DB::transaction(function () use ($review, $request) {
             $locked = Review::query()->whereKey($review->id)->lockForUpdate()->firstOrFail();
 

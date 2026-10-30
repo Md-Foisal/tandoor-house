@@ -8,7 +8,7 @@ class SoldOutRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return $this->user()?->can('staff.kitchen') ?? false;
+        return $this->user()?->can('markSoldOut', $this->route('item')) ?? false;
     }
 
     /**

@@ -6,6 +6,7 @@ use App\Enums\OrderChannel;
 use App\Enums\OrderStatus;
 use App\Enums\PaymentStatus;
 use App\Enums\Role;
+use App\Enums\StaffArea;
 use App\Models\Order;
 use App\Models\User;
 use Illuminate\Auth\Access\Response;
@@ -120,6 +121,35 @@ class OrderBoardPolicy
         return $user->role->isManagement()
             && $order->channel === OrderChannel::Delivery
             && in_array($order->status, [OrderStatus::Ready, OrderStatus::OutForDelivery], true);
+    }
+
+    /** Changing lines and quantities on an order from the board. */
+    public function edit(User $user, Order $order): bool
+    {
+        return StaffArea::Orders->allows($user->role);
+    }
+
+    /** Receipts for any order on the board. */
+    public function receipt(User $user, Order $order): bool
+    {
+        return StaffArea::Orders->allows($user->role);
+    }
+
+    /** Status changes are checked again against the target step inside the transaction. */
+    public function move(User $user, Order $order): bool
+    {
+        return StaffArea::Orders->allows($user->role);
+    }
+
+    public function assignRider(User $user, Order $order): bool
+    {
+        return StaffArea::Orders->allows($user->role) && $user->role->isManagement();
+    }
+
+    /** Starting, bumping and recalling tickets on the kitchen display. */
+    public function cook(User $user): bool
+    {
+        return StaffArea::Kitchen->allows($user->role);
     }
 
     public function canEdit(Order $order): bool

@@ -2,15 +2,16 @@
 
 namespace App\Http\Controllers\Staff\Settings;
 
-use App\Enums\Role;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Staff\Settings\DeliveryZoneRequest;
 use App\Models\DeliveryZone;
 use App\Models\Order;
+use App\Models\Setting;
 use App\Support\ActivityRecorder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 
 class DeliveryZoneController extends Controller
@@ -19,7 +20,7 @@ class DeliveryZoneController extends Controller
 
     public function store(DeliveryZoneRequest $request): RedirectResponse
     {
-        $this->ownerOnly($request);
+        Gate::authorize('updateMoney', Setting::class);
 
         $attributes = $this->attributes($request);
 
@@ -38,13 +39,11 @@ class DeliveryZoneController extends Controller
     public function update(DeliveryZoneRequest $request, DeliveryZone $zone): RedirectResponse
     {
         $attributes = $this->attributes($request);
-        $isOwner = $request->user()?->role === Role::Owner;
 
         // Fees and minimums set revenue, and pausing a zone stops delivery orders, so both are the owner's call.
-        abort_if(
-            ! $isOwner && ($attributes['fee'] !== $zone->fee || $attributes['minimum_order'] !== $zone->minimum_order || ($zone->is_active && ! $attributes['is_active'])),
-            403,
-        );
+        if ($attributes['fee'] !== $zone->fee || $attributes['minimum_order'] !== $zone->minimum_order || ($zone->is_active && ! $attributes['is_active'])) {
+            Gate::authorize('updateMoney', Setting::class);
+        }
 
         DB::transaction(function () use ($zone, $attributes, $request) {
             $before = $zone->only(array_keys($attributes));
@@ -62,7 +61,7 @@ class DeliveryZoneController extends Controller
 
     public function destroy(Request $request, DeliveryZone $zone): RedirectResponse
     {
-        $this->ownerOnly($request);
+        Gate::authorize('updateMoney', Setting::class);
 
         $message = DB::transaction(function () use ($zone, $request) {
             if (Order::query()->where('delivery_zone_id', $zone->id)->exists()) {
@@ -81,11 +80,6 @@ class DeliveryZoneController extends Controller
         Inertia::flash('toast', ['type' => 'success', 'message' => $message]);
 
         return back();
-    }
-
-    private function ownerOnly(Request $request): void
-    {
-        abort_unless($request->user()?->role === Role::Owner, 403);
     }
 
     /**

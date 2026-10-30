@@ -3,7 +3,6 @@
 namespace App\Http\Requests\Staff\Menu;
 
 use App\Enums\Allergen;
-use App\Enums\Role;
 use App\Enums\ServicePeriod;
 use App\Enums\Station;
 use App\Models\MenuItem;
@@ -21,11 +20,14 @@ class SaveItemRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        if (! ($this->user()?->can('staff.menu') ?? false)) {
+        $item = $this->route('item');
+        $allowed = $item instanceof MenuItem ? $this->user()?->can('update', $item) : $this->user()?->can('create', MenuItem::class);
+
+        if (! ($allowed ?? false)) {
             return false;
         }
 
-        if ($this->user()->role === Role::Owner || ! $this->has('vat_rate')) {
+        if ($this->user()->can('setVatRate', MenuItem::class) || ! $this->has('vat_rate')) {
             return true;
         }
 

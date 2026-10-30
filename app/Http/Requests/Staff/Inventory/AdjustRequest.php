@@ -2,16 +2,13 @@
 
 namespace App\Http\Requests\Staff\Inventory;
 
-use App\Policies\InventoryPolicy;
 use Illuminate\Foundation\Http\FormRequest;
 
 class AdjustRequest extends FormRequest
 {
-    public function authorize(InventoryPolicy $policy): bool
+    public function authorize(): bool
     {
-        $user = $this->user();
-
-        return $user !== null && $user->can('staff.inventory') && $policy->log($user);
+        return $this->user()?->can('adjust', $this->route('ingredient')) ?? false;
     }
 
     /**

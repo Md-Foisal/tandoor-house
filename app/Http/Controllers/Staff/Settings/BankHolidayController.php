@@ -4,9 +4,11 @@ namespace App\Http\Controllers\Staff\Settings;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Staff\Settings\HolidaysRequest;
+use App\Models\Setting;
 use App\Support\Settings;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 
 class BankHolidayController extends Controller
@@ -30,6 +32,8 @@ class BankHolidayController extends Controller
 
     public function addNextYear(Request $request, Settings $settings): RedirectResponse
     {
+        Gate::authorize('update', Setting::class);
+
         $merged = array_values(array_unique([...array_map('strval', (array) $settings->get('bank_holidays', [])), ...self::NEXT_YEAR_DATES]));
         sort($merged);
 
