@@ -7,14 +7,22 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 class Csv
 {
     /**
-     * @param  list<string>  $header
+     * @param  list<string>|null  $header  null when the rows carry their own headings
      * @param  iterable<list<string|int|float>>  $rows
+     * @param  bool  $bom  prefix a UTF-8 byte order mark so Excel reads £ and accents correctly
      */
-    public static function download(string $filename, array $header, iterable $rows): StreamedResponse
+    public static function download(string $filename, ?array $header, iterable $rows, bool $bom = false): StreamedResponse
     {
-        return response()->streamDownload(function () use ($header, $rows) {
+        return response()->streamDownload(function () use ($header, $rows, $bom) {
             $out = fopen('php://output', 'w') ?: throw new \RuntimeException('Cannot open the output stream.');
-            fputcsv($out, $header, ',', '"', '');
+
+            if ($bom) {
+                fwrite($out, "\xEF\xBB\xBF");
+            }
+
+            if ($header !== null) {
+                fputcsv($out, $header, ',', '"', '');
+            }
 
             foreach ($rows as $row) {
                 fputcsv($out, array_map(self::safe(...), $row), ',', '"', '');

@@ -12,9 +12,7 @@ final class ReportCsv
         $data = ReportSections::build($section, $range);
         $filename = 'tandoor-house-'.str_replace('_', '-', $section).'-'.$range->fileSlug().'.csv';
 
-        // The byte order mark makes Excel open the file as UTF-8. Csv::download writes the
-        // header row first, so the mark gets a header row of its own, unquoted.
-        return Csv::download($filename, ["\xEF\xBB\xBF"], self::rows($data['tables'], $range));
+        return Csv::download($filename, null, self::rows($data['tables'], $range), bom: true);
     }
 
     /**
