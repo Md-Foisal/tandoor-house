@@ -2,25 +2,35 @@
 
 namespace App\Actions\Team;
 
+use App\Models\StaffInvite;
 use App\Models\User;
-use App\Notifications\Staff\StaffInvite;
+use App\Notifications\Staff\StaffInvite as StaffInviteMail;
 use App\Support\Automation;
-use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
 class SendStaffInvite
 {
     private const MAX_PER_HOUR = 3;
 
-    public function __construct(private readonly Automation $automation, private readonly InviteStatus $status) {}
+    public function __construct(private readonly Automation $automation) {}
 
     /** Sends the first invite for a new person, with no limit or status check. */
     public function __invoke(User $actor, User $user): void
     {
-        $token = Password::broker()->createToken($user);
+        $token = Str::random(64);
+        $sent = now();
 
-        $user->notify(new StaffInvite($token, $actor->name));
+        StaffInvite::query()->updateOrCreate(['user_id' => $user->id], [
+            'token_hash' => StaffInvite::hashToken($token),
+            'invited_by' => $actor->id,
+            'sent_at' => $sent,
+            'expires_at' => InviteStatus::expiresAfter($sent),
+            'accepted_at' => null,
+        ]);
+
+        $user->notify(new StaffInviteMail($token, $actor->name));
 
         $this->automation->log(InviteStatus::EVENT, __('staff_team.log.invite_sent', [
             'user' => $actor->name,
@@ -33,7 +43,9 @@ class SendStaffInvite
     {
         TeamRules::ensureCanAssign($actor, $user->role);
 
-        if (! in_array($this->status->forUser($user)['state'], ['pending', 'expired'], true)) {
+        $invite = StaffInvite::query()->where('user_id', $user->id)->first();
+
+        if ($invite === null || $invite->isAccepted()) {
             throw ValidationException::withMessages(['invite' => __('staff_team.errors.invite_not_needed')]);
         }
 

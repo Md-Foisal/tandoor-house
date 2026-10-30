@@ -5,13 +5,11 @@ namespace App\Http\Controllers\Auth;
 use App\Actions\Team\InviteStatus;
 use App\Concerns\PasswordValidationRules;
 use App\Http\Controllers\Controller;
-use App\Models\User;
+use App\Models\StaffInvite;
 use App\Support\ActivityRecorder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rules\Password;
 use Inertia\Inertia;
@@ -30,7 +28,7 @@ class StaffInviteController extends Controller
         return Inertia::render('auth/accept-invite', [
             'token' => $token,
             'email' => $email,
-            'valid' => $this->invitee($email, $token) !== null,
+            'valid' => $this->invite($email, $token) !== null,
             'validDays' => InviteStatus::VALID_DAYS,
             'restaurant' => config('restaurant.name'),
             'passwordRules' => Password::defaults()->toPasswordRulesString(),
@@ -44,36 +42,52 @@ class StaffInviteController extends Controller
             'password' => $this->passwordRules(),
         ])->validate();
 
-        $user = $this->invitee($data['email'], $token);
+        $user = DB::transaction(function () use ($data, $token) {
+            $invite = $this->invite((string) $data['email'], $token, lock: true);
+
+            if ($invite === null) {
+                return null;
+            }
+
+            $invite->user->forceFill(['password' => $data['password']])->save();
+            $invite->forceFill(['accepted_at' => now()])->save();
+            DB::table('password_reset_tokens')->where('email', $invite->user->email)->delete();
+
+            return $invite->user;
+        });
 
         if ($user === null) {
-            return back()->withErrors(['email' => __('staff_team.invite.page.expired_title')]);
+            return back()->withErrors(['token' => __('staff_team.invite.page.invalid')]);
         }
-
-        DB::transaction(function () use ($user, $data) {
-            $user->forceFill(['password' => $data['password']])->save();
-            DB::table('password_reset_tokens')->where('email', $user->email)->delete();
-        });
 
         $this->activity->record('team.invite_accepted', __('staff_team.log.invite_accepted', ['name' => $user->name]), $user, by: $user);
 
         return to_route('login')->with('status', __('staff_team.invite.page.done'));
     }
 
-    private function invitee(string $email, string $token): ?User
+    /**
+     * Finds the unexpired, unused invite for this token and email. The lookup
+     * is by SHA-256 of the token, so no comparison leaks timing on the secret.
+     */
+    private function invite(string $email, string $token, bool $lock = false): ?StaffInvite
     {
-        $row = DB::table('password_reset_tokens')->where('email', $email)->first();
-
-        if ($row === null || ! Hash::check($token, (string) $row->token)) {
+        if ($email === '' || $token === '') {
             return null;
         }
 
-        if ($row->created_at === null || InviteStatus::expiresAfter(Carbon::parse($row->created_at))->isPast()) {
+        $invite = StaffInvite::query()
+            ->usable()
+            ->where('token_hash', StaffInvite::hashToken($token))
+            ->with('user')
+            ->when($lock, fn ($query) => $query->lockForUpdate())
+            ->first();
+
+        $user = $invite?->user;
+
+        if ($user === null || ! hash_equals(mb_strtolower($user->email), mb_strtolower($email)) || ! $user->role->isStaff()) {
             return null;
         }
 
-        $user = User::query()->where('email', $email)->first();
-
-        return $user?->role->isStaff() ? $user : null;
+        return $invite;
     }
 }

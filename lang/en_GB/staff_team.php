@@ -38,6 +38,8 @@ return [
         'invite_expired' => 'Invite expired :date',
         'invite_resend' => 'Resend invite',
         'invite_resend_for' => 'Resend invite to :name',
+        'invite_just_sent' => 'Sent',
+        'invite_just_sent_to' => 'New invite sent to :name',
     ],
     'invite' => [
         'subject' => 'You have been added to the team at :restaurant',
@@ -54,6 +56,7 @@ return [
             'expired_title' => 'This link has run out',
             'expired_body' => 'Invite links work for :days days and only once. Ask your manager to send a new invite, or use "Forgotten your password?" on the sign-in page.',
             'sign_in' => 'Go to sign in',
+            'invalid' => 'This invite link has run out or has already been used. Ask your manager to send a new one.',
             'done' => 'Your password is saved. Sign in to get started.',
         ],
     ],

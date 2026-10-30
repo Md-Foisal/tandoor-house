@@ -1,11 +1,13 @@
-import { Form, Head, Link } from '@inertiajs/react';
-import { useOnline } from '@/components/brand/states';
-import { Field } from '@/components/input-error';
-import PasswordInput from '@/components/password-input';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Spinner } from '@/components/ui/spinner';
-import { useT } from '@/lib/i18n';
+import { Form, Head, Link } from "@inertiajs/react";
+import { CircleAlert } from "lucide-react";
+import { useOnline } from "@/components/brand/states";
+import { Field } from "@/components/input-error";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import PasswordInput from "@/components/password-input";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Spinner } from "@/components/ui/spinner";
+import { useT } from "@/lib/i18n";
 
 type Props = {
     token: string;
@@ -28,19 +30,19 @@ export default function AcceptInvite({
     if (!valid) {
         return (
             <>
-                <Head title={t('staff_team.invite.page.expired_title')} />
+                <Head title={t("staff_team.invite.page.expired_title")} />
                 <div className="flex flex-col gap-4" role="alert">
                     <h2 className="text-lg font-semibold">
-                        {t('staff_team.invite.page.expired_title')}
+                        {t("staff_team.invite.page.expired_title")}
                     </h2>
                     <p className="text-ink-muted">
-                        {t('staff_team.invite.page.expired_body', {
+                        {t("staff_team.invite.page.expired_body", {
                             days: validDays,
                         })}
                     </p>
                     <Button asChild size="lg" className="w-full">
                         <Link href="/login">
-                            {t('staff_team.invite.page.sign_in')}
+                            {t("staff_team.invite.page.sign_in")}
                         </Link>
                     </Button>
                 </div>
@@ -50,20 +52,41 @@ export default function AcceptInvite({
 
     return (
         <>
-            <Head title={t('staff_team.invite.page.title')} />
+            <Head title={t("staff_team.invite.page.title")} />
 
             <Form
                 action={`/invite/${token}`}
                 method="post"
                 transform={(data) => ({ ...data, email })}
-                resetOnSuccess={['password', 'password_confirmation']}
+                resetOnSuccess={["password", "password_confirmation"]}
                 className="flex flex-col gap-6"
             >
                 {({ processing, errors }) => (
                     <>
+                        {errors.token && (
+                            <Alert
+                                variant="destructive"
+                                className="border-chilli text-chilli"
+                            >
+                                <CircleAlert aria-hidden="true" />
+                                <AlertTitle>
+                                    {t("staff_team.invite.page.expired_title")}
+                                </AlertTitle>
+                                <AlertDescription className="text-ink">
+                                    <p>{errors.token}</p>
+                                    <Link
+                                        href="/login"
+                                        className="font-medium text-ember underline underline-offset-4"
+                                    >
+                                        {t("staff_team.invite.page.sign_in")}
+                                    </Link>
+                                </AlertDescription>
+                            </Alert>
+                        )}
+
                         <Field
                             id="email"
-                            label={t('auth_pages.common.email')}
+                            label={t("auth_pages.common.email")}
                             error={errors.email}
                         >
                             {(control) => (
@@ -81,7 +104,7 @@ export default function AcceptInvite({
 
                         <Field
                             id="password"
-                            label={t('auth_pages.reset.new_password')}
+                            label={t("auth_pages.reset.new_password")}
                             error={errors.password}
                         >
                             {(control) => (
@@ -98,7 +121,7 @@ export default function AcceptInvite({
 
                         <Field
                             id="password_confirmation"
-                            label={t('auth_pages.common.confirm_password')}
+                            label={t("auth_pages.common.confirm_password")}
                             error={errors.password_confirmation}
                         >
                             {(control) => (
@@ -120,12 +143,12 @@ export default function AcceptInvite({
                         >
                             {processing && <Spinner />}
                             {processing
-                                ? t('staff_team.invite.page.busy')
-                                : t('staff_team.invite.page.submit')}
+                                ? t("staff_team.invite.page.busy")
+                                : t("staff_team.invite.page.submit")}
                         </Button>
                         {!online && (
                             <p className="text-sm text-ink-muted" role="status">
-                                {t('staff_team.invite.page.offline')}
+                                {t("staff_team.invite.page.offline")}
                             </p>
                         )}
                     </>
@@ -136,6 +159,6 @@ export default function AcceptInvite({
 }
 
 AcceptInvite.layout = {
-    title: 'staff_team.invite.page.title',
-    description: 'staff_team.invite.page.description',
+    title: "staff_team.invite.page.title",
+    description: "staff_team.invite.page.description",
 };
