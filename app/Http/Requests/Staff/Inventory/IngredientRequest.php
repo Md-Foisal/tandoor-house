@@ -8,9 +8,11 @@ use Illuminate\Validation\Rule;
 
 class IngredientRequest extends FormRequest
 {
-    public function authorize(): bool
+    public function authorize(InventoryPolicy $policy): bool
     {
-        return $this->user() !== null && (new InventoryPolicy)->manage($this->user());
+        $user = $this->user();
+
+        return $user !== null && $user->can('staff.inventory') && $policy->manage($user);
     }
 
     /**

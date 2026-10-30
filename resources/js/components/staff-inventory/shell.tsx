@@ -1,4 +1,4 @@
-import { Head, Link, router } from '@inertiajs/react';
+import { Head, Link, router, usePage } from '@inertiajs/react';
 import { TriangleAlert } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { useOnline } from '@/components/brand/states';
@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useT } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
+import type { Abilities } from './types';
 import { useStale } from './use-stale';
 
 export type InventoryTab =
@@ -18,13 +19,21 @@ export type InventoryTab =
     | 'suppliers'
     | 'purchase_orders';
 
-const tabs: { key: InventoryTab; href: string }[] = [
+const tabs: { key: InventoryTab; href: string; managersOnly?: boolean }[] = [
     { key: 'ingredients', href: '/staff/inventory' },
-    { key: 'recipes', href: '/staff/inventory/recipes' },
+    { key: 'recipes', href: '/staff/inventory/recipes', managersOnly: true },
     { key: 'movements', href: '/staff/inventory/movements' },
     { key: 'waste', href: '/staff/inventory/waste' },
-    { key: 'suppliers', href: '/staff/inventory/suppliers' },
-    { key: 'purchase_orders', href: '/staff/inventory/purchase-orders' },
+    {
+        key: 'suppliers',
+        href: '/staff/inventory/suppliers',
+        managersOnly: true,
+    },
+    {
+        key: 'purchase_orders',
+        href: '/staff/inventory/purchase-orders',
+        managersOnly: true,
+    },
 ];
 
 /** Page header, the six tabs and the "could not refresh" notice shared by every stock page. */
@@ -48,6 +57,10 @@ export function InventoryShell({
     const t = useT();
     const stale = useStale();
     const online = useOnline();
+    const { abilities } = usePage<{ abilities?: Abilities }>().props;
+    const visibleTabs = tabs.filter(
+        (tab) => !tab.managersOnly || abilities?.manage,
+    );
 
     return (
         <>
@@ -62,7 +75,7 @@ export function InventoryShell({
                     className="-mx-4 overflow-x-auto px-4 md:mx-0 md:px-0"
                 >
                     <ul className="flex min-w-max gap-1 border-b border-line">
-                        {tabs.map((tab) => (
+                        {visibleTabs.map((tab) => (
                             <li key={tab.key}>
                                 <Link
                                     href={tab.href}

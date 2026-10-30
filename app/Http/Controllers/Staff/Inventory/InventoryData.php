@@ -20,7 +20,7 @@ class InventoryData
      */
     public static function abilities(User $user): array
     {
-        return ['manage' => (new InventoryPolicy)->manage($user)];
+        return ['manage' => app(InventoryPolicy::class)->manage($user)];
     }
 
     /** Shown on the Ingredients tab so the kitchen sees trouble from any tab. */

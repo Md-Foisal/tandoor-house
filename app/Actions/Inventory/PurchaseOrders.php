@@ -7,12 +7,14 @@ use App\Models\Ingredient;
 use App\Models\PurchaseOrder;
 use App\Models\Supplier;
 use App\Models\User;
+use App\Support\ActivityRecorder;
+use App\Support\CodeGenerator;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
 class PurchaseOrders
 {
-    public function __construct(private StockLedger $ledger) {}
+    public function __construct(private StockLedger $ledger, private ActivityRecorder $activity) {}
 
     /**
      * What to order from a supplier: each low ingredient, enough to reach its par level.
@@ -44,7 +46,7 @@ class PurchaseOrders
     {
         return DB::transaction(function () use ($supplier, $by) {
             $order = PurchaseOrder::create([
-                'reference' => $this->nextReference(),
+                'reference' => CodeGenerator::unique(PurchaseOrder::class, 'reference', 'PO-', 8),
                 'supplier_id' => $supplier->id,
                 'status' => PurchaseOrderStatus::Draft,
                 'total' => 0,
@@ -56,9 +58,9 @@ class PurchaseOrders
                 $this->suggestions($supplier),
             ));
 
-            InventoryActivity::record('inventory.po_created', $order, $by, __('staff_inventory.log.po_created', [
+            $this->activity->record('inventory.po_created', __('staff_inventory.log.po_created', [
                 'user' => $by->name, 'reference' => $order->reference, 'supplier' => $supplier->name,
-            ]));
+            ]), $order, by: $by);
 
             return $order;
         });
@@ -69,37 +71,42 @@ class PurchaseOrders
      */
     public function replaceLines(PurchaseOrder $order, array $lines, User $by): void
     {
-        $this->ensure($order, PurchaseOrderStatus::Draft, 'staff_inventory.errors.po_not_draft');
-
         DB::transaction(function () use ($order, $lines, $by) {
-            $this->setLines($order, $lines);
+            $locked = $this->lock($order, [PurchaseOrderStatus::Draft], 'staff_inventory.errors.po_not_draft');
 
-            InventoryActivity::record('inventory.po_edited', $order, $by, __('staff_inventory.log.po_edited', [
-                'user' => $by->name, 'reference' => $order->reference,
-            ]));
+            $this->setLines($locked, $lines);
+
+            $this->activity->record('inventory.po_edited', __('staff_inventory.log.po_edited', [
+                'user' => $by->name, 'reference' => $locked->reference,
+            ]), $locked, by: $by);
         });
+
+        $order->refresh();
     }
 
     public function send(PurchaseOrder $order, User $by): void
     {
-        $this->ensure($order, PurchaseOrderStatus::Draft, 'staff_inventory.errors.po_not_draft');
+        DB::transaction(function () use ($order, $by) {
+            $locked = $this->lock($order, [PurchaseOrderStatus::Draft], 'staff_inventory.errors.po_not_draft');
 
-        if (! $order->lines()->exists()) {
-            throw ValidationException::withMessages(['status' => __('staff_inventory.errors.po_empty')]);
-        }
+            if (! $locked->lines()->exists()) {
+                throw ValidationException::withMessages(['status' => __('staff_inventory.errors.po_empty')]);
+            }
 
-        $order->forceFill(['status' => PurchaseOrderStatus::Sent, 'sent_at' => now()])->save();
+            $locked->forceFill(['status' => PurchaseOrderStatus::Sent, 'sent_at' => now()])->save();
 
-        InventoryActivity::record('inventory.po_sent', $order, $by, __('staff_inventory.log.po_sent', [
-            'user' => $by->name, 'reference' => $order->reference,
-        ]));
+            $this->activity->record('inventory.po_sent', __('staff_inventory.log.po_sent', [
+                'user' => $by->name, 'reference' => $locked->reference,
+            ]), $locked, by: $by);
+        });
+
+        $order->refresh();
     }
 
     public function receive(PurchaseOrder $order, User $by): void
     {
         DB::transaction(function () use ($order, $by) {
-            $locked = PurchaseOrder::query()->lockForUpdate()->findOrFail($order->id);
-            $this->ensure($locked, PurchaseOrderStatus::Sent, 'staff_inventory.errors.po_not_sent');
+            $locked = $this->lock($order, [PurchaseOrderStatus::Sent], 'staff_inventory.errors.po_not_sent');
 
             foreach ($locked->lines()->with('ingredient')->get() as $line) {
                 $this->ledger->stockIn($line->ingredient, $line->quantity, __('staff_inventory.movements.delivery_against', ['reference' => $locked->reference]), $by);
@@ -107,9 +114,9 @@ class PurchaseOrders
 
             $locked->forceFill(['status' => PurchaseOrderStatus::Received, 'received_at' => now()])->save();
 
-            InventoryActivity::record('inventory.po_received', $locked, $by, __('staff_inventory.log.po_received', [
+            $this->activity->record('inventory.po_received', __('staff_inventory.log.po_received', [
                 'user' => $by->name, 'reference' => $locked->reference,
-            ]));
+            ]), $locked, by: $by);
         });
 
         $order->refresh();
@@ -117,15 +124,17 @@ class PurchaseOrders
 
     public function cancel(PurchaseOrder $order, User $by): void
     {
-        if (! in_array($order->status, [PurchaseOrderStatus::Draft, PurchaseOrderStatus::Sent], true)) {
-            throw ValidationException::withMessages(['status' => __('staff_inventory.errors.po_closed')]);
-        }
+        DB::transaction(function () use ($order, $by) {
+            $locked = $this->lock($order, [PurchaseOrderStatus::Draft, PurchaseOrderStatus::Sent], 'staff_inventory.errors.po_closed');
 
-        $order->forceFill(['status' => PurchaseOrderStatus::Cancelled])->save();
+            $locked->forceFill(['status' => PurchaseOrderStatus::Cancelled])->save();
 
-        InventoryActivity::record('inventory.po_cancelled', $order, $by, __('staff_inventory.log.po_cancelled', [
-            'user' => $by->name, 'reference' => $order->reference,
-        ]));
+            $this->activity->record('inventory.po_cancelled', __('staff_inventory.log.po_cancelled', [
+                'user' => $by->name, 'reference' => $locked->reference,
+            ]), $locked, by: $by);
+        });
+
+        $order->refresh();
     }
 
     /**
@@ -147,19 +156,19 @@ class PurchaseOrders
         $order->forceFill(['total' => $total])->save();
     }
 
-    private function ensure(PurchaseOrder $order, PurchaseOrderStatus $expected, string $message): void
+    /**
+     * Re-reads the order under a row lock so two people pressing at once cannot both act on the old status.
+     *
+     * @param  list<PurchaseOrderStatus>  $allowed
+     */
+    private function lock(PurchaseOrder $order, array $allowed, string $message): PurchaseOrder
     {
-        if ($order->status !== $expected) {
+        $locked = PurchaseOrder::query()->whereKey($order->id)->lockForUpdate()->firstOrFail();
+
+        if (! in_array($locked->status, $allowed, true)) {
             throw ValidationException::withMessages(['status' => __($message)]);
         }
-    }
 
-    private function nextReference(): string
-    {
-        $prefix = 'PO-'.now()->year.'-';
-        $last = PurchaseOrder::query()->where('reference', 'like', $prefix.'%')->orderByDesc('reference')->value('reference');
-        $next = $last ? (int) substr($last, strlen($prefix)) + 1 : 1;
-
-        return $prefix.str_pad((string) $next, 4, '0', STR_PAD_LEFT);
+        return $locked;
     }
 }

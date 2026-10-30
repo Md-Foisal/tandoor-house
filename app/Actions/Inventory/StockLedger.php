@@ -6,6 +6,7 @@ use App\Enums\StockMovementType;
 use App\Models\Ingredient;
 use App\Models\StockMovement;
 use App\Models\User;
+use App\Support\ActivityRecorder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
@@ -15,6 +16,8 @@ use Illuminate\Validation\ValidationException;
  */
 class StockLedger
 {
+    public function __construct(private ActivityRecorder $activity) {}
+
     public function stockIn(Ingredient $ingredient, int $quantity, ?string $reason, User $by): StockMovement
     {
         return $this->apply($ingredient, StockMovementType::In, fn () => $quantity, $reason, $by, 'inventory.stock_in', 'staff_inventory.log.stock_in');
@@ -45,7 +48,7 @@ class StockLedger
     private function apply(Ingredient $ingredient, StockMovementType $type, callable $delta, ?string $reason, User $by, string $event, string $line): StockMovement
     {
         return DB::transaction(function () use ($ingredient, $type, $delta, $reason, $by, $event, $line) {
-            $locked = Ingredient::query()->lockForUpdate()->findOrFail($ingredient->id);
+            $locked = Ingredient::query()->whereKey($ingredient->id)->lockForUpdate()->firstOrFail();
             $change = $delta($locked);
 
             if ($locked->stock + $change < 0) {
@@ -62,12 +65,12 @@ class StockLedger
             $before = $locked->stock;
             $locked->forceFill(['stock' => $before + $change])->save();
 
-            InventoryActivity::record($event, $locked, $by, __($line, [
+            $this->activity->record($event, __($line, [
                 'user' => $by->name,
                 'ingredient' => $locked->name,
                 'quantity' => Quantity::format(abs($change), $locked->unit),
                 'reason' => $reason ?? '',
-            ]), ['ingredient_id' => $locked->id, 'movement_id' => $movement->id, 'before' => $before, 'after' => $locked->stock, 'reason' => $reason]);
+            ]), $locked, ['ingredient_id' => $locked->id, 'movement_id' => $movement->id, 'before' => $before, 'after' => $locked->stock, 'reason' => $reason], $by);
 
             return $movement;
         });

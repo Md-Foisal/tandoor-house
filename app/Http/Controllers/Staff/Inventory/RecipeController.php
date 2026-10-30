@@ -2,12 +2,13 @@
 
 namespace App\Http\Controllers\Staff\Inventory;
 
-use App\Actions\Inventory\InventoryActivity;
 use App\Actions\Inventory\RecipeCosting;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Staff\Inventory\RecipeRequest;
 use App\Models\MenuItem;
 use App\Models\RecipeLine;
+use App\Policies\InventoryPolicy;
+use App\Support\ActivityRecorder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -17,8 +18,10 @@ use Inertia\Response;
 
 class RecipeController extends Controller
 {
-    public function index(Request $request): Response
+    public function index(Request $request, InventoryPolicy $policy): Response
     {
+        abort_unless($policy->manage($request->user()), 403);
+
         $search = Str::of((string) $request->query('q'))->trim()->limit(60, '')->toString();
         $flagged = $request->boolean('flagged');
 
@@ -32,7 +35,7 @@ class RecipeController extends Controller
         ]);
     }
 
-    public function update(RecipeRequest $request, MenuItem $menuItem): RedirectResponse
+    public function update(RecipeRequest $request, MenuItem $menuItem, ActivityRecorder $activity): RedirectResponse
     {
         /** @var list<array{ingredient_id: int, quantity: int}> $lines */
         $lines = array_values($request->validated('lines'));
@@ -45,9 +48,9 @@ class RecipeController extends Controller
             }
         });
 
-        InventoryActivity::record('inventory.recipe_updated', $menuItem, $request->user(), __('staff_inventory.log.recipe_updated', [
+        $activity->record('inventory.recipe_updated', __('staff_inventory.log.recipe_updated', [
             'user' => $request->user()->name, 'dish' => $menuItem->name,
-        ]), ['lines' => $lines]);
+        ]), $menuItem, ['lines' => $lines], $request->user());
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __('staff_inventory.toast.recipe_saved', ['name' => $menuItem->name])]);
 

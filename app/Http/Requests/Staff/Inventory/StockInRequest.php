@@ -7,9 +7,11 @@ use Illuminate\Foundation\Http\FormRequest;
 
 class StockInRequest extends FormRequest
 {
-    public function authorize(): bool
+    public function authorize(InventoryPolicy $policy): bool
     {
-        return $this->user() !== null && (new InventoryPolicy)->log($this->user());
+        $user = $this->user();
+
+        return $user !== null && $user->can('staff.inventory') && $policy->log($user);
     }
 
     /**

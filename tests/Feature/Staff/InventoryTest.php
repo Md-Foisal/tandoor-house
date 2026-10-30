@@ -1,5 +1,6 @@
 <?php
 
+use App\Actions\Inventory\PurchaseOrders;
 use App\Actions\Inventory\RecipeCosting;
 use App\Enums\PurchaseOrderStatus;
 use App\Enums\Role;
@@ -11,6 +12,7 @@ use App\Models\PurchaseOrder;
 use App\Models\StockMovement;
 use App\Models\Supplier;
 use App\Models\User;
+use Illuminate\Validation\ValidationException;
 
 beforeEach(fn () => $this->travelTo('2026-10-28 18:00:00'));
 
@@ -48,19 +50,23 @@ function invOrder(Supplier $supplier, PurchaseOrderStatus $status, array $lines 
     return $order;
 }
 
-it('lets kitchen, manager and owner into every stock page and keeps front-of-house out', function (Role $role, int $status) {
+it('lets each role into the stock pages it may see', function (Role $role, int $stock, int $costs) {
     $order = invOrder(Supplier::factory()->create(), PurchaseOrderStatus::Draft);
 
-    foreach (['', '/waste', '/movements', '/recipes', '/suppliers', '/purchase-orders', "/purchase-orders/{$order->id}"] as $path) {
-        $this->actingAs(invUser($role))->get("/staff/inventory{$path}")->assertStatus($status);
+    foreach (['', '/waste', '/movements'] as $path) {
+        $this->actingAs(invUser($role))->get("/staff/inventory{$path}")->assertStatus($stock);
+    }
+
+    foreach (['/recipes', '/suppliers', '/purchase-orders', "/purchase-orders/{$order->id}", "/purchase-orders/{$order->id}/pdf"] as $path) {
+        $this->actingAs(invUser($role))->get("/staff/inventory{$path}")->assertStatus($costs);
     }
 })->with([
-    'kitchen' => [Role::Kitchen, 200],
-    'manager' => [Role::Manager, 200],
-    'owner' => [Role::Owner, 200],
-    'waiter' => [Role::Waiter, 403],
-    'cashier' => [Role::Cashier, 403],
-    'rider' => [Role::Rider, 403],
+    'kitchen' => [Role::Kitchen, 200, 403],
+    'manager' => [Role::Manager, 200, 200],
+    'owner' => [Role::Owner, 200, 200],
+    'waiter' => [Role::Waiter, 403, 403],
+    'cashier' => [Role::Cashier, 403, 403],
+    'rider' => [Role::Rider, 403, 403],
 ]);
 
 it('keeps front-of-house out of every write', function (Role $role) {
@@ -90,6 +96,7 @@ it('keeps kitchen out of ingredient, recipe, supplier and purchase order editing
     $this->put("/staff/inventory/purchase-orders/{$draft->id}/lines", ['lines' => []])->assertForbidden();
     $this->post("/staff/inventory/purchase-orders/{$draft->id}/send")->assertForbidden();
     $this->post("/staff/inventory/purchase-orders/{$draft->id}/cancel")->assertForbidden();
+    $this->post("/staff/inventory/purchase-orders/{$draft->id}/receive")->assertForbidden();
 
     expect($draft->fresh()->status)->toBe(PurchaseOrderStatus::Draft);
 });
@@ -214,7 +221,7 @@ it('summarises this weeks waste and its cost', function () {
         ->where('summary.cost', 3000)
         ->where('summary.entries', 1)
         ->where('summary.top.0.name', 'Lamb')
-        ->loadDeferredProps(fn ($page) => $page->has('entries', 2)));
+        ->loadDeferredProps(fn ($page) => $page->has('entries.data', 2)));
 });
 
 it('filters the movement history', function () {
@@ -289,7 +296,7 @@ it('flags dishes under the margin target and leaves unrecipe-d dishes alone', fu
     $costly->recipeLines()->create(['ingredient_id' => $saffron->id, 'quantity' => 100]); // 500p on 1000p net: 50%
     $bare = MenuItem::factory()->create(['name' => 'Bare', 'price' => 600]);
 
-    $this->actingAs(invUser(Role::Kitchen))->get('/staff/inventory/recipes')->assertInertia(fn ($page) => $page
+    $this->actingAs(invUser(Role::Manager))->get('/staff/inventory/recipes')->assertInertia(fn ($page) => $page
         ->where('target', 65)
         ->loadDeferredProps(fn ($page) => $page
             ->where('dishes.0.name', 'Costly')
@@ -328,7 +335,7 @@ it('suggests purchase order lines that bring each low ingredient up to par', fun
 
     $order = PurchaseOrder::sole();
     expect($order->status)->toBe(PurchaseOrderStatus::Draft)
-        ->and($order->reference)->toBe('PO-2026-0001')
+        ->and($order->reference)->toMatch('/^PO-[A-HJ-NP-Z2-9]{8}$/')
         ->and($order->supplier_id)->toBe($supplier->id)
         ->and($order->lines->pluck('quantity', 'ingredient_id')->all())->toEqual([$low->id => 8500, $atMark->id => 4000])
         ->and($order->lines->pluck('ingredient_id')->all())->not->toContain($fine->id, $other->id)
@@ -339,14 +346,15 @@ it('suggests purchase order lines that bring each low ingredient up to par', fun
     expect($low->stock + 8500)->toBe($low->par_level)->and($atMark->stock + 4000)->toBe($atMark->par_level);
 });
 
-it('numbers purchase orders in sequence', function () {
+it('gives every purchase order its own short reference', function () {
     $supplier = Supplier::factory()->create();
     $this->actingAs(invUser(Role::Manager));
 
     $this->post('/staff/inventory/purchase-orders', ['supplier_id' => $supplier->id]);
     $this->post('/staff/inventory/purchase-orders', ['supplier_id' => $supplier->id]);
 
-    expect(PurchaseOrder::orderBy('id')->pluck('reference')->all())->toBe(['PO-2026-0001', 'PO-2026-0002']);
+    $references = PurchaseOrder::pluck('reference');
+    expect($references)->toHaveCount(2)->and($references->unique())->toHaveCount(2);
 });
 
 it('edits the lines of a draft and recalculates the total', function () {
@@ -387,9 +395,9 @@ it('adds every line to stock when an order is received', function () {
     $a = invIngredient(['supplier_id' => $supplier->id, 'stock' => 1000]);
     $b = invIngredient(['supplier_id' => $supplier->id, 'stock' => 0]);
     $order = invOrder($supplier, PurchaseOrderStatus::Sent, [$a->id => 4000, $b->id => 250]);
-    $kitchen = invUser(Role::Kitchen);
+    $manager = invUser(Role::Manager);
 
-    $this->actingAs($kitchen)->post("/staff/inventory/purchase-orders/{$order->id}/receive")->assertRedirect();
+    $this->actingAs($manager)->post("/staff/inventory/purchase-orders/{$order->id}/receive")->assertRedirect();
 
     expect($a->fresh()->stock)->toBe(5000)
         ->and($b->fresh()->stock)->toBe(250)
@@ -454,7 +462,7 @@ it('lists purchase orders by status', function () {
     invOrder($supplier, PurchaseOrderStatus::Sent);
     invOrder($supplier, PurchaseOrderStatus::Sent);
 
-    $this->actingAs(invUser(Role::Kitchen))->get('/staff/inventory/purchase-orders?status=sent')->assertInertia(fn ($page) => $page
+    $this->actingAs(invUser(Role::Manager))->get('/staff/inventory/purchase-orders?status=sent')->assertInertia(fn ($page) => $page
         ->where('filters.status', 'sent')
         ->where('counts.sent', 2)
         ->loadDeferredProps(fn ($page) => $page->has('orders', 2)));
@@ -465,7 +473,7 @@ it('downloads a purchase order as a PDF', function () {
     $ingredient = invIngredient(['supplier_id' => $supplier->id]);
     $order = invOrder($supplier, PurchaseOrderStatus::Sent, [$ingredient->id => 2500]);
 
-    $response = $this->actingAs(invUser(Role::Kitchen))->get("/staff/inventory/purchase-orders/{$order->id}/pdf");
+    $response = $this->actingAs(invUser(Role::Manager))->get("/staff/inventory/purchase-orders/{$order->id}/pdf");
 
     $response->assertOk()->assertHeader('content-type', 'application/pdf');
     expect($response->headers->get('content-disposition'))->toContain("{$order->reference}.pdf")
@@ -479,4 +487,44 @@ it('does not offer a PDF for a cancelled order or to front-of-house', function (
 
     $this->actingAs(invUser(Role::Manager))->get("/staff/inventory/purchase-orders/{$cancelled->id}/pdf")->assertNotFound();
     $this->actingAs(invUser(Role::Waiter))->get("/staff/inventory/purchase-orders/{$draft->id}/pdf")->assertForbidden();
+});
+
+it('refuses to send, edit or cancel an order whose status changed under it', function () {
+    $supplier = Supplier::factory()->create();
+    $ingredient = invIngredient(['supplier_id' => $supplier->id]);
+    $order = invOrder($supplier, PurchaseOrderStatus::Draft, [$ingredient->id => 500]);
+    $stale = PurchaseOrder::find($order->id);
+
+    $this->actingAs(invUser(Role::Manager));
+    $this->post("/staff/inventory/purchase-orders/{$order->id}/send")->assertRedirect();
+
+    // The same draft is still in memory elsewhere: the locked re-read must see "sent".
+    $user = invUser(Role::Manager);
+    expect(fn () => app(PurchaseOrders::class)->send($stale, $user))->toThrow(ValidationException::class)
+        ->and(fn () => app(PurchaseOrders::class)->replaceLines($stale, [['ingredient_id' => $ingredient->id, 'quantity' => 1]], $user))->toThrow(ValidationException::class);
+
+    $this->post("/staff/inventory/purchase-orders/{$order->id}/cancel")->assertRedirect();
+    expect(fn () => app(PurchaseOrders::class)->cancel($stale, $user))->toThrow(ValidationException::class)
+        ->and(ActivityLog::where('event', 'inventory.po_sent')->count())->toBe(1)
+        ->and($order->fresh()->lines->first()->quantity)->toBe(500);
+});
+
+it('sums stock value and counts low items in the database', function () {
+    invIngredient(['stock' => 1000, 'low_threshold' => 1000, 'cost_per_thousand' => 500]);
+    invIngredient(['stock' => 2500, 'low_threshold' => 100, 'cost_per_thousand' => 1000]);
+
+    $this->actingAs(invUser(Role::Kitchen))->get('/staff/inventory')->assertInertia(fn ($page) => $page
+        ->where('summary.count', 2)->where('summary.low', 1)->where('summary.value', 3000));
+});
+
+it('pages the waste list and leaves the week summary unaffected', function () {
+    $ingredient = invIngredient(['cost_per_thousand' => 1000]);
+
+    foreach (range(1, 35) as $i) {
+        invMovement(['ingredient_id' => $ingredient->id, 'type' => StockMovementType::Waste, 'quantity' => -100, 'reason' => 'Dropped', 'created_at' => now()->subMinutes($i)]);
+    }
+
+    $this->actingAs(invUser(Role::Kitchen))->get('/staff/inventory/waste')->assertInertia(fn ($page) => $page
+        ->where('summary.entries', 35)->where('summary.cost', 35 * 100)
+        ->loadDeferredProps(fn ($page) => $page->has('entries.data', 30)->where('entries.last_page', 2)->where('entries.total', 35)));
 });

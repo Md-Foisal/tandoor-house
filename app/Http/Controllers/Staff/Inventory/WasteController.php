@@ -16,6 +16,8 @@ use Inertia\Response;
 
 class WasteController extends Controller
 {
+    private const PER_PAGE = 30;
+
     public function index(Request $request): Response
     {
         return Inertia::render('staff/inventory/waste', [
@@ -23,18 +25,26 @@ class WasteController extends Controller
             'lowCount' => InventoryData::lowCount(),
             'ingredients' => fn () => InventoryData::options(),
             'summary' => fn () => $this->summary(),
-            'entries' => Inertia::defer(fn () => StockMovement::query()
-                ->where('type', StockMovementType::Waste)
-                ->with(['ingredient:id,name,unit,cost_per_thousand', 'user:id,name', 'order:id,number'])
-                ->orderByDesc('created_at')->orderByDesc('id')
-                ->limit(60)->get()
-                ->map(fn (StockMovement $m) => InventoryData::movement($m))->all()),
+            'entries' => Inertia::defer(function () {
+                $page = StockMovement::query()
+                    ->where('type', StockMovementType::Waste)
+                    ->with(['ingredient:id,name,unit,cost_per_thousand', 'user:id,name', 'order:id,number'])
+                    ->orderByDesc('created_at')->orderByDesc('id')
+                    ->paginate(self::PER_PAGE)->withQueryString();
+
+                return [
+                    'data' => $page->getCollection()->map(fn (StockMovement $m) => InventoryData::movement($m))->all(),
+                    'current_page' => $page->currentPage(),
+                    'last_page' => $page->lastPage(),
+                    'total' => $page->total(),
+                ];
+            }),
         ]);
     }
 
     public function store(WasteRequest $request, StockLedger $ledger): RedirectResponse
     {
-        $ingredient = Ingredient::query()->findOrFail($request->integer('ingredient_id'));
+        $ingredient = Ingredient::query()->whereKey($request->integer('ingredient_id'))->firstOrFail();
         $note = $request->string('note')->trim()->toString();
         $label = __('staff_inventory.waste.reasons.'.$request->string('reason')->toString());
 
@@ -52,21 +62,22 @@ class WasteController extends Controller
     {
         $since = Carbon::now()->startOfWeek();
 
-        $week = StockMovement::query()
-            ->where('type', StockMovementType::Waste)
-            ->where('created_at', '>=', $since)
-            ->with('ingredient:id,name,cost_per_thousand')
-            ->get();
-
-        $byIngredient = $week->groupBy('ingredient_id')->map(fn ($rows) => [
-            'name' => $rows->first()->ingredient->name,
-            'cost' => $rows->sum(fn (StockMovement $m) => InventoryData::value(abs($m->quantity), $m->ingredient->cost_per_thousand)),
-        ])->sortByDesc('cost')->values();
+        $byIngredient = StockMovement::query()
+            ->join('ingredients', 'ingredients.id', '=', 'stock_movements.ingredient_id')
+            ->where('stock_movements.type', StockMovementType::Waste)
+            ->where('stock_movements.created_at', '>=', $since)
+            ->groupBy('ingredients.id', 'ingredients.name')
+            ->selectRaw('ingredients.name as name, count(*) as entries, sum(round(abs(stock_movements.quantity) * ingredients.cost_per_thousand / 1000.0)) as cost')
+            ->toBase()
+            ->get()
+            ->map(fn (object $row) => ['name' => (string) $row->name, 'entries' => (int) $row->entries, 'cost' => (int) $row->cost])
+            ->sortByDesc('cost')
+            ->values();
 
         return [
-            'cost' => $byIngredient->sum('cost'),
-            'entries' => $week->count(),
-            'top' => $byIngredient->take(3)->all(),
+            'cost' => (int) $byIngredient->sum('cost'),
+            'entries' => (int) $byIngredient->sum('entries'),
+            'top' => $byIngredient->take(3)->map(fn (array $row) => ['name' => $row['name'], 'cost' => $row['cost']])->all(),
             'since' => $since->toIso8601String(),
         ];
     }

@@ -2,11 +2,12 @@
 
 namespace App\Http\Controllers\Staff\Inventory;
 
-use App\Actions\Inventory\InventoryActivity;
 use App\Enums\PurchaseOrderStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Staff\Inventory\SupplierRequest;
 use App\Models\Supplier;
+use App\Policies\InventoryPolicy;
+use App\Support\ActivityRecorder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -14,8 +15,10 @@ use Inertia\Response;
 
 class SupplierController extends Controller
 {
-    public function index(Request $request): Response
+    public function index(Request $request, InventoryPolicy $policy): Response
     {
+        abort_unless($policy->manage($request->user()), 403);
+
         return Inertia::render('staff/inventory/suppliers', [
             'abilities' => InventoryData::abilities($request->user()),
             'lowCount' => InventoryData::lowCount(),
@@ -30,26 +33,26 @@ class SupplierController extends Controller
         ]);
     }
 
-    public function store(SupplierRequest $request): RedirectResponse
+    public function store(SupplierRequest $request, ActivityRecorder $activity): RedirectResponse
     {
         $supplier = Supplier::create($request->validated());
 
-        InventoryActivity::record('inventory.supplier_created', $supplier, $request->user(), __('staff_inventory.log.supplier_created', [
+        $activity->record('inventory.supplier_created', __('staff_inventory.log.supplier_created', [
             'user' => $request->user()->name, 'supplier' => $supplier->name,
-        ]));
+        ]), $supplier, by: $request->user());
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __('staff_inventory.toast.supplier_created', ['name' => $supplier->name])]);
 
         return back();
     }
 
-    public function update(SupplierRequest $request, Supplier $supplier): RedirectResponse
+    public function update(SupplierRequest $request, Supplier $supplier, ActivityRecorder $activity): RedirectResponse
     {
         $supplier->update($request->validated());
 
-        InventoryActivity::record('inventory.supplier_updated', $supplier, $request->user(), __('staff_inventory.log.supplier_updated', [
+        $activity->record('inventory.supplier_updated', __('staff_inventory.log.supplier_updated', [
             'user' => $request->user()->name, 'supplier' => $supplier->name,
-        ]));
+        ]), $supplier, by: $request->user());
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __('staff_inventory.toast.supplier_saved', ['name' => $supplier->name])]);
 

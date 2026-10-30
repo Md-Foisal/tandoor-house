@@ -1,4 +1,5 @@
-import { Deferred, useForm } from '@inertiajs/react';
+import { Deferred, router, useForm } from '@inertiajs/react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useState } from 'react';
 import { EmptyState, useOnline } from '@/components/brand/states';
 import { StatTile } from '@/components/staff/stat-tile';
@@ -49,7 +50,12 @@ export default function Waste({
     summary,
     lowCount,
 }: {
-    entries?: MovementRow[];
+    entries?: {
+        data: MovementRow[];
+        current_page: number;
+        last_page: number;
+        total: number;
+    };
     ingredients: IngredientOption[];
     summary: {
         cost: number;
@@ -77,6 +83,13 @@ export default function Waste({
         form.data.quantity > 0 &&
         form.data.reason !== null &&
         (form.data.reason !== 'other' || form.data.note.trim() !== '');
+
+    const goTo = (page: number) =>
+        router.get('/staff/inventory/waste', page > 1 ? { page } : {}, {
+            only: ['entries'],
+            preserveScroll: true,
+            preserveState: true,
+        });
 
     const submit = (event: React.FormEvent) => {
         event.preventDefault();
@@ -285,7 +298,7 @@ export default function Waste({
                         data="entries"
                         fallback={<RowsSkeleton rows={6} />}
                     >
-                        {entries && entries.length === 0 ? (
+                        {entries && entries.data.length === 0 ? (
                             <div className="rounded-lg border border-line bg-surface">
                                 <EmptyState
                                     title={t(
@@ -297,44 +310,95 @@ export default function Waste({
                                 />
                             </div>
                         ) : (
-                            <ul className="divide-y divide-line overflow-hidden rounded-lg border border-line bg-surface">
-                                {(entries ?? []).map((entry) => (
-                                    <li
-                                        key={entry.id}
-                                        className="flex items-start justify-between gap-3 px-4 py-3"
+                            <div className="grid gap-3">
+                                <ul className="divide-y divide-line overflow-hidden rounded-lg border border-line bg-surface">
+                                    {(entries?.data ?? []).map((entry) => (
+                                        <li
+                                            key={entry.id}
+                                            className="flex items-start justify-between gap-3 px-4 py-3"
+                                        >
+                                            <div className="min-w-0">
+                                                <p className="font-semibold">
+                                                    {entry.ingredient.name}{' '}
+                                                    <span className="font-normal text-ink-muted tabular-nums">
+                                                        {formatQuantity(
+                                                            Math.abs(
+                                                                entry.quantity,
+                                                            ),
+                                                            entry.ingredient
+                                                                .unit,
+                                                        )}
+                                                    </span>
+                                                </p>
+                                                <p className="text-sm text-ink-muted">
+                                                    {entry.reason ??
+                                                        t(
+                                                            'staff_inventory.no_reason',
+                                                        )}
+                                                </p>
+                                                <p className="text-sm text-ink-muted">
+                                                    {entry.user ??
+                                                        t(
+                                                            'staff_inventory.system',
+                                                        )}{' '}
+                                                    · {when(entry.at)}
+                                                </p>
+                                            </div>
+                                            <p className="shrink-0 text-sm font-semibold tabular-nums">
+                                                {formatMoney(entry.cost)}
+                                            </p>
+                                        </li>
+                                    ))}
+                                </ul>
+                                {entries && entries.last_page > 1 && (
+                                    <nav
+                                        aria-label={t(
+                                            'staff_inventory.movements.pages',
+                                        )}
+                                        className="flex items-center justify-between gap-3"
                                     >
-                                        <div className="min-w-0">
-                                            <p className="font-semibold">
-                                                {entry.ingredient.name}{' '}
-                                                <span className="font-normal text-ink-muted tabular-nums">
-                                                    {formatQuantity(
-                                                        Math.abs(
-                                                            entry.quantity,
-                                                        ),
-                                                        entry.ingredient.unit,
-                                                    )}
-                                                </span>
-                                            </p>
-                                            <p className="text-sm text-ink-muted">
-                                                {entry.reason ??
-                                                    t(
-                                                        'staff_inventory.no_reason',
-                                                    )}
-                                            </p>
-                                            <p className="text-sm text-ink-muted">
-                                                {entry.user ??
-                                                    t(
-                                                        'staff_inventory.system',
-                                                    )}{' '}
-                                                · {when(entry.at)}
-                                            </p>
-                                        </div>
-                                        <p className="shrink-0 text-sm font-semibold tabular-nums">
-                                            {formatMoney(entry.cost)}
+                                        <Button
+                                            variant="outline"
+                                            disabled={entries.current_page <= 1}
+                                            onClick={() =>
+                                                goTo(entries.current_page - 1)
+                                            }
+                                        >
+                                            <ChevronLeft />{' '}
+                                            {t(
+                                                'staff_inventory.movements.newer',
+                                            )}
+                                        </Button>
+                                        <p
+                                            className="text-sm text-ink-muted"
+                                            aria-live="polite"
+                                        >
+                                            {t(
+                                                'staff_inventory.movements.page',
+                                                {
+                                                    page: entries.current_page,
+                                                    pages: entries.last_page,
+                                                },
+                                            )}
                                         </p>
-                                    </li>
-                                ))}
-                            </ul>
+                                        <Button
+                                            variant="outline"
+                                            disabled={
+                                                entries.current_page >=
+                                                entries.last_page
+                                            }
+                                            onClick={() =>
+                                                goTo(entries.current_page + 1)
+                                            }
+                                        >
+                                            {t(
+                                                'staff_inventory.movements.older',
+                                            )}{' '}
+                                            <ChevronRight />
+                                        </Button>
+                                    </nav>
+                                )}
+                            </div>
                         )}
                     </Deferred>
                 </div>

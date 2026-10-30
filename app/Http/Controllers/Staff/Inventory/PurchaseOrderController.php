@@ -10,6 +10,7 @@ use App\Http\Requests\Staff\Inventory\PurchaseOrderStoreRequest;
 use App\Models\PurchaseOrder;
 use App\Models\PurchaseOrderLine;
 use App\Models\Supplier;
+use App\Policies\InventoryPolicy;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -17,8 +18,10 @@ use Inertia\Response;
 
 class PurchaseOrderController extends Controller
 {
-    public function index(Request $request): Response
+    public function index(Request $request, InventoryPolicy $policy): Response
     {
+        abort_unless($policy->manage($request->user()), 403);
+
         $status = PurchaseOrderStatus::tryFrom((string) $request->query('status'));
 
         return Inertia::render('staff/inventory/purchase-orders', [
@@ -61,8 +64,10 @@ class PurchaseOrderController extends Controller
         return to_route('staff.inventory.purchase-orders.show', $order);
     }
 
-    public function show(Request $request, PurchaseOrder $purchaseOrder): Response
+    public function show(Request $request, PurchaseOrder $purchaseOrder, InventoryPolicy $policy): Response
     {
+        abort_unless($policy->manage($request->user()), 403);
+
         $purchaseOrder->load(['supplier', 'lines.ingredient']);
 
         return Inertia::render('staff/inventory/purchase-order', [

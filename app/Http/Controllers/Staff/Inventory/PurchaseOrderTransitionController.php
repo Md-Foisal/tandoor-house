@@ -8,33 +8,32 @@ use App\Models\PurchaseOrder;
 use App\Policies\InventoryPolicy;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 
+/** Purchase orders carry supplier costs, so every step is for managers and owners. */
 class PurchaseOrderTransitionController extends Controller
 {
-    public function send(Request $request, PurchaseOrder $purchaseOrder, PurchaseOrders $orders): RedirectResponse
+    public function send(Request $request, PurchaseOrder $purchaseOrder, PurchaseOrders $orders, InventoryPolicy $policy): RedirectResponse
     {
-        Gate::allowIf((new InventoryPolicy)->manage($request->user()));
+        abort_unless($policy->manage($request->user()), 403);
 
         $orders->send($purchaseOrder, $request->user());
 
         return $this->done('sent', $purchaseOrder);
     }
 
-    /** A delivery turning up is a stock-in, so the kitchen may record it. */
-    public function receive(Request $request, PurchaseOrder $purchaseOrder, PurchaseOrders $orders): RedirectResponse
+    public function receive(Request $request, PurchaseOrder $purchaseOrder, PurchaseOrders $orders, InventoryPolicy $policy): RedirectResponse
     {
-        Gate::allowIf((new InventoryPolicy)->log($request->user()));
+        abort_unless($policy->manage($request->user()), 403);
 
         $orders->receive($purchaseOrder, $request->user());
 
         return $this->done('received', $purchaseOrder);
     }
 
-    public function cancel(Request $request, PurchaseOrder $purchaseOrder, PurchaseOrders $orders): RedirectResponse
+    public function cancel(Request $request, PurchaseOrder $purchaseOrder, PurchaseOrders $orders, InventoryPolicy $policy): RedirectResponse
     {
-        Gate::allowIf((new InventoryPolicy)->manage($request->user()));
+        abort_unless($policy->manage($request->user()), 403);
 
         $orders->cancel($purchaseOrder, $request->user());
 
