@@ -16,10 +16,12 @@ if (!input || !outDir) {
 }
 
 const crop = (width) =>
-    sharp(input).rotate().resize(width, Math.round(width * 1.25), {
-        fit: 'cover',
-        position: 'centre',
-    });
+    sharp(input)
+        .rotate()
+        .resize(width, Math.round(width * 1.25), {
+            fit: 'cover',
+            position: 'centre',
+        });
 
 for (const width of WIDTHS) {
     await crop(width).avif({ quality: 50 }).toFile(`${outDir}/${width}.avif`);
