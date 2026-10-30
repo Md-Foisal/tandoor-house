@@ -8,6 +8,7 @@ use App\Enums\OrderChannel;
 use App\Enums\OrderStatus;
 use App\Enums\PaymentStatus;
 use App\Enums\TableRequestType;
+use App\Events\TableRequestRaised;
 use App\Http\Requests\Table\BillRequest;
 use App\Http\Requests\Table\SendOrderRequest;
 use App\Http\Requests\Table\TableRequestRequest;
@@ -95,7 +96,7 @@ class TableOrderingController extends Controller
             return back()->withErrors(['type' => __('table.errors.duplicate')]);
         }
 
-        $table->requests()->create(['type' => $type]);
+        TableRequestRaised::dispatch($table->requests()->create(['type' => $type]));
 
         Inertia::flash('toast', [
             'type' => 'success',

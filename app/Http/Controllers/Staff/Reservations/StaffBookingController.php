@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Staff\Reservations;
 
 use App\Enums\PaymentStatus;
 use App\Enums\ReservationStatus;
+use App\Events\ReservationUpdated;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Staff\Reservations\StoreStaffReservationRequest;
 use App\Models\Reservation;
@@ -52,6 +53,8 @@ class StaffBookingController extends Controller
                 'notes' => $request->filled('notes') ? $request->string('notes')->trim()->toString() : null,
             ]);
         });
+
+        ReservationUpdated::dispatch($reservation);
 
         $this->log->record('reservation.created', __('staff_reservations.log.created', ['name' => $reservation->name, 'party' => $party]), $reservation, $waived && $this->availability->depositFor($party) > 0 ? ['deposit_waived' => true] : [], $request->user());
 

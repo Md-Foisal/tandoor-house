@@ -7,6 +7,7 @@ use App\Enums\OrderChannel;
 use App\Enums\OrderStatus;
 use App\Enums\PaymentMethod;
 use App\Enums\PaymentStatus;
+use App\Events\OrderPlaced;
 use App\Models\DiningTable;
 use App\Models\MenuItem;
 use App\Models\Order;
@@ -86,6 +87,8 @@ class PlaceTableOrder
             }
 
             $order->events()->create(['from' => null, 'to' => OrderStatus::Placed, 'user_id' => $user?->id]);
+
+            OrderPlaced::dispatch($order);
 
             return $order;
         });

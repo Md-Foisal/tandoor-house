@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Staff\Reservations;
 
 use App\Enums\ReservationStatus;
 use App\Enums\TableStatus;
+use App\Events\ReservationUpdated;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Staff\Reservations\ReassignTableRequest;
 use App\Models\DiningTable;
@@ -59,6 +60,8 @@ class ReassignTableController extends Controller
                 $from?->forceFill(['status' => TableStatus::NeedsCleaning, 'party_size' => null, 'seated_at' => null])->save();
                 $table->forceFill(['status' => TableStatus::Seated, 'party_size' => $reservation->party_size, 'seated_at' => $reservation->seated_at])->save();
             }
+
+            ReservationUpdated::dispatch($reservation);
 
             $this->log->record('reservation.moved', __('staff_reservations.log.moved', ['name' => $reservation->name, 'from' => $from->label ?? '-', 'to' => $table->label]), $reservation, [], $request->user());
         });

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Enums\PaymentStatus;
 use App\Enums\ReservationStatus;
+use App\Events\ReservationUpdated;
 use App\Http\Requests\Reservations\StoreReservationRequest;
 use App\Models\Reservation;
 use App\Policies\ReservationPolicy;
@@ -99,6 +100,8 @@ class ReservationController extends Controller
                 'notes' => $request->filled('notes') ? $request->string('notes')->trim()->toString() : null,
             ]);
         });
+
+        ReservationUpdated::dispatch($reservation);
 
         if ($request->boolean('marketing_opt_in') && $request->user() !== null) {
             $request->user()->update(['marketing_opt_in' => true]);
