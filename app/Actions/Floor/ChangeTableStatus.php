@@ -6,12 +6,13 @@ use App\Enums\TableRequestType;
 use App\Enums\TableStatus;
 use App\Models\DiningTable;
 use App\Models\User;
+use App\Support\ActivityRecorder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
 class ChangeTableStatus
 {
-    public function __construct(private readonly RecordFloorActivity $log) {}
+    public function __construct(private readonly ActivityRecorder $log) {}
 
     /**
      * Where a table may go from each status.
@@ -31,37 +32,49 @@ class ChangeTableStatus
 
     public function handle(DiningTable $table, TableStatus $to, User $by, ?int $partySize = null): DiningTable
     {
-        if ($table->merged_into_id !== null) {
-            $lead = DiningTable::query()->findOrFail($table->merged_into_id);
-
-            throw ValidationException::withMessages(['status' => __('staff_floor.errors.joined', ['lead' => $lead->label])]);
-        }
-
-        if (! in_array($to, self::nextFor($table->status), true)) {
-            throw ValidationException::withMessages(['status' => __('staff_floor.errors.status', [
-                'table' => $table->label,
-                'from' => __('staff_floor.status.'.$table->status->value),
-                'to' => __('staff_floor.status.'.$to->value),
-            ])]);
-        }
-
-        if ($to === TableStatus::Seated && $table->status === TableStatus::Free) {
-            $seats = TableLayout::groupSeats($table);
-
-            if ($partySize === null || $partySize < 1) {
-                throw ValidationException::withMessages(['party_size' => __('staff_floor.errors.party_required')]);
-            }
-
-            if ($partySize > $seats) {
-                throw ValidationException::withMessages(['party_size' => __('staff_floor.errors.party_too_big', ['table' => $table->label, 'seats' => $seats])]);
-            }
-        }
-
         return DB::transaction(function () use ($table, $to, $by, $partySize) {
+            $table = DiningTable::query()->whereKey($table->id)->lockForUpdate()->firstOrFail();
+
+            if ($table->merged_into_id !== null) {
+                $lead = DiningTable::query()->findOrFail($table->merged_into_id);
+
+                throw ValidationException::withMessages(['status' => __('staff_floor.errors.joined', ['lead' => $lead->label])]);
+            }
+
+            if (! in_array($to, self::nextFor($table->status), true)) {
+                throw ValidationException::withMessages(['status' => __('staff_floor.errors.status', [
+                    'table' => $table->label,
+                    'from' => __('staff_floor.status.'.$table->status->value),
+                    'to' => __('staff_floor.status.'.$to->value),
+                ])]);
+            }
+
             $from = $table->status;
+            $seating = $to === TableStatus::Seated && $from === TableStatus::Free;
+
+            if ($seating) {
+                $seats = TableLayout::groupSeats($table);
+
+                if ($partySize === null || $partySize < 1) {
+                    throw ValidationException::withMessages(['party_size' => __('staff_floor.errors.party_required')]);
+                }
+
+                if ($partySize > $seats) {
+                    throw ValidationException::withMessages(['party_size' => __('staff_floor.errors.party_too_big', ['table' => $table->label, 'seats' => $seats])]);
+                }
+            }
+
             $releases = in_array($to, [TableStatus::Free, TableStatus::NeedsCleaning], true);
 
-            $table->forceFill(['status' => $to])->save();
+            $table->forceFill(['status' => $to]);
+
+            if ($seating) {
+                $table->forceFill(['party_size' => $partySize, 'seated_at' => now()]);
+            } elseif ($releases) {
+                $table->forceFill(['party_size' => null, 'seated_at' => null]);
+            }
+
+            $table->save();
 
             if ($releases) {
                 DiningTable::query()->where('merged_into_id', $table->id)->update(['merged_into_id' => null, 'status' => TableStatus::Free]);
@@ -74,11 +87,11 @@ class ChangeTableStatus
 
             DiningTable::query()->where('merged_into_id', $table->id)->update(['status' => $to]);
 
-            $this->log->handle('table.status', $table, $by, $this->describe($table, $from, $to, $partySize), [
+            $this->log->record('table.status', $this->describe($table, $from, $to, $partySize), $table, [
                 'from' => $from->value,
                 'to' => $to->value,
                 'party_size' => $partySize,
-            ]);
+            ], $by);
 
             return $table;
         });

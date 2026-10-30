@@ -338,6 +338,7 @@ export default function Reservations(props: ReservationsProps) {
                 isToday={isToday}
                 isPast={date < today}
                 dateLabel={dateLabel}
+                canConfirmDeposit={props.can_confirm_deposit}
                 onClose={() => setSelectedId(null)}
             />
             <NewBookingDialog

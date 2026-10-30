@@ -89,6 +89,7 @@ export type ReservationsProps = {
     rules: Rules;
     occasions: string[];
     can_waive_deposit: boolean;
+    can_confirm_deposit: boolean;
     tables: BoardTable[];
     periods: Period[];
     bookings: Booking[];

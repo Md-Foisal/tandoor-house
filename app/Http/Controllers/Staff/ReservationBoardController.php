@@ -52,6 +52,7 @@ class ReservationBoardController extends Controller
             ],
             'occasions' => StoreReservationRequest::OCCASIONS,
             'can_waive_deposit' => (bool) $request->user()?->role->isManagement(),
+            'can_confirm_deposit' => (bool) $request->user()?->role->isManagement(),
             'tables' => fn () => $this->board->tableRows(),
             'periods' => fn () => $this->board->periods($date),
             'bookings' => fn () => $view === 'day' ? $this->board->bookings($date, $reservations()) : [],

@@ -6,9 +6,9 @@ use App\Actions\Floor\MergeTables;
 use App\Actions\Floor\UnmergeTable;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Staff\Floor\MergeTablesRequest;
+use App\Http\Requests\Staff\Floor\UnmergeTableRequest;
 use App\Models\DiningTable;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
 use Inertia\Inertia;
 
 class MergeController extends Controller
@@ -24,7 +24,7 @@ class MergeController extends Controller
         return back();
     }
 
-    public function destroy(Request $request, DiningTable $table, UnmergeTable $unmerge): RedirectResponse
+    public function destroy(UnmergeTableRequest $request, DiningTable $table, UnmergeTable $unmerge): RedirectResponse
     {
         $lead = $unmerge->handle($table, $request->user() ?? abort(403));
 

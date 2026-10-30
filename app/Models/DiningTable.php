@@ -23,11 +23,13 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property string $shape
  * @property TableStatus $status
  * @property string $qr_token
+ * @property int|null $party_size
+ * @property CarbonImmutable|null $seated_at
  * @property int|null $merged_into_id
  * @property CarbonImmutable|null $created_at
  * @property CarbonImmutable|null $updated_at
  */
-#[Fillable(['label', 'seats', 'area', 'x', 'y', 'width', 'height', 'shape', 'status', 'qr_token', 'merged_into_id'])]
+#[Fillable(['label', 'seats', 'area', 'x', 'y', 'width', 'height', 'shape', 'status', 'qr_token', 'party_size', 'seated_at', 'merged_into_id'])]
 class DiningTable extends Model
 {
     /** @use HasFactory<DiningTableFactory> */
@@ -37,6 +39,7 @@ class DiningTable extends Model
     {
         return [
             'status' => TableStatus::class,
+            'seated_at' => 'immutable_datetime',
         ];
     }
 

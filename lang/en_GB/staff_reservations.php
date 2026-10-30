@@ -108,6 +108,7 @@ return [
     'actions' => [
         'confirm' => 'Deposit taken',
         'confirm_hint' => 'Mark the deposit as paid and confirm the booking.',
+        'confirm_managers' => 'A manager takes the deposit.',
         'seat' => 'Seat now',
         'complete' => 'Finish',
         'no_show' => 'No-show',
@@ -130,6 +131,11 @@ return [
         'cancel_reason' => 'Why is it being cancelled?',
         'cancel_reason_hint' => 'For example: guest rang to cancel',
         'cancel_confirm' => 'Cancel booking',
+        'deposit_title' => 'Take :name\'s deposit?',
+        'deposit_body' => 'The booking is confirmed and the deposit of :amount is logged as paid.',
+        'deposit_reference' => 'Note or payment reference',
+        'deposit_reference_hint' => 'For example: card terminal receipt 4821',
+        'deposit_confirm' => 'Deposit taken',
         'keep' => 'Keep booking',
         'paid' => 'taken',
         'unpaid' => 'not yet taken',
@@ -182,6 +188,8 @@ return [
     'errors' => [
         'waive_managers_only' => 'Only a manager or the owner can waive a deposit.',
         'reason_required' => 'Say why it is being cancelled.',
+        'reference_required' => 'Add a note or the payment reference for the deposit.',
+        'table_busy' => ':table is not free right now. Pick a free table.',
         'no_table' => 'Give this booking a table before seating it.',
         'too_early' => 'A no-show can only be marked from :time, when the booking starts.',
         'wrong_state' => 'This booking is :status, so that is not possible.',

@@ -65,6 +65,7 @@ export function BookingSheet({
     isToday,
     isPast,
     dateLabel,
+    canConfirmDeposit,
     onClose,
 }: {
     booking: Booking | null;
@@ -74,12 +75,15 @@ export function BookingSheet({
     isToday: boolean;
     isPast: boolean;
     dateLabel: string;
+    canConfirmDeposit: boolean;
     onClose: () => void;
 }) {
     const t = useT();
     const depositLabel = useDepositLabel();
     const [busy, setBusy] = useState<Action | 'move' | null>(null);
-    const [dialog, setDialog] = useState<'no_show' | 'cancel' | null>(null);
+    const [dialog, setDialog] = useState<
+        'no_show' | 'cancel' | 'deposit' | null
+    >(null);
     const [reason, setReason] = useState('');
     const [reasonError, setReasonError] = useState<string | null>(null);
     const [target, setTarget] = useState('');
@@ -209,23 +213,28 @@ export function BookingSheet({
                             <div className="flex flex-col gap-5 p-4">
                                 {live && (
                                     <div className="flex flex-col gap-2">
-                                        {status === 'pending_deposit' && (
-                                            <Button
-                                                size="lg"
-                                                disabled={
-                                                    !online || busy !== null
-                                                }
-                                                onClick={() => run('confirm')}
-                                            >
-                                                {busy === 'confirm'
-                                                    ? t(
-                                                          'staff_reservations.actions.working',
-                                                      )
-                                                    : t(
-                                                          'staff_reservations.actions.confirm',
-                                                      )}
-                                            </Button>
-                                        )}
+                                        {status === 'pending_deposit' &&
+                                            (canConfirmDeposit ? (
+                                                <Button
+                                                    size="lg"
+                                                    disabled={
+                                                        !online || busy !== null
+                                                    }
+                                                    onClick={() =>
+                                                        setDialog('deposit')
+                                                    }
+                                                >
+                                                    {t(
+                                                        'staff_reservations.actions.confirm',
+                                                    )}
+                                                </Button>
+                                            ) : (
+                                                <p className="text-sm text-ink-muted">
+                                                    {t(
+                                                        'staff_reservations.actions.confirm_managers',
+                                                    )}
+                                                </p>
+                                            ))}
                                         {status === 'confirmed' && (
                                             <Button
                                                 size="lg"
@@ -600,6 +609,86 @@ export function BookingSheet({
                 }}
             >
                 <DialogContent>
+                    {booking && dialog === 'deposit' && (
+                        <>
+                            <DialogHeader>
+                                <DialogTitle>
+                                    {t(
+                                        'staff_reservations.dialog.deposit_title',
+                                        { name: booking.name },
+                                    )}
+                                </DialogTitle>
+                                <DialogDescription>
+                                    {t(
+                                        'staff_reservations.dialog.deposit_body',
+                                        {
+                                            amount: formatMoney(
+                                                booking.deposit,
+                                            ),
+                                        },
+                                    )}
+                                </DialogDescription>
+                            </DialogHeader>
+                            <div className="flex flex-col gap-2">
+                                <Label htmlFor="deposit-reference">
+                                    {t(
+                                        'staff_reservations.dialog.deposit_reference',
+                                    )}
+                                </Label>
+                                <Textarea
+                                    id="deposit-reference"
+                                    value={reason}
+                                    maxLength={300}
+                                    placeholder={t(
+                                        'staff_reservations.dialog.deposit_reference_hint',
+                                    )}
+                                    aria-invalid={reasonError !== null}
+                                    aria-describedby={
+                                        reasonError
+                                            ? 'deposit-reference-error'
+                                            : undefined
+                                    }
+                                    onChange={(e) => {
+                                        setReason(e.target.value);
+                                        setReasonError(null);
+                                    }}
+                                />
+                                {reasonError && (
+                                    <p
+                                        id="deposit-reference-error"
+                                        role="alert"
+                                        className="text-sm text-chilli"
+                                    >
+                                        {reasonError}
+                                    </p>
+                                )}
+                            </div>
+                            <DialogFooter>
+                                <Button
+                                    variant="outline"
+                                    onClick={() => setDialog(null)}
+                                >
+                                    {t('staff_reservations.dialog.keep')}
+                                </Button>
+                                <Button
+                                    disabled={
+                                        !online ||
+                                        busy !== null ||
+                                        reason.trim() === ''
+                                    }
+                                    onClick={() => run('confirm', { reason })}
+                                >
+                                    {busy === 'confirm'
+                                        ? t(
+                                              'staff_reservations.actions.working',
+                                          )
+                                        : t(
+                                              'staff_reservations.dialog.deposit_confirm',
+                                          )}
+                                </Button>
+                            </DialogFooter>
+                        </>
+                    )}
                     {booking && dialog === 'no_show' && (
                         <>
                             <DialogHeader>

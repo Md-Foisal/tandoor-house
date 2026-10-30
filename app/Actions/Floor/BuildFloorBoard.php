@@ -69,11 +69,11 @@ class BuildFloorBoard
             if ($occupied && $table->merged_into_id === null) {
                 $party = $seatedBooking !== null
                     ? ['kind' => 'booking', 'name' => $seatedBooking->name, 'size' => $seatedBooking->party_size, 'reference' => $seatedBooking->reference]
-                    : ['kind' => 'walk_in', 'name' => null, 'size' => null, 'reference' => null];
+                    : ['kind' => 'walk_in', 'name' => null, 'size' => $table->party_size, 'reference' => null];
             }
 
             $seatedAt = $occupied
-                ? ($seatedBooking->seated_at ?? $open->first()->placed_at ?? $table->updated_at)
+                ? ($seatedBooking->seated_at ?? $table->seated_at ?? $open->first()->placed_at ?? $table->updated_at)
                 : null;
 
             return [

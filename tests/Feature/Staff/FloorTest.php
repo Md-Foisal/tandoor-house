@@ -76,7 +76,37 @@ it('seats a walk-in and logs it', function () {
     $this->actingAs($waiter)->post("/staff/floor/tables/{$table->id}/status", ['status' => 'seated', 'party_size' => 3])->assertRedirect();
 
     expect($table->refresh()->status)->toBe(TableStatus::Seated)
+        ->and($table->party_size)->toBe(3)
+        ->and($table->seated_at)->not->toBeNull()
         ->and(ActivityLog::where('event', 'table.status')->where('user_id', $waiter->id)->count())->toBe(1);
+});
+
+it('draws a walk-in with its party size and seating time, and clears both when freed', function () {
+    $table = floorTable(0, seats: 4);
+    $waiter = floorStaff();
+
+    $this->actingAs($waiter)->post("/staff/floor/tables/{$table->id}/status", ['status' => 'seated', 'party_size' => 3]);
+
+    $this->actingAs($waiter)->get('/staff/floor')->assertInertia(fn (Assert $page) => $page
+        ->loadDeferredProps(fn (Assert $deferred) => $deferred
+            ->where('tables.0.party.kind', 'walk_in')
+            ->where('tables.0.party.size', 3)
+            ->where('tables.0.seated_at', $table->fresh()->seated_at->toIso8601String())));
+
+    foreach (['needs_cleaning', 'free'] as $status) {
+        $this->actingAs($waiter)->post("/staff/floor/tables/{$table->id}/status", ['status' => $status]);
+    }
+
+    expect($table->refresh()->party_size)->toBeNull()->and($table->seated_at)->toBeNull();
+});
+
+it('refuses a status change when the table moved on since the page loaded', function () {
+    $table = floorTable(0, seats: 4);
+    $waiter = floorStaff();
+
+    $this->actingAs($waiter)->post("/staff/floor/tables/{$table->id}/status", ['status' => 'seated', 'party_size' => 2])->assertSessionHasNoErrors();
+    $this->actingAs($waiter)->post("/staff/floor/tables/{$table->id}/status", ['status' => 'seated', 'party_size' => 2])->assertSessionHasErrors('status');
+    expect($table->refresh()->party_size)->toBe(2);
 });
 
 it('refuses a walk-in without a party size or bigger than the table', function () {
@@ -165,6 +195,7 @@ it('will not merge a table that sits in someone else\'s merge', function () {
 
 it('moves a party and its open orders to a free table', function () {
     $from = floorTable(0, status: TableStatus::Seated);
+    $from->update(['party_size' => 3, 'seated_at' => now()]);
     $to = floorTable(3);
     $open = Order::factory()->dineIn()->create(['dining_table_id' => $from->id, 'status' => OrderStatus::Cooking]);
     $done = Order::factory()->dineIn()->create(['dining_table_id' => $from->id, 'status' => OrderStatus::Completed]);
@@ -177,6 +208,10 @@ it('moves a party and its open orders to a free table', function () {
         ->and($request->refresh()->dining_table_id)->toBe($to->id)
         ->and($to->refresh()->status)->toBe(TableStatus::Seated)
         ->and($from->refresh()->status)->toBe(TableStatus::NeedsCleaning)
+        ->and($to->party_size)->toBe(3)
+        ->and($to->seated_at)->not->toBeNull()
+        ->and($from->party_size)->toBeNull()
+        ->and($from->seated_at)->toBeNull()
         ->and(ActivityLog::where('event', 'table.transferred')->count())->toBe(1);
 });
 
@@ -202,7 +237,19 @@ it('seats a booking on its own table', function () {
 
     expect($booking->refresh()->status)->toBe(ReservationStatus::Seated)
         ->and($booking->seated_at)->not->toBeNull()
-        ->and($table->refresh()->status)->toBe(TableStatus::Seated);
+        ->and($table->refresh()->status)->toBe(TableStatus::Seated)
+        ->and($table->party_size)->toBe(3)
+        ->and($table->seated_at)->not->toBeNull()
+        ->and(ActivityLog::where('event', 'reservation.seated')->where('subject_id', $booking->id)->count())->toBe(1);
+});
+
+it('refuses to seat a booking that was already seated', function () {
+    $table = floorTable(0, status: TableStatus::Reserved);
+    $booking = Reservation::factory()->at(now()->addMinutes(10))->create(['dining_table_id' => $table->id, 'party_size' => 3]);
+
+    $this->actingAs(floorStaff())->post("/staff/floor/reservations/{$booking->id}/seat")->assertSessionHasNoErrors();
+    $this->actingAs(floorStaff())->post("/staff/floor/reservations/{$booking->id}/seat")->assertSessionHasErrors('reservation');
+    expect(ActivityLog::where('event', 'reservation.seated')->count())->toBe(1);
 });
 
 it('seats an unassigned booking on a chosen free table and refuses busy or small ones', function () {

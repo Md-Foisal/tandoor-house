@@ -5,64 +5,65 @@ namespace App\Actions\Floor;
 use App\Enums\TableStatus;
 use App\Models\DiningTable;
 use App\Models\User;
+use App\Support\ActivityRecorder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
 class MergeTables
 {
-    public function __construct(private readonly RecordFloorActivity $log) {}
+    public function __construct(private readonly ActivityRecorder $log) {}
 
     /**
      * @param  list<int>  $ids
      */
     public function handle(array $ids, ?int $leadId, User $by): DiningTable
     {
-        $tables = DiningTable::query()->whereIn('id', $ids)->get();
+        return DB::transaction(function () use ($ids, $leadId, $by) {
+            $tables = DiningTable::query()->whereIn('id', $ids)->orderBy('id')->lockForUpdate()->get();
 
-        if ($tables->count() < 2) {
-            $this->fail(__('staff_floor.errors.merge_two'));
-        }
-
-        foreach ($tables as $table) {
-            if ($table->merged_into_id !== null) {
-                $this->fail(__('staff_floor.errors.merge_joined', ['table' => $table->label]));
+            if ($tables->count() < 2) {
+                $this->fail(__('staff_floor.errors.merge_two'));
             }
 
-            if (! in_array($table->status, [TableStatus::Free, TableStatus::Seated], true)) {
-                $this->fail(__('staff_floor.errors.merge_status', ['table' => $table->label]));
+            foreach ($tables as $table) {
+                if ($table->merged_into_id !== null) {
+                    $this->fail(__('staff_floor.errors.merge_joined', ['table' => $table->label]));
+                }
+
+                if (! in_array($table->status, [TableStatus::Free, TableStatus::Seated], true)) {
+                    $this->fail(__('staff_floor.errors.merge_status', ['table' => $table->label]));
+                }
             }
-        }
 
-        if ($tables->pluck('area')->unique()->count() > 1) {
-            $this->fail(__('staff_floor.errors.merge_area'));
-        }
-
-        $lead = $this->lead($tables, $leadId);
-
-        $others = $tables->reject(fn (DiningTable $table) => $table->is($lead));
-        $existingChildren = DiningTable::query()->where('merged_into_id', $lead->id)->get();
-
-        foreach ($others as $table) {
-            if (DiningTable::query()->where('merged_into_id', $table->id)->exists()) {
-                $this->fail(__('staff_floor.errors.merge_has_group', ['table' => $table->label]));
+            if ($tables->pluck('area')->unique()->count() > 1) {
+                $this->fail(__('staff_floor.errors.merge_area'));
             }
-        }
 
-        if (! TableLayout::connected($tables->concat($existingChildren))) {
-            $this->fail(__('staff_floor.errors.merge_adjacent'));
-        }
+            $lead = $this->lead($tables, $leadId);
 
-        return DB::transaction(function () use ($others, $lead, $by) {
+            $others = $tables->reject(fn (DiningTable $table) => $table->is($lead));
+            $existingChildren = DiningTable::query()->where('merged_into_id', $lead->id)->lockForUpdate()->get();
+
             foreach ($others as $table) {
-                $table->forceFill(['merged_into_id' => $lead->id, 'status' => $lead->status])->save();
+                if (DiningTable::query()->where('merged_into_id', $table->id)->exists()) {
+                    $this->fail(__('staff_floor.errors.merge_has_group', ['table' => $table->label]));
+                }
+            }
+
+            if (! TableLayout::connected($tables->concat($existingChildren))) {
+                $this->fail(__('staff_floor.errors.merge_adjacent'));
+            }
+
+            foreach ($others as $table) {
+                $table->forceFill(['merged_into_id' => $lead->id, 'status' => $lead->status, 'party_size' => null, 'seated_at' => null])->save();
             }
 
             $labels = $others->pluck('label')->implode(', ');
-            $this->log->handle('table.merged', $lead, $by, __('staff_floor.log.merged', ['lead' => $lead->label, 'tables' => $labels]), [
+            $this->log->record('table.merged', __('staff_floor.log.merged', ['lead' => $lead->label, 'tables' => $labels]), $lead, [
                 'lead' => $lead->label,
                 'merged' => $others->pluck('label')->values()->all(),
-            ]);
+            ], $by);
 
             return $lead;
         });

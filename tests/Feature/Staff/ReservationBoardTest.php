@@ -127,16 +127,39 @@ it('falls back to today for a bad date', function () {
         ->assertInertia(fn (Assert $page) => $page->where('date', '2030-03-05'));
 });
 
-it('takes the deposit in person and confirms the booking', function () {
+it('lets a manager take the deposit in person with a reference, and logs it', function () {
     $booking = Reservation::factory()->pendingDeposit(6)->at('2030-03-06 19:00')->create(['dining_table_id' => $this->six->id]);
 
-    $this->actingAs($this->waiter)->post("/staff/reservations/{$booking->id}/status", ['action' => 'confirm'])->assertRedirect();
+    $this->actingAs($this->manager)->post("/staff/reservations/{$booking->id}/status", ['action' => 'confirm', 'reason' => 'Terminal receipt 4821'])->assertRedirect();
 
     expect($booking->fresh())
         ->status->toBe(ReservationStatus::Confirmed)
         ->deposit_status->toBe(PaymentStatus::Paid);
-    expect(ActivityLog::where('event', 'reservation.deposit_taken')->count())->toBe(1);
+    $entry = ActivityLog::where('event', 'reservation.deposit_taken')->sole();
+    expect($entry->properties['reference'])->toBe('Terminal receipt 4821')->and($entry->user_id)->toBe($this->manager->id);
 });
+
+it('needs a note or reference to take a deposit', function () {
+    $booking = Reservation::factory()->pendingDeposit(6)->at('2030-03-06 19:00')->create(['dining_table_id' => $this->six->id]);
+
+    $this->actingAs($this->manager)->post("/staff/reservations/{$booking->id}/status", ['action' => 'confirm'])->assertSessionHasErrors('reason');
+
+    expect($booking->fresh()->status)->toBe(ReservationStatus::PendingDeposit);
+});
+
+it('keeps deposits for management only', function (Role $role, bool $allowed) {
+    $booking = Reservation::factory()->pendingDeposit(6)->at('2030-03-06 19:00')->create(['dining_table_id' => $this->six->id]);
+
+    $response = $this->actingAs(User::factory()->role($role)->create())->post("/staff/reservations/{$booking->id}/status", ['action' => 'confirm', 'reason' => 'Receipt 1']);
+
+    $allowed ? $response->assertRedirect() : $response->assertForbidden();
+    expect($booking->fresh()->status)->toBe($allowed ? ReservationStatus::Confirmed : ReservationStatus::PendingDeposit);
+})->with([
+    [Role::Waiter, false],
+    [Role::Cashier, false],
+    [Role::Manager, true],
+    [Role::Owner, true],
+]);
 
 it('seats a booking and marks its table seated', function () {
     $booking = bookAt('18:00', ['dining_table_id' => $this->two->id]);
@@ -144,7 +167,24 @@ it('seats a booking and marks its table seated', function () {
     $this->actingAs($this->waiter)->post("/staff/reservations/{$booking->id}/status", ['action' => 'seat'])->assertRedirect();
 
     expect($booking->fresh())->status->toBe(ReservationStatus::Seated)->seated_at->not->toBeNull();
-    expect($this->two->fresh()->status)->toBe(TableStatus::Seated);
+    expect($this->two->fresh())->status->toBe(TableStatus::Seated)->party_size->toBe($booking->party_size)->seated_at->not->toBeNull();
+    expect(ActivityLog::where('event', 'reservation.seated')->count())->toBe(1);
+});
+
+it('will not seat a booking twice', function () {
+    $booking = bookAt('18:00', ['dining_table_id' => $this->two->id]);
+
+    $this->actingAs($this->waiter)->post("/staff/reservations/{$booking->id}/status", ['action' => 'seat'])->assertSessionHasNoErrors();
+    $this->actingAs($this->waiter)->post("/staff/reservations/{$booking->id}/status", ['action' => 'seat'])->assertSessionHasErrors('action');
+    expect(ActivityLog::where('event', 'reservation.seated')->count())->toBe(1);
+});
+
+it('will not seat a booking onto a table someone else is already sitting at', function () {
+    $this->two->update(['status' => TableStatus::Seated]);
+    $booking = bookAt('18:00', ['party_size' => 2, 'dining_table_id' => $this->two->id]);
+
+    $this->actingAs($this->waiter)->post("/staff/reservations/{$booking->id}/status", ['action' => 'seat'])->assertSessionHasErrors('action');
+    expect($booking->fresh()->status)->toBe(ReservationStatus::Confirmed);
 });
 
 it('will not seat a booking without a table or one still owing a deposit', function () {
@@ -166,6 +206,32 @@ it('finishes a seated booking and flags the table for cleaning', function () {
 
     expect($booking->fresh()->status)->toBe(ReservationStatus::Completed)
         ->and($this->four->fresh()->status)->toBe(TableStatus::NeedsCleaning);
+});
+
+it('carries a seated party to the new table when it moves', function () {
+    $booking = Reservation::factory()->seated()->create(['dining_table_id' => $this->two->id, 'party_size' => 2]);
+    $this->two->update(['status' => TableStatus::Seated, 'party_size' => 2, 'seated_at' => now()]);
+
+    $this->actingAs($this->waiter)->patch("/staff/reservations/{$booking->id}/table", ['dining_table_id' => $this->six->id])->assertRedirect();
+
+    expect($this->six->fresh())->status->toBe(TableStatus::Seated)->party_size->toBe(2)
+        ->and($this->two->fresh())->status->toBe(TableStatus::NeedsCleaning)->party_size->toBeNull();
+});
+
+it('will not move a seated party onto a table that is not free', function () {
+    $booking = Reservation::factory()->seated()->create(['dining_table_id' => $this->two->id, 'party_size' => 2]);
+    $this->two->update(['status' => TableStatus::Seated]);
+    $this->six->update(['status' => TableStatus::Seated]);
+
+    $this->actingAs($this->waiter)->patch("/staff/reservations/{$booking->id}/table", ['dining_table_id' => $this->six->id])->assertSessionHasErrors('dining_table_id');
+    expect($booking->fresh()->dining_table_id)->toBe($this->two->id);
+});
+
+it('will not move a booking that has finished since the page loaded', function () {
+    $booking = bookAt('19:00', ['party_size' => 2, 'dining_table_id' => $this->two->id, 'status' => ReservationStatus::Cancelled]);
+
+    $this->actingAs($this->waiter)->patch("/staff/reservations/{$booking->id}/table", ['dining_table_id' => $this->six->id])->assertSessionHasErrors('dining_table_id');
+    expect($booking->fresh()->dining_table_id)->toBe($this->two->id);
 });
 
 it('only allows a no-show once the booking has started, and logs it', function () {

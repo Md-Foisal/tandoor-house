@@ -8,6 +8,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Staff\Reservations\StoreStaffReservationRequest;
 use App\Models\Reservation;
 use App\Services\TableAvailability;
+use App\Support\ActivityRecorder;
 use App\Support\CodeGenerator;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\DB;
@@ -18,7 +19,7 @@ class StaffBookingController extends Controller
 {
     public function __construct(
         private readonly TableAvailability $availability,
-        private readonly ReservationActions $actions,
+        private readonly ActivityRecorder $log,
     ) {}
 
     public function store(StoreStaffReservationRequest $request): RedirectResponse
@@ -52,7 +53,7 @@ class StaffBookingController extends Controller
             ]);
         });
 
-        $this->actions->log('reservation.created', $reservation, $request->user(), __('staff_reservations.log.created', ['name' => $reservation->name, 'party' => $party]), $waived && $this->availability->depositFor($party) > 0 ? ['deposit_waived' => true] : []);
+        $this->log->record('reservation.created', __('staff_reservations.log.created', ['name' => $reservation->name, 'party' => $party]), $reservation, $waived && $this->availability->depositFor($party) > 0 ? ['deposit_waived' => true] : [], $request->user());
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __($deposit > 0 ? 'staff_reservations.flash.created_deposit' : 'staff_reservations.flash.created', ['name' => $reservation->name])]);
 

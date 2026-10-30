@@ -11,7 +11,11 @@ class TransitionReservationRequest extends FormRequest
 
     public function authorize(): bool
     {
-        return true;
+        if (! ($this->user()?->can('staff.reservations') ?? false)) {
+            return false;
+        }
+
+        return $this->input('action') !== 'confirm' || $this->user()->role->isManagement();
     }
 
     /**
@@ -21,7 +25,7 @@ class TransitionReservationRequest extends FormRequest
     {
         return [
             'action' => ['required', Rule::in(self::ACTIONS)],
-            'reason' => [Rule::requiredIf($this->input('action') === 'cancel'), 'nullable', 'string', 'max:300'],
+            'reason' => [Rule::requiredIf(in_array($this->input('action'), ['cancel', 'confirm'], true)), 'nullable', 'string', 'max:300'],
         ];
     }
 
@@ -31,7 +35,7 @@ class TransitionReservationRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'reason.required' => __('staff_reservations.errors.reason_required'),
+            'reason.required' => __($this->input('action') === 'confirm' ? 'staff_reservations.errors.reference_required' : 'staff_reservations.errors.reason_required'),
         ];
     }
 }

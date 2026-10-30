@@ -13,6 +13,11 @@ use Illuminate\Validation\Validator;
  */
 class StoreStaffReservationRequest extends StoreReservationRequest
 {
+    public function authorize(): bool
+    {
+        return $this->user()?->can('staff.reservations') ?? false;
+    }
+
     /**
      * @return array<string, mixed>
      */
