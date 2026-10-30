@@ -30,6 +30,10 @@ return [
         'legal_name' => env('RESTAURANT_LEGAL_NAME', 'Tandoor House Ltd'),
         'vat_number' => env('RESTAURANT_VAT_NUMBER', 'GB 123 4567 89'),
         'company_number' => env('RESTAURANT_COMPANY_NUMBER', '01234567'),
+        // Placeholder only. Set RESTAURANT_ICO_NUMBER to the real data protection
+        // fee registration number before going live; the privacy notice shows
+        // it, or a plain "pending" line while it is empty.
+        'ico_number' => env('RESTAURANT_ICO_NUMBER'),
     ],
 
     /*

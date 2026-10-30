@@ -1,6 +1,7 @@
 import '@fontsource/rozha-one/latin-400.css';
 import '@fontsource-variable/hanken-grotesk/wght.css';
 import { createInertiaApp } from '@inertiajs/react';
+import { ConsentBanner } from '@/components/consent/consent-banner';
 import { Toaster } from '@/components/ui/sonner';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { initializeTheme } from '@/hooks/use-appearance';
@@ -38,6 +39,7 @@ void createInertiaApp({
             <TooltipProvider delayDuration={0}>
                 {app}
                 <Toaster />
+                <ConsentBanner />
             </TooltipProvider>
         );
     },
