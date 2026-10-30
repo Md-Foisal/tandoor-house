@@ -74,3 +74,11 @@ Files: routes/staff/{menu,settings,reviews,activity,reports}.php, app/Http/Contr
 25. No chart text under 12px; hour bucketing driver-aware (`DATE_FORMAT(placed_at, '%Y-%m-%d %H')` on MySQL, `strftime('%Y-%m-%d %H', placed_at)` on SQLite via `DB::getDriverName()`).
 27. Replace ReviewQueue::log, SettingsChange::log, RecordMenuChange with ActivityRecorder.
 15. Form Request `authorize()` for these areas.
+
+---
+
+## When many fix agents run at once
+Up to nine fix agents may run together. To keep each other's checks reliable:
+- Do NOT run `npm run build`, `php artisan migrate:fresh`, or the screenshot script; the main session does those centrally.
+- Run only your own test files (`php artisan test --compact tests/Feature/Staff/<YourTest>.php ...`), `vendor/bin/pint <your paths>`, `vendor/bin/phpstan analyse --memory-limit=1G <your paths>`, `npx vp fmt <your TSX paths>` and `npm run types:check` (report, don't fix, type errors in others' files).
+- If a test of yours fails only with "Vite manifest" / "Not a valid Inertia response" because a page is missing from the last build, say so; the main session rebuilds.
