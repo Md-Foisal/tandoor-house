@@ -59,7 +59,7 @@ export function SuggestedSpecials({ items }: { items: MenuItem[] }) {
                             aria-label={t('basket.quick_add', {
                                 item: item.name,
                             })}
-                            className="grid size-11 shrink-0 place-items-center rounded-full bg-ember text-ember-ink transition-transform duration-150 outline-none hover:scale-105 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ember active:scale-95 disabled:opacity-45"
+                            className="grid size-11 shrink-0 place-items-center rounded-full bg-ember text-ember-ink outline-hidden transition-transform duration-150 hover:scale-105 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ember active:scale-95 disabled:opacity-45"
                         >
                             <Plus
                                 className="size-5"

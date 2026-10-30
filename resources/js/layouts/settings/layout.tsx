@@ -35,7 +35,7 @@ export default function SettingsLayout({ children }: PropsWithChildren) {
                                     prefetch
                                     aria-current={current ? 'page' : undefined}
                                     className={cn(
-                                        '-mb-px flex h-11 items-center border-b-2 border-transparent px-3 font-semibold whitespace-nowrap text-ink-muted outline-none hover:text-ink focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ember',
+                                        '-mb-px flex h-11 items-center border-b-2 border-transparent px-3 font-semibold whitespace-nowrap text-ink-muted outline-hidden hover:text-ink focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ember',
                                         current &&
                                             'border-ember text-ink hover:text-ink',
                                     )}

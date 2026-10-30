@@ -50,7 +50,7 @@ export default function AuthSimpleLayout({
                 <Link
                     href="/"
                     aria-label={t('auth_pages.layout.home', { name })}
-                    className="-ml-2 inline-flex min-h-11 w-fit items-center rounded-md px-2 outline-none focus-visible:outline-2 focus-visible:outline-ember"
+                    className="-ml-2 inline-flex min-h-11 w-fit items-center rounded-md px-2 outline-hidden focus-visible:outline-2 focus-visible:outline-ember"
                 >
                     <Logo name={name} />
                 </Link>

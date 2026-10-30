@@ -94,7 +94,7 @@ export default function TablePay({
 
                 <Link
                     href={urls.bill}
-                    className="mt-6 inline-flex min-h-11 items-center text-sm font-semibold text-ember underline underline-offset-4 outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ember"
+                    className="mt-6 inline-flex min-h-11 items-center text-sm font-semibold text-ember underline underline-offset-4 outline-hidden focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ember"
                 >
                     {t('table.pay.back')}
                 </Link>

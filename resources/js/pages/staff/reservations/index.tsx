@@ -212,7 +212,7 @@ export default function Reservations(props: ReservationsProps) {
                                 aria-pressed={view === mode}
                                 onClick={() => go({ view: mode })}
                                 className={cn(
-                                    'h-10 min-w-16 rounded-sm px-3 text-sm font-semibold outline-none focus-visible:outline-2 focus-visible:outline-ember',
+                                    'h-10 min-w-16 rounded-sm px-3 text-sm font-semibold outline-hidden focus-visible:outline-2 focus-visible:outline-ember',
                                     view === mode
                                         ? 'bg-ink text-paper'
                                         : 'hover:bg-clay',

@@ -128,7 +128,7 @@ export function ConsentBanner() {
                         id={titleId}
                         ref={heading}
                         tabIndex={-1}
-                        className="font-display text-xl outline-none"
+                        className="font-display text-xl outline-hidden"
                     >
                         {view === 'main'
                             ? t('legal.consent.title')

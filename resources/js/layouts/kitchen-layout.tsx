@@ -40,7 +40,7 @@ export default function KitchenLayout({ children }: { children: ReactNode }) {
             <header className="flex h-14 shrink-0 items-center gap-3 border-b border-line px-3">
                 <Link
                     href="/staff"
-                    className="grid size-11 place-items-center rounded-md text-ink-muted outline-none hover:bg-clay hover:text-ink focus-visible:outline-2 focus-visible:outline-ember"
+                    className="grid size-11 place-items-center rounded-md text-ink-muted outline-hidden hover:bg-clay hover:text-ink focus-visible:outline-2 focus-visible:outline-ember"
                     aria-label={t('staff.areas.today')}
                 >
                     <ArrowLeft className="size-5" aria-hidden="true" />

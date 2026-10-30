@@ -136,7 +136,7 @@ export function TicketCard({
                                 dish: line.name,
                             })}
                             className={cn(
-                                'flex min-h-16 w-full items-start gap-3 px-4 py-3 text-left outline-none focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ember',
+                                'flex min-h-16 w-full items-start gap-3 px-4 py-3 text-left outline-hidden focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ember',
                                 line.done
                                     ? 'bg-leaf-soft text-ink-muted'
                                     : 'hover:bg-clay active:bg-clay',

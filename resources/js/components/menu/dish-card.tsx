@@ -56,7 +56,7 @@ export function DishCard({
                     <Link
                         href={href}
                         prefetch
-                        className="outline-none after:absolute after:inset-0 after:content-[''] focus-visible:underline focus-visible:decoration-ember focus-visible:underline-offset-4"
+                        className="outline-hidden after:absolute after:inset-0 after:content-[''] focus-visible:underline focus-visible:decoration-ember focus-visible:underline-offset-4"
                     >
                         {item.name}
                     </Link>

@@ -30,7 +30,7 @@ export function StationTabs({
                         aria-selected={selected}
                         onClick={() => onSelect(station.value)}
                         className={cn(
-                            'flex h-12 shrink-0 items-center gap-2 rounded-md px-4 text-[0.9375rem] font-semibold outline-none focus-visible:outline-2 focus-visible:outline-ember',
+                            'flex h-12 shrink-0 items-center gap-2 rounded-md px-4 text-[0.9375rem] font-semibold outline-hidden focus-visible:outline-2 focus-visible:outline-ember',
                             selected
                                 ? 'bg-ember text-ember-ink'
                                 : 'text-ink-muted hover:bg-clay hover:text-ink',

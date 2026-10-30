@@ -127,7 +127,7 @@ export default function MenuIndex({ categories }: Props) {
                         {t('menu.allergen_note')}{' '}
                         <Link
                             href="/allergens"
-                            className="inline-flex min-h-11 items-center font-semibold text-ember underline underline-offset-4 outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ember"
+                            className="inline-flex min-h-11 items-center font-semibold text-ember underline underline-offset-4 outline-hidden focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ember"
                         >
                             {t('menu.allergen_link')}
                         </Link>

@@ -123,7 +123,7 @@ export const TableTile = forwardRef<HTMLButtonElement, TileProps>(
                 onClick={onActivate}
                 onFocus={onFocus}
                 className={cn(
-                    'relative flex h-full w-full flex-col items-start justify-start gap-0.5 overflow-hidden border-2 p-1.5 text-left text-xs text-ink transition-colors duration-150 outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ember',
+                    'relative flex h-full w-full flex-col items-start justify-start gap-0.5 overflow-hidden border-2 p-1.5 text-left text-xs text-ink outline-hidden transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ember',
                     meta.tile,
                     radius,
                     joined && 'border-dashed',

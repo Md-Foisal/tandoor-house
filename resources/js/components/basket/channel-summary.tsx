@@ -61,7 +61,7 @@ export function ChannelSummary({
             {channel !== 'dine_in' && (
                 <Link
                     href="/checkout"
-                    className="inline-flex min-h-11 items-center self-start rounded-sm text-sm font-semibold text-ember underline underline-offset-4 outline-none focus-visible:outline-2 focus-visible:outline-ember"
+                    className="inline-flex min-h-11 items-center self-start rounded-sm text-sm font-semibold text-ember underline underline-offset-4 outline-hidden focus-visible:outline-2 focus-visible:outline-ember"
                 >
                     {t('basket.channel.change')}
                 </Link>

@@ -114,7 +114,7 @@ export function HeroVideo({ className }: { className?: string }) {
                 <button
                     type="button"
                     onClick={toggle}
-                    className="absolute right-4 bottom-4 z-10 grid size-11 place-items-center rounded-full bg-ink/60 text-paper outline-none hover:bg-ink/75 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-paper dark:bg-black/60 dark:text-ink"
+                    className="absolute right-4 bottom-4 z-10 grid size-11 place-items-center rounded-full bg-ink/60 text-paper outline-hidden hover:bg-ink/75 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-paper dark:bg-black/60 dark:text-ink"
                     aria-label={
                         playing ? t('ui.video.pause') : t('ui.video.play')
                     }

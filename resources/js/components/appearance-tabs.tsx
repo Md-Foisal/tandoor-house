@@ -43,7 +43,7 @@ export default function AppearanceToggleTab({
                 <RadioGroupPrimitive.Item
                     key={value}
                     value={value}
-                    className="group flex min-h-11 items-center gap-3 rounded-lg border border-line-strong bg-surface p-4 text-left transition-colors duration-150 outline-none hover:bg-clay focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ember data-[state=checked]:border-ember data-[state=checked]:bg-ember-soft sm:flex-col sm:items-start"
+                    className="group flex min-h-11 items-center gap-3 rounded-lg border border-line-strong bg-surface p-4 text-left outline-hidden transition-colors duration-150 hover:bg-clay focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ember data-[state=checked]:border-ember data-[state=checked]:bg-ember-soft sm:flex-col sm:items-start"
                 >
                     <Icon
                         className="size-6 text-ink-muted group-data-[state=checked]:text-ember"

@@ -49,7 +49,7 @@ export function TableList({
                                             : undefined
                                     }
                                     className={cn(
-                                        'flex min-h-16 w-full items-center gap-3 rounded-lg border-2 p-3 text-left outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ember',
+                                        'flex min-h-16 w-full items-center gap-3 rounded-lg border-2 p-3 text-left outline-hidden focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ember',
                                         statusMeta[table.status].tile,
                                         table.merged_into_id !== null &&
                                             'border-dashed',

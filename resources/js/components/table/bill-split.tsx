@@ -160,7 +160,7 @@ export function BillSplit({
                                 aria-pressed={guest === index}
                                 onClick={() => setGuest(index)}
                                 className={cn(
-                                    'min-h-11 rounded-full border-[1.5px] px-4 font-semibold outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ember',
+                                    'min-h-11 rounded-full border-[1.5px] px-4 font-semibold outline-hidden focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ember',
                                     guest === index
                                         ? 'border-ember bg-ember-soft text-ember'
                                         : 'border-line-strong text-ink hover:bg-clay',

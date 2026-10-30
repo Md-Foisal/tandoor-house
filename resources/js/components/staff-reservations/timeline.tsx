@@ -246,7 +246,7 @@ export function Timeline({
                                                     },
                                                 )}
                                                 className={cn(
-                                                    'absolute top-1.5 bottom-1.5 flex min-w-0 flex-col justify-center overflow-hidden rounded-md border-l-4 px-2 text-left text-sm outline-none focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-ember',
+                                                    'absolute top-1.5 bottom-1.5 flex min-w-0 flex-col justify-center overflow-hidden rounded-md border-l-4 px-2 text-left text-sm outline-hidden focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-ember',
                                                     blockTone[b.status],
                                                     highlighted.has(b.id) &&
                                                         'ring-2 ring-ember ring-offset-1 ring-offset-surface',

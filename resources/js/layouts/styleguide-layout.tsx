@@ -25,7 +25,7 @@ export default function StyleguideLayout({
                 <div className="container-page flex h-16 items-center justify-between gap-4">
                     <Link
                         href="/"
-                        className="rounded-sm outline-none focus-visible:outline-2 focus-visible:outline-ember"
+                        className="rounded-sm outline-hidden focus-visible:outline-2 focus-visible:outline-ember"
                     >
                         <Logo name={name} />
                     </Link>
@@ -43,7 +43,7 @@ export default function StyleguideLayout({
                                 url === link.href ? 'page' : undefined
                             }
                             className={cn(
-                                'rounded-full px-4 py-2.5 text-sm font-semibold text-ink-muted outline-none hover:text-ink focus-visible:outline-2 focus-visible:outline-ember',
+                                'rounded-full px-4 py-2.5 text-sm font-semibold text-ink-muted outline-hidden hover:text-ink focus-visible:outline-2 focus-visible:outline-ember',
                                 url === link.href &&
                                     'bg-ink text-paper hover:text-paper',
                             )}

@@ -24,7 +24,7 @@ export default function PasswordInput({
             <button
                 type="button"
                 onClick={() => setShowPassword((prev) => !prev)}
-                className="absolute inset-y-0 right-0 grid w-11 place-items-center rounded-r-md text-ink-muted outline-none hover:text-ink focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ember"
+                className="absolute inset-y-0 right-0 grid w-11 place-items-center rounded-r-md text-ink-muted outline-hidden hover:text-ink focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ember"
                 aria-label={
                     showPassword
                         ? t('auth_pages.common.hide_password')

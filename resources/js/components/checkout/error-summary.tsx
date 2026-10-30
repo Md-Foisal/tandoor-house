@@ -35,7 +35,7 @@ export const ErrorSummary = forwardRef<
             ref={ref}
             tabIndex={-1}
             role="alert"
-            className="rounded-lg border border-chilli/40 bg-chilli-soft p-4 outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ember"
+            className="rounded-lg border border-chilli/40 bg-chilli-soft p-4 outline-hidden focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ember"
         >
             <h2 className="font-semibold text-ink">
                 {t('checkout.errors.summary_title')}

@@ -12,7 +12,7 @@ export default function TextLink({
     return (
         <Link
             className={cn(
-                'inline-flex min-h-11 items-center font-semibold text-ember underline decoration-1 underline-offset-4 outline-none hover:decoration-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ember',
+                'inline-flex min-h-11 items-center font-semibold text-ember underline decoration-1 underline-offset-4 outline-hidden hover:decoration-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ember',
                 className,
             )}
             {...props}

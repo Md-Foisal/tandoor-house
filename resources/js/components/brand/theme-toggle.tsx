@@ -42,7 +42,7 @@ export function ThemeToggle({ className }: { className?: string }) {
                     value={value}
                     aria-label={t(`ui.theme.${value}`)}
                     title={t(`ui.theme.${value}`)}
-                    className="grid size-11 place-items-center rounded-full text-ink-muted transition-colors duration-150 outline-none hover:text-ink focus-visible:outline-2 focus-visible:outline-ember data-[state=checked]:bg-surface data-[state=checked]:text-ink data-[state=checked]:shadow-plate"
+                    className="grid size-11 place-items-center rounded-full text-ink-muted outline-hidden transition-colors duration-150 hover:text-ink focus-visible:outline-2 focus-visible:outline-ember data-[state=checked]:bg-surface data-[state=checked]:text-ink data-[state=checked]:shadow-plate"
                 >
                     <Icon className="size-4" aria-hidden="true" />
                 </RadioGroupPrimitive.Item>

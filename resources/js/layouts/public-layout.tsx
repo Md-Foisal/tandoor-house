@@ -66,7 +66,7 @@ function DesktopHeader({ links }: { links: NavItem[] }) {
             <div className="container-page flex h-[4.5rem] items-center gap-8">
                 <Link
                     href="/"
-                    className="rounded-sm outline-none focus-visible:outline-2 focus-visible:outline-ember"
+                    className="rounded-sm outline-hidden focus-visible:outline-2 focus-visible:outline-ember"
                 >
                     <Logo name={name} />
                 </Link>
@@ -84,7 +84,7 @@ function DesktopHeader({ links }: { links: NavItem[] }) {
                                 prefetch
                                 aria-current={current ? 'page' : undefined}
                                 className={cn(
-                                    'relative rounded-md px-3 py-2.5 font-semibold text-ink-muted transition-colors duration-150 outline-none hover:text-ink focus-visible:outline-2 focus-visible:outline-ember',
+                                    'relative rounded-md px-3 py-2.5 font-semibold text-ink-muted outline-hidden transition-colors duration-150 hover:text-ink focus-visible:outline-2 focus-visible:outline-ember',
                                     current && 'text-ink',
                                 )}
                             >
@@ -113,7 +113,7 @@ function DesktopHeader({ links }: { links: NavItem[] }) {
                     <ThemeToggle className="hidden lg:inline-flex" />
                     <Link
                         href={auth.user ? '/account' : '/login'}
-                        className="grid size-11 place-items-center rounded-full text-ink outline-none hover:bg-clay focus-visible:outline-2 focus-visible:outline-ember"
+                        className="grid size-11 place-items-center rounded-full text-ink outline-hidden hover:bg-clay focus-visible:outline-2 focus-visible:outline-ember"
                         aria-label={
                             auth.user ? t('nav.account') : t('nav.sign_in')
                         }
@@ -122,7 +122,7 @@ function DesktopHeader({ links }: { links: NavItem[] }) {
                     </Link>
                     <Link
                         href="/basket"
-                        className="relative grid size-11 place-items-center rounded-full text-ink outline-none hover:bg-clay focus-visible:outline-2 focus-visible:outline-ember"
+                        className="relative grid size-11 place-items-center rounded-full text-ink outline-hidden hover:bg-clay focus-visible:outline-2 focus-visible:outline-ember"
                         aria-label={t('nav.basket_count', {
                             count: basketCount,
                         })}
@@ -150,7 +150,7 @@ function MobileHeader() {
             <div className="flex h-14 items-center justify-between px-4">
                 <Link
                     href="/"
-                    className="rounded-sm outline-none focus-visible:outline-2 focus-visible:outline-ember"
+                    className="rounded-sm outline-hidden focus-visible:outline-2 focus-visible:outline-ember"
                 >
                     <Logo
                         name={name}
@@ -201,7 +201,7 @@ function MobileTabBar() {
                                 prefetch
                                 aria-current={current ? 'page' : undefined}
                                 className={cn(
-                                    'flex h-16 flex-col items-center justify-center gap-1 text-[0.6875rem] font-semibold text-ink-muted outline-none focus-visible:bg-clay',
+                                    'flex h-16 flex-col items-center justify-center gap-1 text-[0.6875rem] font-semibold text-ink-muted outline-hidden focus-visible:bg-clay',
                                     current && 'text-ember',
                                 )}
                             >

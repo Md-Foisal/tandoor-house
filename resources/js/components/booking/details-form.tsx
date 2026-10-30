@@ -109,7 +109,7 @@ export function DetailsForm({
                         onChange={(event) =>
                             setData('occasion', event.target.value)
                         }
-                        className="h-11 w-full rounded-md border border-line-strong bg-surface px-3 text-base text-ink outline-none focus-visible:border-ember focus-visible:shadow-[0_0_0_3px_var(--ember-soft)] aria-invalid:border-chilli"
+                        className="h-11 w-full rounded-md border border-line-strong bg-surface px-3 text-base text-ink outline-hidden focus-visible:border-ember focus-visible:shadow-[0_0_0_3px_var(--ember-soft)] aria-invalid:border-chilli"
                     >
                         <option value="">
                             {t('booking.details.occasion_none')}

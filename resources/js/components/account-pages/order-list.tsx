@@ -29,7 +29,7 @@ export function OrderList({ orders }: { orders: HistoryOrder[] }) {
                                         aria-label={t('account.orders.view', {
                                             number: order.number,
                                         })}
-                                        className="font-semibold outline-none hover:text-ember focus-visible:outline-2 focus-visible:outline-ember"
+                                        className="font-semibold outline-hidden hover:text-ember focus-visible:outline-2 focus-visible:outline-ember"
                                     >
                                         {order.number}
                                     </Link>
