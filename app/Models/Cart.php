@@ -4,6 +4,8 @@ namespace App\Models;
 
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\MassPrunable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -22,7 +24,19 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 #[Fillable(['user_id', 'session_id', 'lines', 'channel', 'dining_table_id', 'promo_code', 'reminded_at'])]
 class Cart extends Model
 {
+    use MassPrunable;
+
     public $timestamps = false;
+
+    /**
+     * updated_at is the last-touched time, set by CartService.
+     *
+     * @return Builder<Cart>
+     */
+    public function prunable(): Builder
+    {
+        return static::where(fn ($q) => $q->where('updated_at', '<', now()->subDays(30))->orWhereNull('updated_at'));
+    }
 
     protected function casts(): array
     {

@@ -6,9 +6,12 @@ import DeleteUser from '@/components/delete-user';
 import Heading from '@/components/heading';
 import { Field } from '@/components/input-error';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
 import { useT } from '@/lib/i18n';
+import { dataExport } from '@/routes/account';
 import { edit } from '@/routes/profile';
 import { send } from '@/routes/verification';
 import type { User } from '@/types';
@@ -21,9 +24,11 @@ type PageProps = {
 export default function Profile({
     mustVerifyEmail,
     status,
+    marketingOptIn,
 }: {
     mustVerifyEmail: boolean;
     status?: string;
+    marketingOptIn: boolean;
 }) {
     const t = useT();
     const online = useOnline();
@@ -112,6 +117,38 @@ export default function Profile({
                                     </div>
                                 )}
 
+                            <div className="flex items-start gap-3">
+                                <input
+                                    type="hidden"
+                                    name="marketing_opt_in"
+                                    value="0"
+                                />
+                                <Checkbox
+                                    id="marketing_opt_in"
+                                    name="marketing_opt_in"
+                                    value="1"
+                                    defaultChecked={marketingOptIn}
+                                    aria-describedby="marketing-hint"
+                                    className="mt-0.5"
+                                />
+                                <div className="space-y-1">
+                                    <Label
+                                        htmlFor="marketing_opt_in"
+                                        className="font-medium"
+                                    >
+                                        {t('settings_pages.profile.marketing')}
+                                    </Label>
+                                    <p
+                                        id="marketing-hint"
+                                        className="text-sm text-ink-muted"
+                                    >
+                                        {t(
+                                            'settings_pages.profile.marketing_hint',
+                                        )}
+                                    </p>
+                                </div>
+                            </div>
+
                             <div className="flex flex-wrap items-center gap-3">
                                 <Button
                                     disabled={processing || !online}
@@ -131,6 +168,37 @@ export default function Profile({
                         </>
                     )}
                 </Form>
+            </section>
+
+            <section
+                aria-labelledby="export-heading"
+                className="space-y-4 border-t border-line pt-10"
+            >
+                <Heading
+                    id="export-heading"
+                    variant="small"
+                    title={t('settings_pages.export.title')}
+                    description={t('settings_pages.export.description')}
+                />
+                <Button
+                    asChild
+                    variant="secondary"
+                    aria-disabled={!online}
+                    className="aria-disabled:pointer-events-none aria-disabled:opacity-45"
+                >
+                    <a
+                        href={online ? dataExport.url() : undefined}
+                        download
+                        data-test="download-data-button"
+                    >
+                        {t('settings_pages.export.action')}
+                    </a>
+                </Button>
+                <p className="text-sm text-ink-muted">
+                    {online
+                        ? t('settings_pages.export.hint')
+                        : t('settings_pages.export.offline')}
+                </p>
             </section>
 
             <DeleteUser />

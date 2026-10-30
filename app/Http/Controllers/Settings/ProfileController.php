@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers\Settings;
 
+use App\Actions\Account\EraseAccount;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Settings\ProfileDeleteRequest;
 use App\Http\Requests\Settings\ProfileUpdateRequest;
+use App\Support\ActivityRecorder;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -22,21 +24,31 @@ class ProfileController extends Controller
         return Inertia::render('settings/profile', [
             'mustVerifyEmail' => $request->user() instanceof MustVerifyEmail,
             'status' => $request->session()->get('status'),
+            'marketingOptIn' => $request->user()->fresh()->marketing_opt_in,
         ]);
     }
 
     /**
      * Update the user's profile information.
      */
-    public function update(ProfileUpdateRequest $request): RedirectResponse
+    public function update(ProfileUpdateRequest $request, ActivityRecorder $activity): RedirectResponse
     {
         $request->user()->fill($request->validated());
+        $consentChanged = $request->user()->isDirty('marketing_opt_in');
 
         if ($request->user()->isDirty('email')) {
             $request->user()->email_verified_at = null;
         }
 
         $request->user()->save();
+
+        if ($consentChanged) {
+            $activity->record(
+                $request->user()->marketing_opt_in ? 'marketing.opted_in' : 'marketing.opted_out',
+                $request->user()->marketing_opt_in ? 'A customer opted in to marketing.' : 'A customer opted out of marketing.',
+                $request->user(),
+            );
+        }
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __('Profile updated.')]);
 
@@ -46,13 +58,15 @@ class ProfileController extends Controller
     /**
      * Delete the user's profile.
      */
-    public function destroy(ProfileDeleteRequest $request): RedirectResponse
+    public function destroy(ProfileDeleteRequest $request, EraseAccount $erase): RedirectResponse
     {
         $user = $request->user();
 
+        $erase->ensureCanErase($user);
+
         Auth::logout();
 
-        $user->delete();
+        $erase->handle($user);
 
         $request->session()->invalidate();
         $request->session()->regenerateToken();
