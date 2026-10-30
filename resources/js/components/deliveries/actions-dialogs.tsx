@@ -54,7 +54,7 @@ export function DeliverDialog({
     const [busy, setBusy] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const pence = Math.round(Number(cash) * 100);
-    const valid = !card.cash_due || (cash.trim() !== '' && pence >= 0);
+    const valid = !card.cash_due || (cash.trim() !== '' && pence >= card.total);
 
     useEffect(() => {
         if (open) {

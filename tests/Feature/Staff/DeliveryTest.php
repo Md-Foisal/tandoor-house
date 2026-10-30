@@ -143,6 +143,50 @@ it('requires the cash amount for a cash order and records it', function () {
         ->and($payment->amount)->toBe($order->total);
 });
 
+it('records the order total as the payment and the change in meta', function () {
+    $me = rider();
+    $order = cashRun($me);
+    $tendered = $order->total + 500;
+
+    $this->actingAs($me)->post("/staff/deliveries/{$order->number}/deliver", ['cash_collected' => $tendered])->assertSessionHasNoErrors();
+
+    $payment = $order->refresh()->payments()->sole();
+    expect($order->cash_collected)->toBe($tendered)
+        ->and($payment->amount)->toBe($order->total)
+        ->and($payment->meta)->toMatchArray(['cash_tendered' => $tendered, 'change_given' => 500]);
+});
+
+it('does not let a rider mark a cash order paid while short', function () {
+    $me = rider();
+    $order = cashRun($me);
+
+    $this->actingAs($me)->post("/staff/deliveries/{$order->number}/deliver", ['cash_collected' => $order->total - 1])
+        ->assertSessionHasErrors('cash_collected');
+
+    $order->refresh();
+    expect($order->status)->toBe(OrderStatus::OutForDelivery)
+        ->and($order->payment_status)->toBe(PaymentStatus::Pending)
+        ->and($order->cash_collected)->toBeNull();
+});
+
+it('refuses a second delivery of the same order', function () {
+    $me = rider();
+    $order = run($me, OrderStatus::OutForDelivery);
+
+    $this->actingAs($me)->post("/staff/deliveries/{$order->number}/deliver")->assertSessionHasNoErrors();
+    $this->post("/staff/deliveries/{$order->number}/deliver")->assertSessionHasErrors('status');
+});
+
+it('only lets managers and owners assign riders, and only on live runs', function () {
+    $order = run(null);
+    $this->actingAs(rider())->patch("/staff/deliveries/{$order->number}/rider", ['rider_id' => rider()->id])->assertForbidden();
+    $this->actingAs(User::factory()->role(Role::Owner)->create())
+        ->patch("/staff/deliveries/{$order->number}/rider", ['rider_id' => rider()->id])->assertRedirect();
+
+    $done = run(null, OrderStatus::Delivered);
+    $this->patch("/staff/deliveries/{$done->number}/rider", ['rider_id' => rider()->id])->assertSessionHasErrors('rider_id');
+});
+
 it('totals the cash taken today for the rider', function () {
     $me = rider();
     $order = cashRun($me);

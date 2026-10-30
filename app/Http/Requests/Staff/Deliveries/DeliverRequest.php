@@ -10,21 +10,27 @@ class DeliverRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return $this->user()?->can('staff.deliveries') ?? false;
+        return ($this->user()?->can('staff.deliveries') ?? false)
+            && app(DeliveryPolicy::class)->act($this->user(), $this->order());
     }
 
     /**
-     * Pence, required only when the rider collects cash.
+     * Pence handed over, required only when the rider collects cash.
      *
      * @return array<string, mixed>
      */
     public function rules(): array
     {
+        return [
+            'cash_collected' => [app(DeliveryPolicy::class)->collectsCash($this->order()) ? 'required' : 'prohibited', 'integer', 'min:0', 'max:100000'],
+        ];
+    }
+
+    private function order(): Order
+    {
         /** @var Order $order */
         $order = $this->route('order');
 
-        return [
-            'cash_collected' => [(new DeliveryPolicy)->collectsCash($order) ? 'required' : 'prohibited', 'integer', 'min:0', 'max:100000'],
-        ];
+        return $order;
     }
 }

@@ -22,17 +22,18 @@ class DeliveryController extends Controller
     /** Roughly how many items fit in one carrier bag. */
     private const ITEMS_PER_BAG = 6;
 
+    public function __construct(private readonly DeliveryPolicy $policy) {}
+
     public function index(Request $request): Response
     {
         $user = $request->user();
-        $policy = new DeliveryPolicy;
-        $manages = $policy->manages($user);
+        $manages = $this->policy->manages($user);
         $tab = in_array($request->query('tab'), ['ready', 'road', 'done'], true) ? $request->query('tab') : 'ready';
 
         return Inertia::render('staff/deliveries/index', [
             'tab' => $tab,
             'manages' => $manages,
-            'deliveries' => fn () => $this->runs($user, $manages, $policy),
+            'deliveries' => fn () => $this->runs($user, $manages),
             'cash' => fn () => $this->cash($user, $manages),
             'riders' => fn () => $manages
                 ? User::query()->where('role', Role::Rider)->orderBy('name')->get(['id', 'name'])
@@ -63,7 +64,7 @@ class DeliveryController extends Controller
     /**
      * @return array{ready: list<array<string, mixed>>, road: list<array<string, mixed>>, done: list<array<string, mixed>>}
      */
-    private function runs(User $user, bool $manages, DeliveryPolicy $policy): array
+    private function runs(User $user, bool $manages): array
     {
         $with = ['lines.menuItem:id,is_alcoholic', 'rider:id,name'];
 
@@ -84,7 +85,7 @@ class DeliveryController extends Controller
             ->unique('subject_id')
             ->keyBy('subject_id');
 
-        $card = fn (Order $order) => $this->card($order, $policy, $failures->get($order->id)?->properties['reason'] ?? null);
+        $card = fn (Order $order) => $this->card($order, $failures->get($order->id)?->properties['reason'] ?? null);
 
         return [
             'ready' => array_values($live->where('status', OrderStatus::Ready)->map($card)->all()),
@@ -96,7 +97,7 @@ class DeliveryController extends Controller
     /**
      * @return array<string, mixed>
      */
-    private function card(Order $order, DeliveryPolicy $policy, ?string $failure): array
+    private function card(Order $order, ?string $failure): array
     {
         $items = (int) $order->lines->sum('quantity');
         $address = $order->address ?? [];
@@ -113,7 +114,7 @@ class DeliveryController extends Controller
             'items' => $items,
             'bags' => max(1, (int) ceil($items / self::ITEMS_PER_BAG)),
             'total' => $order->total,
-            'cash_due' => $policy->collectsCash($order),
+            'cash_due' => $this->policy->collectsCash($order),
             'cash_collected' => $order->cash_collected,
             'age_check' => $order->age_confirmed || $order->lines->contains(fn (OrderLine $line) => $line->menuItem?->is_alcoholic === true),
             'ready_at' => $order->ready_at?->toIso8601String(),

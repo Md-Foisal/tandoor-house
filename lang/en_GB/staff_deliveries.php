@@ -45,7 +45,7 @@ return [
     'deliver' => [
         'title' => 'Delivered to :name?',
         'cash_label' => 'Cash collected (£)',
-        'cash_hint' => 'Prefilled with the total. Change it if the customer paid a different amount.',
+        'cash_hint' => 'Prefilled with the total. Enter more if the customer needs change; it cannot be less than the total.',
         'confirm' => 'Confirm delivered',
         'card_body' => 'This order is already paid. Nothing to collect.',
         'cancel' => 'Not yet',
@@ -87,6 +87,9 @@ return [
     ],
     'errors' => [
         'not_on_the_road' => 'Only orders on the road can be reported.',
+        'cash_short' => 'The cash collected is less than the total. Collect the full amount first.',
+        'not_a_rider' => 'Choose someone with the rider role.',
+        'cannot_assign' => 'A rider can only be changed while the order is ready or on the road.',
     ],
     'log' => [
         'failed' => ':user could not deliver :number: :reason',

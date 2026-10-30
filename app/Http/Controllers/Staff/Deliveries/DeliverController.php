@@ -13,37 +13,42 @@ use App\Policies\DeliveryPolicy;
 use App\Services\OrderStateMachine;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Gate;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 
 class DeliverController extends Controller
 {
-    public function __invoke(DeliverRequest $request, Order $order, OrderStateMachine $machine): RedirectResponse
+    public function __invoke(DeliverRequest $request, Order $order, OrderStateMachine $machine, DeliveryPolicy $policy): RedirectResponse
     {
-        $policy = new DeliveryPolicy;
-        Gate::allowIf($policy->act($request->user(), $order));
-
         DB::transaction(function () use ($request, $order, $machine, $policy) {
-            $machine->transition($order, OrderStatus::Delivered, $request->user());
+            $locked = Order::query()->lockForUpdate()->whereKey($order->getKey())->firstOrFail();
 
-            if (! $policy->collectsCash($order)) {
+            $takesCash = $policy->collectsCash($locked);
+            $tendered = $request->integer('cash_collected');
+
+            if ($takesCash && $tendered < $locked->total) {
+                throw ValidationException::withMessages(['cash_collected' => __('staff_deliveries.errors.cash_short')]);
+            }
+
+            $locked = $machine->transition($locked, OrderStatus::Delivered, $request->user());
+
+            if (! $takesCash) {
                 return;
             }
 
-            $cash = $request->integer('cash_collected');
-
-            $order->forceFill([
-                'cash_collected' => $cash,
+            $locked->forceFill([
+                'cash_collected' => $tendered,
                 'payment_method' => PaymentMethod::Cash,
                 'payment_status' => PaymentStatus::Paid,
             ])->save();
 
-            $payment = $order->payments()->where('status', PaymentStatus::Pending)->first() ?? new Payment(['order_id' => $order->id]);
+            $payment = $locked->payments()->where('status', PaymentStatus::Pending)->lockForUpdate()->first() ?? new Payment(['order_id' => $locked->id]);
             $payment->fill([
                 'gateway' => 'venue',
                 'method' => PaymentMethod::Cash,
-                'amount' => $cash,
+                'amount' => $locked->total,
                 'status' => PaymentStatus::Paid,
+                'meta' => [...($payment->meta ?? []), 'cash_tendered' => $tendered, 'change_given' => $tendered - $locked->total],
             ])->save();
         });
 
