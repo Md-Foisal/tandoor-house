@@ -265,7 +265,7 @@ export function NewBookingDialog({
                                             setData('time', slot.time)
                                         }
                                         className={cn(
-                                            'h-11 rounded-md border text-sm font-semibold tabular-nums outline-hidden focus-visible:outline-2 focus-visible:outline-ember',
+                                            'h-11 rounded-md border text-sm font-semibold tabular-nums outline-hidden focus-visible:outline-2 focus-visible:outline-ember focus-visible:outline-solid',
                                             data.time === slot.time
                                                 ? 'border-ember bg-ember text-ember-ink'
                                                 : 'border-line-strong bg-surface hover:bg-clay',

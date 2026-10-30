@@ -52,14 +52,14 @@ export function EntryRow({
                     {entry.subject && (
                         <Link
                             href={entry.subject.href}
-                            className="inline-flex min-h-11 items-center text-sm font-semibold text-ember underline-offset-4 hover:underline md:min-h-0"
+                            className="inline-flex min-h-11 items-center text-sm font-semibold text-ember underline-offset-4 hover:underline md:min-h-6"
                         >
                             {entry.subject.label}
                         </Link>
                     )}
                     {entry.details.length > 0 && (
                         <Collapsible open={open} onOpenChange={setOpen}>
-                            <CollapsibleTrigger className="inline-flex min-h-11 items-center gap-1 text-sm text-ink-muted hover:text-ink md:min-h-0">
+                            <CollapsibleTrigger className="inline-flex min-h-11 items-center gap-1 text-sm text-ink-muted hover:text-ink md:min-h-6">
                                 {open
                                     ? t('staff_activity.details_hide')
                                     : t('staff_activity.details_show')}

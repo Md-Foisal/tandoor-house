@@ -1,4 +1,5 @@
 import { Head, router } from '@inertiajs/react';
+import { hasPreferenceConsent } from '@/components/consent/consent-store';
 import { Moon, Sun, UtensilsCrossed } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
@@ -121,7 +122,9 @@ export default function Kitchen({
 
     const choose = useCallback((next: string) => {
         try {
-            localStorage.setItem(STATION_KEY, next);
+            if (hasPreferenceConsent()) {
+                localStorage.setItem(STATION_KEY, next);
+            }
         } catch {
             // The choice then lasts only for this visit.
         }

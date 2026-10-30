@@ -34,12 +34,12 @@ export function Agenda({
                                         type="button"
                                         onClick={() => onSelect(b.id)}
                                         className={cn(
-                                            'flex min-h-14 w-full flex-col gap-1 rounded-lg border border-line bg-surface p-3 text-left outline-hidden focus-visible:outline-2 focus-visible:outline-ember',
+                                            'flex min-h-14 w-full flex-col gap-1 rounded-lg border border-line bg-surface p-3 text-left outline-hidden focus-visible:outline-2 focus-visible:outline-ember focus-visible:outline-solid',
                                             highlighted.has(b.id) &&
                                                 'ring-2 ring-ember',
                                             (b.status === 'completed' ||
                                                 b.status === 'no_show') &&
-                                                'opacity-70',
+                                                'bg-clay',
                                         )}
                                     >
                                         <span className="flex items-start justify-between gap-2">

@@ -167,7 +167,7 @@ export default function StaffLayout({ children }: { children: ReactNode }) {
                 <SidebarHeader>
                     <Link
                         href="/staff"
-                        className="flex h-12 items-center gap-2.5 rounded-md px-1.5 outline-hidden focus-visible:outline-2 focus-visible:outline-ember"
+                        className="flex h-12 items-center gap-2.5 rounded-md px-1.5 outline-hidden focus-visible:outline-2 focus-visible:outline-ember focus-visible:outline-solid"
                     >
                         <LogoMark className="size-7" />
                         <span className="truncate font-display text-lg group-data-[collapsible=icon]:hidden">

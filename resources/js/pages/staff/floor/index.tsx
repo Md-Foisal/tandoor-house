@@ -312,6 +312,7 @@ function FloorBoard({
                                         <TabsTrigger
                                             key={area.name}
                                             value={area.name}
+                                            aria-controls={undefined}
                                             className="min-h-12 flex-col items-start gap-0 px-4"
                                         >
                                             <span className="font-semibold">

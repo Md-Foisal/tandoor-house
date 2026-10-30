@@ -146,7 +146,7 @@ export function Timeline({
             role="region"
             aria-label={t('staff_reservations.timeline.label')}
             tabIndex={0}
-            className="overflow-x-auto rounded-lg border border-line bg-surface focus-visible:outline-2 focus-visible:outline-ember"
+            className="overflow-x-auto rounded-lg border border-line bg-surface focus-visible:outline-2 focus-visible:outline-ember focus-visible:outline-solid"
         >
             <div
                 className="relative"
@@ -229,61 +229,73 @@ export function Timeline({
                                                 b.dining_table_id === row.table,
                                         )
                                         .map((b) => (
-                                            <button
-                                                key={b.id}
-                                                type="button"
-                                                onClick={() => onSelect(b.id)}
-                                                aria-label={t(
-                                                    'staff_reservations.timeline.block',
-                                                    {
-                                                        name: b.name,
-                                                        count: b.party_size,
-                                                        start: b.start,
-                                                        end: b.end,
-                                                        status: t(
-                                                            `staff_reservations.status.${b.status}`,
-                                                        ),
-                                                    },
-                                                )}
-                                                className={cn(
-                                                    'absolute top-1.5 bottom-1.5 flex min-w-0 flex-col justify-center overflow-hidden rounded-md border-l-4 px-2 text-left text-sm outline-hidden focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-ember',
-                                                    blockTone[b.status],
-                                                    highlighted.has(b.id) &&
-                                                        'ring-2 ring-ember ring-offset-1 ring-offset-surface',
-                                                )}
-                                                style={{
-                                                    left:
-                                                        px(b.start_minute) + 1,
-                                                    width:
-                                                        px(b.end_minute) -
-                                                        px(b.start_minute) -
-                                                        2,
-                                                }}
-                                            >
-                                                <span className="truncate font-semibold">
-                                                    {b.name}
-                                                </span>
-                                                <span className="flex items-center gap-1.5 truncate text-xs">
-                                                    <Users
-                                                        className="size-3 shrink-0"
-                                                        aria-hidden="true"
-                                                    />
-                                                    {b.party_size}
-                                                    <OccasionIcon
-                                                        occasion={b.occasion}
-                                                    />
-                                                    {b.deposit > 0 && (
-                                                        <span className="truncate">
-                                                            {t(
-                                                                b.deposit_status ===
-                                                                    'paid'
-                                                                    ? 'staff_reservations.deposit.short_paid'
-                                                                    : 'staff_reservations.deposit.short_pending',
-                                                            )}
-                                                        </span>
+                                            <Fragment key={b.id}>
+                                                <span
+                                                    id={`booking-${b.id}-block`}
+                                                    className="sr-only"
+                                                >
+                                                    {t(
+                                                        'staff_reservations.timeline.block',
+                                                        {
+                                                            name: b.name,
+                                                            count: b.party_size,
+                                                            start: b.start,
+                                                            end: b.end,
+                                                            status: t(
+                                                                `staff_reservations.status.${b.status}`,
+                                                            ),
+                                                        },
                                                     )}
                                                 </span>
-                                            </button>
+                                                <button
+                                                    type="button"
+                                                    onClick={() =>
+                                                        onSelect(b.id)
+                                                    }
+                                                    aria-describedby={`booking-${b.id}-block`}
+                                                    className={cn(
+                                                        'absolute top-1.5 bottom-1.5 flex min-w-0 flex-col justify-center overflow-hidden rounded-md border-l-4 px-2 text-left text-sm outline-hidden focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-ember focus-visible:outline-solid',
+                                                        blockTone[b.status],
+                                                        highlighted.has(b.id) &&
+                                                            'ring-2 ring-ember ring-offset-1 ring-offset-surface',
+                                                    )}
+                                                    style={{
+                                                        left:
+                                                            px(b.start_minute) +
+                                                            1,
+                                                        width:
+                                                            px(b.end_minute) -
+                                                            px(b.start_minute) -
+                                                            2,
+                                                    }}
+                                                >
+                                                    <span className="truncate font-semibold">
+                                                        {b.name}
+                                                    </span>
+                                                    <span className="flex items-center gap-1.5 truncate text-xs">
+                                                        <Users
+                                                            className="size-3 shrink-0"
+                                                            aria-hidden="true"
+                                                        />
+                                                        {b.party_size}
+                                                        <OccasionIcon
+                                                            occasion={
+                                                                b.occasion
+                                                            }
+                                                        />
+                                                        {b.deposit > 0 && (
+                                                            <span className="truncate">
+                                                                {t(
+                                                                    b.deposit_status ===
+                                                                        'paid'
+                                                                        ? 'staff_reservations.deposit.short_paid'
+                                                                        : 'staff_reservations.deposit.short_pending',
+                                                                )}
+                                                            </span>
+                                                        )}
+                                                    </span>
+                                                </button>
+                                            </Fragment>
                                         ))}
                                 </div>
                             </div>

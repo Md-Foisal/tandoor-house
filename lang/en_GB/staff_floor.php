@@ -27,7 +27,6 @@ return [
         'booking_at' => ':name at :time',
         'open_total' => ':total open',
         'seated_for' => 'Seated :minutes min',
-        'aria' => ':table, :seats seats, :status',
     ],
     'areas' => [
         'label' => 'Areas',

@@ -1,4 +1,5 @@
 import { Head, router } from '@inertiajs/react';
+import { hasPreferenceConsent } from '@/components/consent/consent-store';
 import { Search, X } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { EmptyState } from '@/components/brand/states';
@@ -251,10 +252,12 @@ export default function OrderBoard({
                                     setChimeOn(on);
 
                                     try {
-                                        window.localStorage.setItem(
-                                            CHIME_KEY,
-                                            on ? '1' : '0',
-                                        );
+                                        if (hasPreferenceConsent()) {
+                                            window.localStorage.setItem(
+                                                CHIME_KEY,
+                                                on ? '1' : '0',
+                                            );
+                                        }
                                     } catch {
                                         // Not saved on this device; still works for this visit.
                                     }

@@ -10,7 +10,7 @@ return [
         'delivery' => 'Delivery',
         'pickup_at' => 'Pickup :time',
         'waiting' => 'Waiting :minutes min',
-        'bump_line' => 'Mark :dish as plated',
+        'bump_line' => 'Mark as plated',
         'bump_ticket' => 'Bump ticket',
         'bump_station' => 'Bump :station',
         'order_note' => 'Order note',

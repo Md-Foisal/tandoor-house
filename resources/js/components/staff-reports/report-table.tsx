@@ -24,9 +24,18 @@ export function ReportTable({
     table: ReportTableData;
     className?: string;
 }) {
+    const t = useT();
+
     return (
         <div className={cn('flex flex-col gap-2', className)}>
-            <div className="overflow-x-auto rounded-md border border-line">
+            <div
+                role="region"
+                tabIndex={0}
+                aria-label={t('staff_reports.table.region', {
+                    title: table.title,
+                })}
+                className="overflow-x-auto rounded-md border border-line outline-hidden focus-visible:outline-2 focus-visible:outline-ember"
+            >
                 <table className="w-full min-w-max border-collapse text-sm">
                     <caption className="sr-only">{table.title}</caption>
                     <thead>
@@ -136,7 +145,7 @@ export function TableDisclosure({
 
     return (
         <details className="group rounded-md">
-            <summary className="flex min-h-11 w-fit cursor-pointer items-center text-sm font-semibold text-ember underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ember">
+            <summary className="flex min-h-11 w-fit cursor-pointer items-center text-sm font-semibold text-ember underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ember focus-visible:outline-solid">
                 {t('staff_reports.table.show')}: {table.title}
             </summary>
             <div className="mt-2">

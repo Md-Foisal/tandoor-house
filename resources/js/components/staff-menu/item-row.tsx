@@ -71,7 +71,7 @@ export function ItemRow({
                 <div className="min-w-0 flex-1">
                     <Link
                         href={`/staff/menu/items/${item.id}/edit`}
-                        className="inline-flex min-h-11 items-center gap-1.5 font-semibold text-ink underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ember md:min-h-0"
+                        className="inline-flex min-h-11 items-center gap-1.5 font-semibold text-ink underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ember focus-visible:outline-solid md:min-h-0"
                         aria-label={t('staff_menu.list.edit', {
                             name: item.name,
                         })}
