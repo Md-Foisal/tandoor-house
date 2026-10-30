@@ -56,4 +56,17 @@ return [
         'reconnecting' => 'Reconnecting',
     ],
     'open_menu' => 'Open menu',
+    'install' => [
+        'app_name' => ':name Staff',
+        'description' => 'Orders, kitchen and floor for :name, on the tablet.',
+        'button' => 'Install on this tablet',
+        'help_title' => 'Add this to your home screen',
+        'help_ipad' => 'Tap the Share button in Safari, choose Add to Home Screen, then tap Add.',
+        'help_other' => 'Open your browser menu and choose Install app or Add to Home Screen.',
+        'help_why' => 'It opens full screen, like an app, and keeps the kitchen display in landscape.',
+        'close' => 'Got it',
+        'offline_title' => 'This tablet is offline',
+        'offline_body' => 'Staff screens will come back on their own when it reconnects. Check the Wi-Fi if it takes more than a minute.',
+        'offline_retry' => 'Try again',
+    ],
 ];
