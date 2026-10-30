@@ -87,7 +87,31 @@ export type TipShare = {
     share: number;
 };
 
+export type TipRecordRow = {
+    id: number;
+    name: string;
+    role: Role;
+    minutes: number;
+    amount: number;
+    live: number;
+};
+
+export type TipRecording = {
+    status: 'none' | 'recorded' | 'paid';
+    recorded_at: string | null;
+    recorded_by: string | null;
+    paid_at: string | null;
+    rows: TipRecordRow[];
+    total: number;
+    differs: boolean;
+    week_over: boolean;
+    available_on: string;
+    can_record: boolean;
+    can_pay: boolean;
+};
+
 export type Tips = {
+    recording: TipRecording;
     total: number;
     orders: number;
     minutes: number;
@@ -105,4 +129,13 @@ export type TeamContext = {
 
 export function hours(minutes: number): string {
     return (minutes / 60).toFixed(1).replace(/\.0$/, '');
+}
+
+export function shortDate(iso: string): string {
+    return new Intl.DateTimeFormat('en-GB', {
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric',
+        timeZone: 'Europe/London',
+    }).format(new Date(iso));
 }
