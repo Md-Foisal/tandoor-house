@@ -1,6 +1,6 @@
-import { Head } from "@inertiajs/react";
-import { Download } from "lucide-react";
-import { useEffect, useState } from "react";
+import { Head } from '@inertiajs/react';
+import { Download } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import {
     Dialog,
     DialogContent,
@@ -8,19 +8,19 @@ import {
     DialogFooter,
     DialogHeader,
     DialogTitle,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { SidebarMenuButton, SidebarMenuItem } from "@/components/ui/sidebar";
-import { useT } from "@/lib/i18n";
+} from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
+import { useT } from '@/lib/i18n';
 
 type InstallPromptEvent = Event & {
     prompt: () => Promise<void>;
-    userChoice: Promise<{ outcome: "accepted" | "dismissed" }>;
+    userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>;
 };
 
 function isInstalled(): boolean {
     return (
-        window.matchMedia("(display-mode: standalone)").matches ||
+        window.matchMedia('(display-mode: standalone)').matches ||
         (navigator as Navigator & { standalone?: boolean }).standalone === true
     );
 }
@@ -28,7 +28,7 @@ function isInstalled(): boolean {
 function isIpad(): boolean {
     return (
         /iPad/.test(navigator.userAgent) ||
-        (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1)
+        (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)
     );
 }
 
@@ -38,9 +38,9 @@ function isIpad(): boolean {
  */
 export function StaffPwaHead() {
     useEffect(() => {
-        if ("serviceWorker" in navigator) {
+        if ('serviceWorker' in navigator) {
             navigator.serviceWorker
-                .register("/staff-sw.js", { scope: "/staff/" })
+                .register('/staff-sw.js', { scope: '/staff/' })
                 .catch(() => undefined);
         }
     }, []);
@@ -87,12 +87,12 @@ export function InstallApp() {
             setPrompt(null);
         };
 
-        window.addEventListener("beforeinstallprompt", onPrompt);
-        window.addEventListener("appinstalled", onInstalled);
+        window.addEventListener('beforeinstallprompt', onPrompt);
+        window.addEventListener('appinstalled', onInstalled);
 
         return () => {
-            window.removeEventListener("beforeinstallprompt", onPrompt);
-            window.removeEventListener("appinstalled", onInstalled);
+            window.removeEventListener('beforeinstallprompt', onPrompt);
+            window.removeEventListener('appinstalled', onInstalled);
         };
     }, []);
 
@@ -110,7 +110,7 @@ export function InstallApp() {
         await prompt.prompt();
         const { outcome } = await prompt.userChoice;
 
-        if (outcome === "accepted") {
+        if (outcome === 'accepted') {
             setInstalled(true);
         }
 
@@ -122,28 +122,28 @@ export function InstallApp() {
             <SidebarMenuButton
                 type="button"
                 onClick={install}
-                tooltip={t("staff.install.button")}
+                tooltip={t('staff.install.button')}
                 className="h-11 font-semibold"
             >
                 <Download aria-hidden="true" />
-                <span>{t("staff.install.button")}</span>
+                <span>{t('staff.install.button')}</span>
             </SidebarMenuButton>
             <Dialog open={helpOpen} onOpenChange={setHelpOpen}>
                 <DialogContent>
                     <DialogHeader>
                         <DialogTitle>
-                            {t("staff.install.help_title")}
+                            {t('staff.install.help_title')}
                         </DialogTitle>
                         <DialogDescription>
                             {t(
                                 ipad
-                                    ? "staff.install.help_ipad"
-                                    : "staff.install.help_other",
+                                    ? 'staff.install.help_ipad'
+                                    : 'staff.install.help_other',
                             )}
                         </DialogDescription>
                     </DialogHeader>
                     <p className="text-sm text-ink-muted">
-                        {t("staff.install.help_why")}
+                        {t('staff.install.help_why')}
                     </p>
                     <DialogFooter>
                         <Button
@@ -151,7 +151,7 @@ export function InstallApp() {
                             className="min-h-11"
                             onClick={() => setHelpOpen(false)}
                         >
-                            {t("staff.install.close")}
+                            {t('staff.install.close')}
                         </Button>
                     </DialogFooter>
                 </DialogContent>

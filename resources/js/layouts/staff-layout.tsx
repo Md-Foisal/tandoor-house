@@ -1,5 +1,5 @@
-import { Link, router, usePage } from "@inertiajs/react";
-import type { LucideIcon } from "lucide-react";
+import { Link, router, usePage } from '@inertiajs/react';
+import type { LucideIcon } from 'lucide-react';
 import {
     Activity,
     BarChart3,
@@ -17,12 +17,12 @@ import {
     Users,
     Bike,
     ChevronsUpDown,
-} from "lucide-react";
-import type { ReactNode } from "react";
-import { InstallApp, StaffPwaHead } from "@/components/staff/install-app";
-import { LogoMark } from "@/components/brand/logo";
-import { OfflineBanner } from "@/components/brand/states";
-import { ThemeToggle } from "@/components/brand/theme-toggle";
+} from 'lucide-react';
+import type { ReactNode } from 'react';
+import { InstallApp, StaffPwaHead } from '@/components/staff/install-app';
+import { LogoMark } from '@/components/brand/logo';
+import { OfflineBanner } from '@/components/brand/states';
+import { ThemeToggle } from '@/components/brand/theme-toggle';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -30,7 +30,7 @@ import {
     DropdownMenuLabel,
     DropdownMenuSeparator,
     DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+} from '@/components/ui/dropdown-menu';
 import {
     Sidebar,
     SidebarContent,
@@ -46,34 +46,34 @@ import {
     SidebarProvider,
     SidebarRail,
     SidebarTrigger,
-} from "@/components/ui/sidebar";
-import { useT } from "@/lib/i18n";
-import { useConnectionState } from "@/lib/realtime";
-import type { StaffArea } from "@/types";
+} from '@/components/ui/sidebar';
+import { useT } from '@/lib/i18n';
+import { useConnectionState } from '@/lib/realtime';
+import type { StaffArea } from '@/types';
 
 type AreaLink = { area: StaffArea; href: string; icon: LucideIcon };
 
 export const staffLinks: { service: AreaLink[]; backOffice: AreaLink[] } = {
     service: [
-        { area: "today", href: "/staff", icon: LayoutDashboard },
-        { area: "orders", href: "/staff/orders", icon: ReceiptText },
-        { area: "kitchen", href: "/staff/kitchen", icon: ChefHat },
-        { area: "floor", href: "/staff/floor", icon: LayoutGrid },
+        { area: 'today', href: '/staff', icon: LayoutDashboard },
+        { area: 'orders', href: '/staff/orders', icon: ReceiptText },
+        { area: 'kitchen', href: '/staff/kitchen', icon: ChefHat },
+        { area: 'floor', href: '/staff/floor', icon: LayoutGrid },
         {
-            area: "reservations",
-            href: "/staff/reservations",
+            area: 'reservations',
+            href: '/staff/reservations',
             icon: CalendarDays,
         },
-        { area: "deliveries", href: "/staff/deliveries", icon: Bike },
+        { area: 'deliveries', href: '/staff/deliveries', icon: Bike },
     ],
     backOffice: [
-        { area: "menu", href: "/staff/menu", icon: BookOpen },
-        { area: "inventory", href: "/staff/inventory", icon: Package },
-        { area: "team", href: "/staff/team", icon: Users },
-        { area: "reports", href: "/staff/reports", icon: BarChart3 },
-        { area: "reviews", href: "/staff/reviews", icon: MessageSquareQuote },
-        { area: "activity", href: "/staff/activity", icon: Activity },
-        { area: "settings", href: "/staff/settings", icon: Settings },
+        { area: 'menu', href: '/staff/menu', icon: BookOpen },
+        { area: 'inventory', href: '/staff/inventory', icon: Package },
+        { area: 'team', href: '/staff/team', icon: Users },
+        { area: 'reports', href: '/staff/reports', icon: BarChart3 },
+        { area: 'reviews', href: '/staff/reviews', icon: MessageSquareQuote },
+        { area: 'activity', href: '/staff/activity', icon: Activity },
+        { area: 'settings', href: '/staff/settings', icon: Settings },
     ],
 };
 
@@ -82,14 +82,14 @@ function LiveStatus() {
     const connection = useConnectionState();
 
     if (
-        connection === "disabled" ||
-        connection === "idle" ||
-        connection === "offline"
+        connection === 'disabled' ||
+        connection === 'idle' ||
+        connection === 'offline'
     ) {
         return null;
     }
 
-    const live = connection === "live";
+    const live = connection === 'live';
 
     return (
         <span
@@ -98,18 +98,18 @@ function LiveStatus() {
         >
             <span
                 aria-hidden="true"
-                className={`size-2 rounded-full ${live ? "bg-leaf" : "bg-turmeric"}`}
+                className={`size-2 rounded-full ${live ? 'bg-leaf' : 'bg-turmeric'}`}
             />
-            {t(live ? "staff.live.on" : "staff.live.reconnecting")}
+            {t(live ? 'staff.live.on' : 'staff.live.reconnecting')}
         </span>
     );
 }
 
 function isActive(url: string, href: string): boolean {
-    const path = url.split("?")[0] ?? url;
+    const path = url.split('?')[0] ?? url;
 
-    return href === "/staff"
-        ? path === "/staff"
+    return href === '/staff'
+        ? path === '/staff'
         : path === href || path.startsWith(`${href}/`);
 }
 
@@ -177,11 +177,11 @@ export default function StaffLayout({ children }: { children: ReactNode }) {
                 </SidebarHeader>
                 <SidebarContent>
                     <NavGroup
-                        label={t("staff.groups.service")}
+                        label={t('staff.groups.service')}
                         links={staffLinks.service}
                     />
                     <NavGroup
-                        label={t("staff.groups.back_office")}
+                        label={t('staff.groups.back_office')}
                         links={staffLinks.backOffice}
                     />
                 </SidebarContent>
@@ -226,7 +226,7 @@ export default function StaffLayout({ children }: { children: ReactNode }) {
                                     className="w-64"
                                 >
                                     <DropdownMenuLabel className="text-label text-ink-muted">
-                                        {t("ui.theme.label")}
+                                        {t('ui.theme.label')}
                                     </DropdownMenuLabel>
                                     <div className="px-2 pb-2">
                                         <ThemeToggle />
@@ -238,15 +238,15 @@ export default function StaffLayout({ children }: { children: ReactNode }) {
                                     >
                                         <Link href="/">
                                             <ExternalLink aria-hidden="true" />
-                                            {t("staff.view_site")}
+                                            {t('staff.view_site')}
                                         </Link>
                                     </DropdownMenuItem>
                                     <DropdownMenuItem
                                         className="min-h-11"
-                                        onSelect={() => router.post("/logout")}
+                                        onSelect={() => router.post('/logout')}
                                     >
                                         <LogOut aria-hidden="true" />
-                                        {t("staff.sign_out")}
+                                        {t('staff.sign_out')}
                                     </DropdownMenuItem>
                                 </DropdownMenuContent>
                             </DropdownMenu>
@@ -260,7 +260,7 @@ export default function StaffLayout({ children }: { children: ReactNode }) {
                 <header className="sticky top-0 z-20 flex h-14 items-center gap-2 border-b border-line bg-paper/95 px-3 backdrop-blur-sm md:hidden">
                     <SidebarTrigger
                         className="size-11"
-                        aria-label={t("staff.open_menu")}
+                        aria-label={t('staff.open_menu')}
                     />
                     <span className="font-display text-lg">{name}</span>
                     <LiveStatus />
