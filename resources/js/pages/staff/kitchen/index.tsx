@@ -2,6 +2,7 @@ import { Head, router, usePoll } from '@inertiajs/react';
 import { Moon, Sun, UtensilsCrossed } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
+import { DISPLAY_LOCALE, DISPLAY_TIME_ZONE } from '@/components/kitchen/format';
 import { AllDayPanel } from '@/components/kitchen/all-day-panel';
 import { RecentRail } from '@/components/kitchen/recent-rail';
 import { StationTabs } from '@/components/kitchen/station-tabs';
@@ -26,6 +27,12 @@ import {
 } from '@/components/ui/dialog';
 import { setKitchenTheme } from '@/layouts/kitchen-layout';
 import { useT } from '@/lib/i18n';
+
+const clockFormat = new Intl.DateTimeFormat(DISPLAY_LOCALE, {
+    hour: '2-digit',
+    minute: '2-digit',
+    timeZone: DISPLAY_TIME_ZONE,
+});
 
 type KitchenProps = {
     station: string;
@@ -65,11 +72,7 @@ function useClock(): string {
         return () => window.clearInterval(timer);
     }, []);
 
-    return now.toLocaleTimeString('en-GB', {
-        hour: '2-digit',
-        minute: '2-digit',
-        timeZone: 'Europe/London',
-    });
+    return clockFormat.format(now);
 }
 
 export default function Kitchen({
@@ -94,17 +97,27 @@ export default function Kitchen({
             : document.documentElement.classList.contains('dark'),
     );
 
-    const poll = usePoll(POLL_MS, { only: PROPS }, { autoStart: false });
+    const { start: startPoll, stop: stopPoll } = usePoll(
+        POLL_MS,
+        { only: PROPS },
+        { autoStart: false },
+    );
+    const pollControls = useRef({ startPoll, stopPoll });
 
     useEffect(() => {
+        pollControls.current = { startPoll, stopPoll };
+    });
+
+    useEffect(() => {
+        const controls = pollControls.current;
+
         if (online) {
-            poll.start();
+            controls.startPoll();
         } else {
-            poll.stop();
+            controls.stopPoll();
         }
 
-        return poll.stop;
-        // eslint-disable-next-line react-hooks/exhaustive-deps
+        return () => pollControls.current.stopPoll();
     }, [online]);
 
     useEffect(() => {

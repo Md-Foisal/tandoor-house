@@ -11,15 +11,16 @@ use App\Http\Controllers\MenuController;
 use App\Http\Requests\Staff\Kitchen\BumpOrderRequest;
 use App\Http\Requests\Staff\Kitchen\IndexRequest;
 use App\Http\Requests\Staff\Kitchen\SoldOutRequest;
-use App\Models\ActivityLog;
 use App\Models\MenuItem;
 use App\Models\Order;
 use App\Models\OrderLine;
 use App\Models\User;
 use App\Services\OrderStateMachine;
+use App\Support\ActivityRecorder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -29,7 +30,10 @@ class KitchenController extends Controller
 
     private const ALLERGY_WORDS = '/allerg|\bnuts?\b|peanut|gluten|coeliac|celiac|dairy|lactose|intoleran|sesame|shellfish/i';
 
-    public function __construct(private readonly OrderStateMachine $orders) {}
+    public function __construct(
+        private readonly OrderStateMachine $orders,
+        private readonly ActivityRecorder $activity,
+    ) {}
 
     public function index(IndexRequest $request): Response
     {
@@ -88,16 +92,19 @@ class KitchenController extends Controller
     public function bumpOrder(BumpOrderRequest $request, Order $order): RedirectResponse
     {
         $station = $request->validated('station');
+        $user = $this->user();
 
-        $lines = $order->lines()
-            ->where('status', '!=', LineStatus::Ready)
-            ->when($station !== 'all', fn ($query) => $query->where('station', $station))
-            ->orderBy('id')
-            ->get();
+        DB::transaction(function () use ($order, $station, $user) {
+            $order->load(['lines' => fn ($query) => $query
+                ->where('status', '!=', LineStatus::Ready)
+                ->when($station !== 'all', fn ($query) => $query->where('station', $station))
+                ->orderBy('id')]);
 
-        foreach ($lines as $line) {
-            $this->orders->bump($line, $this->user());
-        }
+            foreach ($order->lines as $line) {
+                $line->setRelation('order', $order);
+                $this->orders->bump($line, $user);
+            }
+        });
 
         return back();
     }
@@ -108,14 +115,13 @@ class KitchenController extends Controller
             $item->forceFill(['is_available' => false])->save();
             Cache::forget(MenuController::CACHE_KEY);
 
-            ActivityLog::query()->create([
-                'event' => 'menu.sold_out',
-                'subject_type' => MenuItem::class,
-                'subject_id' => $item->id,
-                'user_id' => $this->user()->id,
-                'description' => __('staff_kitchen.log.sold_out', ['dish' => $item->name, 'name' => $this->user()->name]),
-                'properties' => ['source' => 'kitchen'],
-            ]);
+            $this->activity->record(
+                'menu.sold_out',
+                __('staff_kitchen.log.sold_out', ['dish' => $item->name, 'name' => $this->user()->name]),
+                $item,
+                ['source' => 'kitchen'],
+                $this->user(),
+            );
         }
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __('staff_kitchen.sold_out_done', ['dish' => $item->name])]);

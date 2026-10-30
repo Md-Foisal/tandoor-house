@@ -167,3 +167,20 @@ it('stops other roles marking dishes sold out or bumping', function (Role $role)
     $this->actingAs($user)->post("/staff/kitchen/lines/{$line->id}/bump")->assertForbidden();
     expect($line->menuItem->refresh()->is_available)->toBeTrue();
 })->with([Role::Waiter, Role::Cashier, Role::Rider]);
+
+it('bumps a station ticket in a single pass and keeps other stations cooking', function () {
+    $order = railOrder(stations: [Station::Tandoor, Station::Tandoor, Station::Curry]);
+
+    $this->actingAs(kitchenUser())->post("/staff/kitchen/orders/{$order->id}/bump", ['station' => 'tandoor'])->assertRedirect();
+
+    expect($order->refresh()->status)->toBe(OrderStatus::Cooking)
+        ->and($order->lines()->where('status', LineStatus::Ready)->count())->toBe(2)
+        ->and($order->events()->where('to', OrderStatus::Cooking)->count())->toBe(1);
+});
+
+it('refuses bump-ticket from roles without kitchen access', function (Role $role) {
+    $order = railOrder();
+
+    $this->actingAs(kitchenUser($role))->post("/staff/kitchen/orders/{$order->id}/bump", ['station' => 'all'])->assertForbidden();
+    expect($order->refresh()->status)->toBe(OrderStatus::Accepted);
+})->with([Role::Waiter, Role::Cashier, Role::Rider]);
