@@ -8,7 +8,9 @@ use App\Payments\Payable;
 use Carbon\CarbonImmutable;
 use Database\Factories\ReservationFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\MassPrunable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
@@ -39,6 +41,21 @@ class Reservation extends Model implements Payable
 {
     /** @use HasFactory<ReservationFactory> */
     use HasFactory;
+
+    use MassPrunable;
+
+    /**
+     * Bookings are kept for a year; ones that took a deposit are financial
+     * records and stay for six.
+     *
+     * @return Builder<self>
+     */
+    public function prunable(): Builder
+    {
+        return self::query()->where(fn (Builder $query) => $query
+            ->where(fn (Builder $q) => $q->where('deposit', 0)->where('starts_at', '<', now()->subYear()))
+            ->orWhere('starts_at', '<', now()->subYears(6)));
+    }
 
     protected function casts(): array
     {

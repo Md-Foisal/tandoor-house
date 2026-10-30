@@ -2,6 +2,7 @@
 
 use App\Models\ActivityLog;
 use App\Models\Cart;
+use App\Models\Reservation;
 use App\Models\StaffInvite;
 use App\Models\User;
 use Illuminate\Console\Scheduling\Schedule;
@@ -72,4 +73,16 @@ it('schedules model:prune daily', function () {
         ->filter(fn ($e) => str_contains($e->command, 'model:prune'));
 
     expect($events)->toHaveCount(1)->and($events->first()->expression)->toBe('0 0 * * *');
+});
+
+it('prunes bookings after a year, but keeps deposit bookings for six', function () {
+    $old = Reservation::factory()->create(['starts_at' => now()->subMonths(13), 'deposit' => 0]);
+    $deposit = Reservation::factory()->create(['starts_at' => now()->subMonths(13), 'deposit' => 2000]);
+    $recent = Reservation::factory()->create(['starts_at' => now()->subMonths(6), 'deposit' => 0]);
+
+    $this->artisan('model:prune', ['--model' => [Reservation::class]])->assertSuccessful();
+
+    expect(Reservation::find($old->id))->toBeNull()
+        ->and(Reservation::find($deposit->id))->not->toBeNull()
+        ->and(Reservation::find($recent->id))->not->toBeNull();
 });
