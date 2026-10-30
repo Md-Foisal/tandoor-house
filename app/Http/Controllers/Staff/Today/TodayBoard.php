@@ -241,7 +241,7 @@ class TodayBoard
      */
     private function waiting(): Collection
     {
-        return Order::query()->with('diningTable')->where('status', OrderStatus::Placed)->orderBy('placed_at')->get();
+        return Order::query()->releasedToStaff()->with('diningTable')->where('status', OrderStatus::Placed)->orderBy('placed_at')->get();
     }
 
     /**

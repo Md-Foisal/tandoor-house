@@ -94,6 +94,7 @@ class OrderBoardController extends Controller
     private function board(?OrderChannel $channel, ?OrderStatus $status, string $search, OrderData $data, User $viewer): array
     {
         $base = fn (): Builder => Order::query()
+            ->releasedToStaff()
             ->with(['lines.menuItem:id,is_alcoholic', 'diningTable:id,label', 'rider:id,name'])
             ->when($channel !== null, fn (Builder $q) => $q->where('channel', $channel))
             ->when($status !== null, fn (Builder $q) => $q->where('status', $status))

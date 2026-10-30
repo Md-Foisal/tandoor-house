@@ -10,6 +10,8 @@ use App\Payments\Payable;
 use Carbon\CarbonImmutable;
 use Database\Factories\OrderFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Scope;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -90,6 +92,21 @@ class Order extends Model implements Payable
     public function events(): HasMany
     {
         return $this->hasMany(OrderStatusEvent::class);
+    }
+
+    /**
+     * Orders paid online reach staff only once the payment has gone through;
+     * until then the guest may still abandon the payment page.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function releasedToStaff(Builder $query): void
+    {
+        $query->where(fn (Builder $q) => $q
+            ->where('status', '!=', OrderStatus::Placed)
+            ->orWhereNotIn('payment_method', [PaymentMethod::Card, PaymentMethod::ApplePay, PaymentMethod::GooglePay])
+            ->orWhere('payment_status', PaymentStatus::Paid));
     }
 
     /**
