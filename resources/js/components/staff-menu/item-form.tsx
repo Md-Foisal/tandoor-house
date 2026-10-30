@@ -649,8 +649,16 @@ export function ItemForm({
                             file={data.photo}
                             photoUrl={item?.photo_url ?? null}
                             mediaKey={item?.image ?? null}
+                            removed={data.remove_photo}
                             error={errors.photo}
-                            onChange={(file) => setData('photo', file)}
+                            onChange={(file) => {
+                                setData('photo', file);
+
+                                if (file) setData('remove_photo', false);
+                            }}
+                            onRemoveChange={(removed) =>
+                                setData('remove_photo', removed)
+                            }
                         />
                     </Section>
                     {item && (
