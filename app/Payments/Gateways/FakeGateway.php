@@ -14,6 +14,7 @@ use App\Payments\RefundResult;
 use App\Payments\WebhookOutcome;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 
 /**
  * Behaves like Stripe without the network: a started payment waits for the
@@ -56,7 +57,18 @@ class FakeGateway implements PaymentGateway
             return new PaymentAttempt(AttemptStatus::Succeeded, (string) $payment->reference);
         }
 
+        if (Cache::has($this->cancelledKey((string) $payment->reference))) {
+            return new PaymentAttempt(AttemptStatus::Failed, (string) $payment->reference, message: __('payments.cancelled'));
+        }
+
         return $this->decide((string) $payment->reference, $payment->amount);
+    }
+
+    public function cancel(Payment $payment): void
+    {
+        if ($payment->reference !== null) {
+            Cache::put($this->cancelledKey($payment->reference), true, now()->addDay());
+        }
     }
 
     public function refund(Payment $payment, int $amount, string $reason): RefundResult
@@ -69,6 +81,11 @@ class FakeGateway implements PaymentGateway
     public function handleWebhook(Request $request): ?WebhookOutcome
     {
         return null;
+    }
+
+    private function cancelledKey(string $reference): string
+    {
+        return 'payments.fake.cancelled.'.$reference;
     }
 
     private function decide(string $reference, int $amount): PaymentAttempt

@@ -23,6 +23,13 @@ interface PaymentGateway
     public function refund(Payment $payment, int $amount, string $reason): RefundResult;
 
     /**
+     * Stops a started payment from being completed later, e.g. from a tab
+     * left open. One that is already cancelled or already succeeded is left
+     * alone; a success that lands anyway is refunded when it is settled.
+     */
+    public function cancel(Payment $payment): void;
+
+    /**
      * Null when the request is genuine but says nothing about a payment.
      *
      * @throws InvalidWebhookSignature

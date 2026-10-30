@@ -3,6 +3,8 @@
 namespace App\Payments;
 
 use App\Enums\PaymentMethod;
+use App\Enums\PaymentStatus;
+use App\Models\Payment;
 
 /**
  * The props the shared front-end payment panel needs. The amount comes from
@@ -37,5 +39,27 @@ final class PaymentPageProps
             'confirmUrl' => $confirmUrl,
             'returnUrl' => $returnUrl,
         ];
+    }
+
+    /**
+     * What the payment panel is told after a confirm: paid, failed or still
+     * pending. Money sent straight back because it was no longer wanted
+     * reads as failed, with the reason.
+     *
+     * @return array{0: 'paid'|'failed'|'pending', 1: string|null}
+     */
+    public static function outcome(Payment $payment): array
+    {
+        $why = $payment->meta['auto_refund'] ?? null;
+
+        if (is_string($why) && $payment->status === PaymentStatus::Refunded) {
+            return ['failed', (string) __("payments.auto_refund.customer.{$why}")];
+        }
+
+        return match ($payment->status) {
+            PaymentStatus::Paid, PaymentStatus::PartiallyRefunded, PaymentStatus::Refunded => ['paid', null],
+            PaymentStatus::Failed => ['failed', is_string($payment->meta['failure'] ?? null) ? $payment->meta['failure'] : null],
+            default => ['pending', null],
+        };
     }
 }

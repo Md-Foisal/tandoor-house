@@ -8,7 +8,6 @@ use App\Enums\PaymentStatus;
 use App\Http\Requests\Checkout\ConfirmPaymentRequest;
 use App\Http\Requests\Table\PayRequest;
 use App\Models\DiningTable;
-use App\Models\Payment;
 use App\Models\TableBillPayment;
 use App\Payments\AttemptStatus;
 use App\Payments\Exceptions\PaymentException;
@@ -16,6 +15,7 @@ use App\Payments\PaymentAttempt;
 use App\Payments\PaymentPageProps;
 use App\Payments\Payments;
 use App\Payments\StartedPayment;
+use App\Support\Money;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\DB;
@@ -56,6 +56,8 @@ class TablePaymentController extends Controller
             ]);
         });
 
+        $this->releaseLapsed($lead);
+
         return redirect()->route('table.pay.show', [$lead->qr_token, $charge]);
     }
 
@@ -64,7 +66,7 @@ class TablePaymentController extends Controller
         $lead = $this->lead($table);
         $this->authorizeFor($lead, $payment);
 
-        if ($payment->payment_status === PaymentStatus::Paid) {
+        if (in_array($payment->payment_status, [PaymentStatus::Paid, PaymentStatus::PartiallyRefunded, PaymentStatus::Refunded], true)) {
             return $this->done($lead);
         }
 
@@ -108,9 +110,29 @@ class TablePaymentController extends Controller
             return $this->answer($lead, 'failed', __('payments.fake.declined'));
         }
 
-        $row = $this->payments->confirm((string) $row->reference);
+        [$status, $message] = PaymentPageProps::outcome($this->payments->confirm((string) $row->reference));
 
-        return $this->answer($lead, $this->outcome($row), $row->meta['failure'] ?? null);
+        return $this->answer($lead, $status, $message);
+    }
+
+    /**
+     * Shares whose hold ran out no longer reserve their part of the bill, so
+     * a new share may claim it: their card payments are cancelled and the
+     * shares marked failed (reopening one checks the bill again).
+     */
+    private function releaseLapsed(DiningTable $lead): void
+    {
+        foreach ($this->bill->lapsed($lead) as $lapsed) {
+            $this->payments->cancelOpen($lapsed);
+
+            DB::transaction(function () use ($lapsed) {
+                $locked = TableBillPayment::query()->lockForUpdate()->findOrFail($lapsed->id);
+
+                if ($locked->payment_status === PaymentStatus::Pending) {
+                    $locked->markPaymentFailed();
+                }
+            });
+        }
     }
 
     private function authorizeFor(DiningTable $lead, TableBillPayment $payment): void
@@ -134,7 +156,8 @@ class TablePaymentController extends Controller
 
     /**
      * Reuses the waiting payment so reloading does not open a new charge; a
-     * declined one starts a fresh attempt and holds its part of the bill again.
+     * declined one starts a fresh attempt (cancelling the declined one) and
+     * holds its part of the bill again.
      */
     private function current(TableBillPayment $payment): StartedPayment
     {
@@ -155,7 +178,7 @@ class TablePaymentController extends Controller
                 $position = $this->bill->position($table, $this->bill->visit($table, lock: true));
 
                 if ($this->bill->payable($position, $locked->service_included) < $locked->amount) {
-                    throw new PaymentException(__('table.pay.errors.too_much', ['max' => '£'.number_format($this->bill->payable($position, $locked->service_included) / 100, 2)]));
+                    throw new PaymentException(__('table.pay.errors.too_much', ['max' => Money::format($this->bill->payable($position, $locked->service_included))]));
                 }
 
                 $locked->forceFill(['payment_status' => PaymentStatus::Pending, 'created_at' => now()])->save();
@@ -164,15 +187,6 @@ class TablePaymentController extends Controller
         }
 
         return $this->payments->start($payment, PaymentMethod::Card);
-    }
-
-    private function outcome(Payment $payment): string
-    {
-        return match ($payment->status) {
-            PaymentStatus::Paid, PaymentStatus::PartiallyRefunded, PaymentStatus::Refunded => 'paid',
-            PaymentStatus::Failed => 'failed',
-            default => 'pending',
-        };
     }
 
     private function answer(DiningTable $lead, string $status, ?string $message): JsonResponse

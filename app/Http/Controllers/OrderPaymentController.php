@@ -9,7 +9,6 @@ use App\Enums\PaymentStatus;
 use App\Events\OrderPlaced;
 use App\Http\Requests\Checkout\ConfirmPaymentRequest;
 use App\Models\Order;
-use App\Models\Payment;
 use App\Models\User;
 use App\Payments\AttemptStatus;
 use App\Payments\Exceptions\PaymentException;
@@ -89,9 +88,9 @@ class OrderPaymentController extends Controller
             return $this->answer($order, 'failed', __('payments.fake.declined'));
         }
 
-        $payment = $this->payments->confirm((string) $payment->reference);
+        [$status, $message] = PaymentPageProps::outcome($this->payments->confirm((string) $payment->reference));
 
-        return $this->answer($order, $this->outcome($payment), $payment->meta['failure'] ?? null);
+        return $this->answer($order, $status, $message);
     }
 
     /**
@@ -116,6 +115,8 @@ class OrderPaymentController extends Controller
         });
 
         if ($switched) {
+            // Starting the venue payment cancels the card attempt, so the old
+            // payment form can no longer take money for this order.
             $this->payments->start($order->refresh(), PaymentMethod::PayAtVenue);
             OrderPlaced::dispatch($order);
         }
@@ -140,7 +141,8 @@ class OrderPaymentController extends Controller
 
     /**
      * Reuses the waiting payment so reloading the page does not open a new
-     * charge; a declined or missing one starts a fresh attempt.
+     * charge; a declined or missing one starts a fresh attempt, which cancels
+     * the declined one so an old tab cannot charge the card as well.
      */
     private function current(Order $order): StartedPayment
     {
@@ -169,15 +171,6 @@ class OrderPaymentController extends Controller
         if ($payment !== null) {
             $this->payments->confirm((string) $payment->reference);
         }
-    }
-
-    private function outcome(Payment $payment): string
-    {
-        return match ($payment->status) {
-            PaymentStatus::Paid, PaymentStatus::PartiallyRefunded, PaymentStatus::Refunded => 'paid',
-            PaymentStatus::Failed => 'failed',
-            default => 'pending',
-        };
     }
 
     private function answer(Order $order, string $status, ?string $message): JsonResponse

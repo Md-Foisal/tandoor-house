@@ -128,16 +128,19 @@ it('holds a part of the bill while a share is being paid so shares cannot double
         ->assertSessionHasNoErrors();
 });
 
-it('never allocates more than the bill when stale shares both land', function () {
+it('cancels a lapsed share when a new one claims its part of the bill', function () {
     $first = startTablePayment($this->table, ['amount' => 1200]);
     $this->travelTo(now()->addMinutes(20));
     $second = startTablePayment($this->table, ['amount' => 1200]);
 
-    confirmTablePayment($this->table, $first)->assertJson(['status' => 'paid']);
+    expect($first->refresh()->payment_status)->toBe(PaymentStatus::Failed)
+        ->and($first->payments()->sole()->meta['cancelled'])->toBeTrue();
+
+    confirmTablePayment($this->table, $first)->assertJson(['status' => 'failed', 'message' => __('payments.cancelled')]);
     confirmTablePayment($this->table, $second)->assertJson(['status' => 'paid']);
 
-    expect((int) DB::table('table_bill_payment_orders')->sum('amount'))->toBe(2000)
-        ->and($this->order->refresh()->payment_status)->toBe(PaymentStatus::Paid);
+    expect((int) DB::table('table_bill_payment_orders')->sum('amount'))->toBe(1200)
+        ->and(DB::table('table_bill_payment_orders')->where('table_bill_payment_id', $first->id)->exists())->toBeFalse();
 });
 
 it('does not settle twice when the same payment is confirmed again', function () {

@@ -50,6 +50,10 @@ class OrderCancellationController extends Controller
             return $refunded;
         });
 
+        // After the commit, so a payment that lands meanwhile sees the order
+        // cancelled and is refunded rather than kept.
+        $payments->cancelOpen($order);
+
         Inertia::flash('toast', [
             'type' => 'success',
             'message' => __($refunded > 0 ? 'tracking.cancel.done_refunded' : 'tracking.cancel.done'),

@@ -24,7 +24,15 @@ class AnnounceOrderPaid
 
         $order = $payment->payableModel();
 
-        if ($order instanceof Order && $order->status === OrderStatus::Placed) {
+        if (! $order instanceof Order || $order->status !== OrderStatus::Placed) {
+            return;
+        }
+
+        // A second payment that lands on an already-paid order is refunded,
+        // not a new order for the kitchen.
+        $alreadyPaid = $order->payments()->where('status', PaymentStatus::Paid)->whereKeyNot($payment->id)->exists();
+
+        if (! $alreadyPaid) {
             OrderPlaced::dispatch($order);
         }
     }

@@ -14,7 +14,6 @@ use App\Models\Order;
 use App\Models\TableBillPayment;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 
 /**
@@ -169,11 +168,35 @@ class TableBill
             }
         }
 
-        if ($toSettle > 0) {
-            Log::warning('A table payment arrived for more than the table owed.', ['payment' => $payment->id, 'excess' => $toSettle]);
-        }
-
         $this->tellTheFloor($table, $this->visit($table)->isEmpty());
+    }
+
+    /**
+     * The part of a landed share the table no longer owed (others paid it
+     * first); Payments refunds it.
+     */
+    public function unallocated(TableBillPayment $payment): int
+    {
+        $allocated = (int) DB::table('table_bill_payment_orders')
+            ->where('table_bill_payment_id', $payment->id)
+            ->sum('amount');
+
+        return max(0, $payment->amount + $payment->waived - $allocated);
+    }
+
+    /**
+     * Shares started but not finished within the hold: they no longer reserve
+     * any of the bill, so their card payments must not be completed later.
+     *
+     * @return Collection<int, TableBillPayment>
+     */
+    public function lapsed(DiningTable $lead): Collection
+    {
+        return TableBillPayment::query()
+            ->where('dining_table_id', $lead->id)
+            ->where('payment_status', PaymentStatus::Pending)
+            ->where('created_at', '<', now()->subMinutes(self::HOLD_MINUTES))
+            ->get();
     }
 
     private function billOf(Order $order): int

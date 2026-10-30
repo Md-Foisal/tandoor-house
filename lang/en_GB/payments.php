@@ -4,6 +4,8 @@ return [
     'already_paid' => 'This has already been paid. Nothing more to take.',
     'nothing_owed' => 'There is nothing to pay for this one.',
     'declined' => 'Your card was declined. Please try another card or pay at the restaurant.',
+    'cancelled' => 'This payment was cancelled because a newer one was started. You have not been charged for it.',
+    'hold_expired' => 'The time to pay this deposit has run out, so the table is no longer held. You have not been charged; please book again.',
     'gateway_error' => 'We could not reach the payment provider. Please try again in a moment.',
     'describe' => [
         'order' => 'Order :number at :restaurant',
@@ -17,11 +19,29 @@ return [
         'cash_refund' => 'Hand the cash back to the guest.',
         'not_venue' => 'Only pay-at-venue and cash payments can be taken by staff.',
         'not_pending' => 'This payment is no longer waiting to be taken.',
+        'already_paid' => 'This has already been paid in full, so there is nothing to take.',
     ],
     'refund' => [
         'nothing_paid' => 'Nothing has been paid on this payment yet, so there is nothing to refund.',
         'too_much' => 'You can refund up to :max on this payment.',
         'gateway_failed' => 'The payment provider would not make this refund. Nothing has been changed.',
+    ],
+    'auto_refund' => [
+        'actor' => 'Automation',
+        'reason' => [
+            'duplicate' => 'Already paid by another payment',
+            'cancelled' => 'Paid after it was cancelled',
+            'expired' => 'Deposit paid after the table hold ran out',
+            'overpaid' => 'More than the table still owed',
+        ],
+        'customer' => [
+            'duplicate' => 'This was already paid, so we have refunded that payment in full. It can take a few days to reach your account.',
+            'cancelled' => 'This was cancelled before your payment arrived, so we have refunded it in full. It can take a few days to reach your account.',
+            'expired' => 'The table hold ran out before your deposit arrived, so we have refunded it in full. Please book again.',
+            'overpaid' => 'The bill had already been settled, so we have refunded your payment in full. It can take a few days to reach your account.',
+        ],
+        'log' => 'Refunded :amount automatically on :reference: :reason.',
+        'log_failed' => 'Could not refund :amount automatically on :reference (:reason). Refund it by hand.',
     ],
     'panel' => [
         'title' => 'Pay :amount',

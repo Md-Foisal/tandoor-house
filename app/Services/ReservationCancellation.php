@@ -96,6 +96,10 @@ class ReservationCancellation
             return $outcome;
         });
 
+        // After the commit, so a deposit that lands meanwhile sees the booking
+        // cancelled and is refunded rather than kept.
+        $this->payments->cancelOpen($reservation);
+
         ReservationUpdated::dispatch($reservation);
 
         return $outcome;
@@ -116,11 +120,24 @@ class ReservationCancellation
         return CarbonImmutable::instance($reservation->starts_at)->subHours($this->freeHours());
     }
 
+    /**
+     * What is still held of the deposit after any refunds already made. A
+     * deposit marked paid with no payment recorded (taken outside the site,
+     * or demo data) counts in full.
+     */
     private function heldDeposit(Reservation $reservation): int
     {
-        return in_array($reservation->deposit_status, [PaymentStatus::Paid, PaymentStatus::PartiallyRefunded], true)
+        if (! in_array($reservation->deposit_status, [PaymentStatus::Paid, PaymentStatus::PartiallyRefunded], true)) {
+            return 0;
+        }
+
+        $paid = $reservation->payments()
+            ->whereIn('status', [PaymentStatus::Paid, PaymentStatus::PartiallyRefunded])
+            ->get();
+
+        return $paid->isEmpty()
             ? $reservation->deposit
-            : 0;
+            : (int) $paid->sum(fn (Payment $payment) => $payment->amount - $payment->refunded);
     }
 
     private function refundDeposit(Reservation $reservation, ?User $by): void

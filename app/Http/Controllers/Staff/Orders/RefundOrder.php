@@ -11,6 +11,7 @@ use App\Payments\Exceptions\PaymentException;
 use App\Payments\Payments;
 use App\Policies\Staff\OrderBoardPolicy;
 use App\Support\ActivityRecorder;
+use App\Support\Money;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -40,7 +41,7 @@ class RefundOrder
      */
     public function __invoke(Order $order, string $kind, ?int $typed, array $requested, string $reason, User $by): int
     {
-        [$amount, $failure] = DB::transaction(function () use ($order, $kind, $typed, $requested, $reason, $by) {
+        [$done, $failure] = DB::transaction(function () use ($order, $kind, $typed, $requested, $reason, $by) {
             $locked = Order::query()->lockForUpdate()->whereKey($order->getKey())->firstOrFail();
             $payments = $locked->payments()->lockForUpdate()->get();
 
@@ -133,12 +134,12 @@ class RefundOrder
 
         if ($failure !== null) {
             throw ValidationException::withMessages(['amount' => __('staff_orders.refund.partial', [
-                'done' => '£'.number_format($amount / 100, 2),
+                'done' => Money::format($done),
                 'reason' => collect($failure->errors())->flatten()->first(),
             ])]);
         }
 
-        return $amount;
+        return $done;
     }
 
     /**

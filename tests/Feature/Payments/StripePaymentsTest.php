@@ -1,9 +1,11 @@
 <?php
 
+use App\Enums\OrderStatus;
 use App\Enums\PaymentMethod;
 use App\Enums\PaymentStatus;
 use App\Enums\Role;
 use App\Events\PaymentUpdated;
+use App\Models\ActivityLog;
 use App\Models\Order;
 use App\Models\Payment;
 use App\Models\User;
@@ -51,7 +53,7 @@ function intentEvent(string $type, string $id, int $amount, string $eventId = 'e
     return [
         'id' => $eventId,
         'type' => $type,
-        'data' => ['object' => ['id' => $id, 'object' => 'payment_intent', 'amount' => $amount, 'amount_received' => $amount, 'status' => 'succeeded']],
+        'data' => ['object' => ['id' => $id, 'object' => 'payment_intent', 'amount' => $amount, 'amount_received' => $amount, 'currency' => 'gbp', 'status' => 'succeeded']],
     ];
 }
 
@@ -182,4 +184,74 @@ it('ignores webhooks sent to the fake driver', function () {
     $this->postJson('/webhooks/payments/fake', ['reference' => 'fake_1', 'status' => 'succeeded'])->assertNoContent();
 
     expect($payment->fresh()->status)->toBe(PaymentStatus::Pending);
+});
+
+it('cancels the declined intent at stripe before creating a new one', function () {
+    Http::fake([
+        'api.stripe.com/v1/payment_intents' => Http::sequence()
+            ->push(['id' => 'pi_old', 'status' => 'requires_payment_method', 'client_secret' => 's1'])
+            ->push(['id' => 'pi_new', 'status' => 'requires_payment_method', 'client_secret' => 's2']),
+        'api.stripe.com/v1/payment_intents/pi_old/cancel' => Http::response(['id' => 'pi_old', 'status' => 'canceled']),
+    ]);
+    $order = stripeOrder();
+    $payments = app(Payments::class);
+    $old = $payments->start($order, PaymentMethod::Card)->payment;
+    postStripeWebhook(intentEvent('payment_intent.payment_failed', 'pi_old', 4200))->assertNoContent();
+
+    $new = $payments->start($order->refresh(), PaymentMethod::Card)->payment;
+
+    expect($new->reference)->toBe('pi_new')
+        ->and($old->refresh()->meta['cancelled'])->toBeTrue();
+    Http::assertSent(fn (Request $request) => $request->url() === 'https://api.stripe.com/v1/payment_intents/pi_old/cancel'
+        && $request['cancellation_reason'] === 'abandoned');
+});
+
+it('treats an intent stripe can no longer cancel as cancelled here', function () {
+    Http::fake(['api.stripe.com/v1/payment_intents/pi_done/cancel' => Http::response(
+        ['error' => ['code' => 'payment_intent_unexpected_state', 'message' => 'already succeeded']], 400,
+    )]);
+    $order = stripeOrder();
+    $payment = Payment::factory()->forOrder($order)->pending()->create(['reference' => 'pi_done', 'payable_type' => $order->getMorphClass(), 'payable_id' => $order->id]);
+
+    expect(app(Payments::class)->cancelOpen($order))->toBe(1)
+        ->and($payment->refresh()->meta['cancelled'])->toBeTrue();
+});
+
+it('refunds through stripe when a cancelled intent succeeds anyway', function () {
+    Http::fake(['api.stripe.com/v1/refunds' => Http::response(['id' => 're_auto', 'status' => 'succeeded'])]);
+    $order = stripeOrder(4200);
+    $order->forceFill(['status' => OrderStatus::Cancelled])->save();
+    $payment = Payment::factory()->forOrder($order)->pending()->create(['reference' => 'pi_late_win', 'payable_type' => $order->getMorphClass(), 'payable_id' => $order->id]);
+
+    postStripeWebhook(intentEvent('payment_intent.succeeded', 'pi_late_win', 4200))->assertNoContent();
+
+    expect($payment->refresh()->status)->toBe(PaymentStatus::Refunded)
+        ->and($payment->meta['refunds'][0]['reference'])->toBe('re_auto');
+    Http::assertSent(fn (Request $request) => $request->url() === 'https://api.stripe.com/v1/refunds'
+        && $request['payment_intent'] === 'pi_late_win' && $request['amount'] === 4200);
+});
+
+it('logs an automatic refund stripe refuses so staff can finish it', function () {
+    Http::fake(['api.stripe.com/v1/refunds' => Http::response(['error' => ['message' => 'No']], 400)]);
+    $order = stripeOrder(4200);
+    $order->forceFill(['status' => OrderStatus::Cancelled])->save();
+    $payment = Payment::factory()->forOrder($order)->pending()->create(['reference' => 'pi_stuck', 'payable_type' => $order->getMorphClass(), 'payable_id' => $order->id]);
+
+    postStripeWebhook(intentEvent('payment_intent.succeeded', 'pi_stuck', 4200))->assertNoContent();
+
+    expect($payment->refresh()->status)->toBe(PaymentStatus::Paid)
+        ->and($payment->meta['auto_refund_failed']['amount'])->toBe(4200)
+        ->and(ActivityLog::query()->where('event', 'payment.auto_refund_failed')->exists())->toBeTrue();
+});
+
+it('ignores a webhook in another currency', function () {
+    $order = stripeOrder(4200);
+    $payment = Payment::factory()->forOrder($order)->pending()->create(['reference' => 'pi_usd', 'payable_type' => $order->getMorphClass(), 'payable_id' => $order->id]);
+    $event = intentEvent('payment_intent.succeeded', 'pi_usd', 4200);
+    $event['data']['object']['currency'] = 'usd';
+
+    postStripeWebhook($event)->assertNoContent();
+
+    expect($payment->fresh()->status)->toBe(PaymentStatus::Pending)
+        ->and($order->fresh()->payment_status)->toBe(PaymentStatus::Pending);
 });

@@ -7,7 +7,6 @@ use App\Enums\PaymentMethod;
 use App\Enums\PaymentStatus;
 use App\Enums\ReservationStatus;
 use App\Http\Requests\Checkout\ConfirmPaymentRequest;
-use App\Models\Payment;
 use App\Models\Reservation;
 use App\Payments\AttemptStatus;
 use App\Payments\Exceptions\PaymentException;
@@ -100,14 +99,25 @@ class ReservationPaymentController extends Controller
             return $this->answer($reservation, 'failed', __('payments.fake.declined'));
         }
 
-        $payment = $this->payments->confirm((string) $payment->reference);
-        $outcome = $this->outcome($payment);
+        $expired = $this->hold->expired($reservation);
 
-        if ($outcome === 'paid') {
-            $this->confirm->handle($reservation);
+        if ($expired) {
+            $this->payments->cancelOpen($reservation);
         }
 
-        return $this->answer($reservation, $outcome, $payment->meta['failure'] ?? null);
+        // Still asked even after the hold ends: money that already landed is
+        // found here and sent back by Payments.
+        $payment = $this->payments->confirm((string) $payment->reference);
+        [$status, $message] = PaymentPageProps::outcome($payment);
+
+        if ($status === 'paid') {
+            $this->confirm->handle($reservation);
+        } elseif ($expired && ! isset($payment->meta['auto_refund'])) {
+            $status = 'failed';
+            $message = (string) __('payments.hold_expired');
+        }
+
+        return $this->answer($reservation, $status, $message);
     }
 
     private function isDone(Reservation $reservation): bool
@@ -148,20 +158,11 @@ class ReservationPaymentController extends Controller
             return;
         }
 
-        $settled = $this->payments->confirm((string) $payment->reference);
+        [$status] = PaymentPageProps::outcome($this->payments->confirm((string) $payment->reference));
 
-        if ($this->outcome($settled) === 'paid') {
+        if ($status === 'paid') {
             $this->confirm->handle($reservation);
         }
-    }
-
-    private function outcome(Payment $payment): string
-    {
-        return match ($payment->status) {
-            PaymentStatus::Paid, PaymentStatus::PartiallyRefunded, PaymentStatus::Refunded => 'paid',
-            PaymentStatus::Failed => 'failed',
-            default => 'pending',
-        };
     }
 
     private function answer(Reservation $reservation, string $status, ?string $message): JsonResponse

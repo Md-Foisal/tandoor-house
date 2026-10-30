@@ -18,6 +18,7 @@ use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Http\Client\Response;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 /**
  * Stripe PaymentIntents over plain HTTP. Card, Apple Pay and Google Pay all
@@ -98,6 +99,23 @@ class StripeGateway implements PaymentGateway
         return new RefundResult(true, (string) $response->json('id'));
     }
 
+    public function cancel(Payment $payment): void
+    {
+        if ($payment->reference === null || $payment->reference === '') {
+            return;
+        }
+
+        $response = $this->client('cancel-'.$payment->reference)
+            ->post('payment_intents/'.rawurlencode($payment->reference).'/cancel', ['cancellation_reason' => 'abandoned']);
+
+        // Already cancelled or already succeeded: nothing left to stop.
+        if ($response->successful() || $response->json('error.code') === 'payment_intent_unexpected_state') {
+            return;
+        }
+
+        throw new PaymentException($this->errorMessage($response));
+    }
+
     public function handleWebhook(Request $request): ?WebhookOutcome
     {
         $this->verify($request->getContent(), (string) $request->header('Stripe-Signature'));
@@ -118,6 +136,18 @@ class StripeGateway implements PaymentGateway
         $intent = $event['data']['object'] ?? null;
 
         if ($status === null || ! is_array($intent) || ! is_string($intent['id'] ?? null)) {
+            return null;
+        }
+
+        $currency = strtolower((string) config('payments.currency', 'gbp'));
+
+        if (strtolower((string) ($intent['currency'] ?? '')) !== $currency) {
+            Log::warning('Stripe webhook ignored: the payment is not in the configured currency.', [
+                'intent' => $intent['id'],
+                'currency' => $intent['currency'] ?? null,
+                'expected' => $currency,
+            ]);
+
             return null;
         }
 

@@ -45,6 +45,8 @@ class VenueGateway implements PaymentGateway
         return new RefundResult(true, 'cash_'.Str::lower((string) Str::ulid()), 'cash', __('payments.venue.cash_refund'));
     }
 
+    public function cancel(Payment $payment): void {}
+
     public function handleWebhook(Request $request): ?WebhookOutcome
     {
         return null;
