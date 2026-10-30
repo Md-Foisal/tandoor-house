@@ -36,4 +36,12 @@ class ReservationPolicy
 
         return in_array($reservation->reference, (array) session()->get(self::SESSION_KEY, []), true);
     }
+
+    /**
+     * Paying the deposit is for whoever booked.
+     */
+    public function pay(?User $user, Reservation $reservation): bool
+    {
+        return $this->cancel($user, $reservation);
+    }
 }

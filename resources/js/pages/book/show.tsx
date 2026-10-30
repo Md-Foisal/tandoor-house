@@ -4,6 +4,7 @@ import { CreditCard, Phone } from 'lucide-react';
 import { useState } from 'react';
 import { EmberLine } from '@/components/brand/ember-line';
 import { Settle } from '@/components/motion/served';
+import { HoldTimer } from '@/components/booking/hold-timer';
 import { CancelBooking } from '@/components/booking/cancel-booking';
 import type { ShowProps } from '@/components/booking/types';
 import { Badge } from '@/components/ui/badge';
@@ -81,7 +82,7 @@ function Row({
     );
 }
 
-export default function BookShow({ reservation, cancel }: ShowProps) {
+export default function BookShow({ reservation, cancel, pay }: ShowProps) {
     const t = useT();
     const reduced = useReducedMotion();
     const { restaurant } = usePage().props;
@@ -214,21 +215,27 @@ export default function BookShow({ reservation, cancel }: ShowProps) {
                 </div>
 
                 <div className="mx-auto mt-8 grid max-w-md gap-4">
-                    {pending && (
+                    {pending && pay && (
                         <div className="grid gap-2">
-                            <Button
-                                type="button"
-                                size="lg"
-                                className="h-12 w-full"
-                                disabled
-                                aria-describedby="pay-note"
-                            >
-                                <CreditCard aria-hidden="true" />
-                                {t('booking.confirmation.pay')}
-                            </Button>
-                            <p id="pay-note" className="text-sm text-ink-muted">
-                                {t('booking.confirmation.pay_note')}
-                            </p>
+                            {pay.expired ? (
+                                <p className="text-sm text-ink-muted">
+                                    {t('booking.pay.expired_body')}
+                                </p>
+                            ) : (
+                                <>
+                                    <Button
+                                        asChild
+                                        size="lg"
+                                        className="h-12 w-full"
+                                    >
+                                        <Link href={pay.url}>
+                                            <CreditCard aria-hidden="true" />
+                                            {t('booking.confirmation.pay')}
+                                        </Link>
+                                    </Button>
+                                    <HoldTimer expiresAt={pay.expires_at} />
+                                </>
+                            )}
                         </div>
                     )}
                     <p className="text-sm text-ink-muted">

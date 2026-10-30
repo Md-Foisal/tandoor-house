@@ -7,6 +7,7 @@ use App\Models\Reservation;
 use App\Notifications\Messages\SmsMessage;
 use App\Notifications\Messages\WhatsAppMessage;
 use App\Notifications\NotificationChannels;
+use App\Support\GuestLinks;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
@@ -104,7 +105,7 @@ class BookingNotice extends Notification implements ShouldQueue
 
     private function url(): string
     {
-        return route('book.show', $this->reservation);
+        return GuestLinks::booking($this->reservation);
     }
 
     private function firstName(): string

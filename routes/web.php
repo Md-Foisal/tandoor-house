@@ -16,6 +16,7 @@ use App\Http\Controllers\PageController;
 use App\Http\Controllers\PaymentWebhookController;
 use App\Http\Controllers\ReservationCancellationController;
 use App\Http\Controllers\ReservationController;
+use App\Http\Controllers\ReservationPaymentController;
 use App\Http\Controllers\StyleguideController;
 use App\Http\Controllers\TableOrderingController;
 use Illuminate\Foundation\Http\Middleware\ValidateCsrfToken;
@@ -61,6 +62,11 @@ Route::controller(ReservationController::class)->prefix('book')->name('book.')->
     Route::get('slots', 'slots')->name('slots');
     Route::post('/', 'store')->middleware('throttle:booking')->name('store');
     Route::get('{reservation:reference}', 'show')->name('show');
+});
+
+Route::controller(ReservationPaymentController::class)->prefix('book/{reservation:reference}/pay')->name('book.pay')->group(function () {
+    Route::get('/', 'show')->middleware('throttle:lookup')->name('');
+    Route::post('confirm', 'confirm')->middleware('throttle:checkout')->name('.confirm');
 });
 
 Route::post('book/{reservation:reference}/cancel', ReservationCancellationController::class.'@store')->middleware('throttle:10,1')->name('book.cancel');
