@@ -1,5 +1,5 @@
 import { router } from '@inertiajs/react';
-import { Tag, X } from 'lucide-react';
+import { Gift, Tag, X } from 'lucide-react';
 import { useState } from 'react';
 import { Price } from '@/components/brand/price';
 import { Button } from '@/components/ui/button';
@@ -11,6 +11,7 @@ import { formatMoney } from '@/lib/money';
 import { promo } from '@/routes/checkout';
 import type { CheckoutFormApi, CheckoutProps } from './types';
 import type { liveTotals } from './utils';
+import { usingReward } from './utils';
 
 export function OrderSummary({
     form,
@@ -26,6 +27,7 @@ export function OrderSummary({
     const [code, setCode] = useState('');
     const [busy, setBusy] = useState(false);
     const [codeError, setCodeError] = useState<string | undefined>();
+    const rewardOn = usingReward(form.data, props);
 
     const submitCode = (value: string) => {
         setBusy(true);
@@ -98,8 +100,17 @@ export function OrderSummary({
                 ))}
             </ul>
 
-            <div className="grid gap-2 border-t border-line pt-4">
-                {summary.promo_code ? (
+            <div className="grid gap-3 border-t border-line pt-4">
+                {summary.loyalty && (
+                    <LoyaltyControl form={form} props={props} />
+                )}
+                {rewardOn ? (
+                    <p className="text-sm text-ink-muted">
+                        {t('checkout.loyalty.with_reward', {
+                            value: formatMoney(totals.discount),
+                        })}
+                    </p>
+                ) : summary.promo_code ? (
                     <div className="flex items-center justify-between gap-3 rounded-md bg-leaf-soft px-3 py-2 text-sm">
                         <span className="inline-flex items-center gap-2 font-semibold">
                             <Tag className="size-4" aria-hidden="true" />
@@ -183,7 +194,11 @@ export function OrderSummary({
                 />
                 {totals.discount > 0 && (
                     <Row
-                        label={t('checkout.summary.discount')}
+                        label={t(
+                            rewardOn
+                                ? 'checkout.summary.loyalty_discount'
+                                : 'checkout.summary.discount',
+                        )}
                         pence={-totals.discount}
                     />
                 )}
@@ -259,6 +274,74 @@ function Row({ label, pence }: { label: string; pence: number }) {
                 {pence < 0 ? '−' : ''}
                 {formatMoney(Math.abs(pence))}
             </dd>
+        </div>
+    );
+}
+
+function LoyaltyControl({
+    form,
+    props,
+}: {
+    form: CheckoutFormApi;
+    props: CheckoutProps;
+}) {
+    const t = useT();
+    const offer = props.summary.loyalty;
+
+    if (!offer) {
+        return null;
+    }
+
+    const ready = offer.discount > 0;
+    const hasPromo = props.summary.promo_code !== null;
+    const blocked = !ready || hasPromo;
+    const error = (form.errors as Record<string, string | undefined>)
+        .use_loyalty;
+    const note = !ready
+        ? t('checkout.loyalty.too_small', {
+              value: formatMoney(offer.reward_value),
+          })
+        : hasPromo
+          ? t('checkout.loyalty.with_promo')
+          : form.data.use_loyalty
+            ? t('checkout.loyalty.applied', {
+                  value: formatMoney(offer.reward_value),
+                  points: String(offer.reward_points),
+                  left: String(offer.points - offer.reward_points),
+              })
+            : t('checkout.loyalty.balance', { points: String(offer.points) });
+
+    return (
+        <div className="grid gap-1.5 rounded-md bg-turmeric-soft px-3 py-3">
+            <div className="flex min-h-11 items-center justify-between gap-3">
+                <label
+                    htmlFor="use-loyalty"
+                    className="inline-flex items-center gap-2 text-sm font-semibold"
+                >
+                    <Gift className="size-4 shrink-0" aria-hidden="true" />
+                    {t('checkout.loyalty.title', {
+                        points: String(offer.reward_points),
+                        value: formatMoney(offer.reward_value),
+                    })}
+                </label>
+                <Switch
+                    id="use-loyalty"
+                    checked={form.data.use_loyalty && !blocked}
+                    disabled={blocked}
+                    aria-describedby="use-loyalty-note"
+                    onCheckedChange={(checked) =>
+                        form.setData('use_loyalty', checked)
+                    }
+                />
+            </div>
+            <p id="use-loyalty-note" className="text-sm text-ink-muted">
+                {note}
+            </p>
+            {error && (
+                <p role="alert" className="text-sm font-medium text-chilli">
+                    {error}
+                </p>
+            )}
         </div>
     );
 }

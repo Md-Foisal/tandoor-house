@@ -229,8 +229,9 @@ class CartService
 
         $channel = OrderChannel::tryFrom((string) $cart->channel) ?? OrderChannel::Delivery;
         $promo = $this->promo();
+        $pricedLines = $priced->map(fn (array $line) => ['total' => $line['total'], 'vat_rate' => $line['vat_rate']])->all();
         $totals = $this->pricing->totals(
-            $priced->map(fn (array $line) => ['total' => $line['total'], 'vat_rate' => $line['vat_rate']])->all(),
+            $pricedLines,
             $channel,
             null,
             $promo,
@@ -242,6 +243,8 @@ class CartService
             $totals['total'] += $deliveryFee;
         }
 
+        $reward = $this->pricing->loyaltyReward($this->request->user(), $totals['subtotal']);
+
         return [
             'lines' => $priced->all(),
             'count' => (int) $priced->sum('quantity'),
@@ -251,6 +254,11 @@ class CartService
             'promo_invalid' => $cart->promo_code !== null && $promo === null,
             'has_unavailable' => $priced->contains(fn (array $line) => ! $line['is_available']),
             'has_alcohol' => $priced->contains(fn (array $line) => $line['is_alcoholic']),
+            // VAT with the reward applied, so the checkout can show it without a round trip.
+            'loyalty' => $reward === null ? null : [
+                ...$reward,
+                'vat_total' => $this->pricing->vat($pricedLines, $totals['subtotal'], $reward['discount']),
+            ],
             ...$totals,
         ];
     }
@@ -272,6 +280,8 @@ class CartService
         $cart = $this->cart();
         $cart->lines = $lines;
         $cart->reminded_at = null;
+        // Carts do not use Eloquent timestamps; baskets:remind reads this as "last touched".
+        $cart->setAttribute('updated_at', now()->toDateTimeString());
         $cart->save();
     }
 

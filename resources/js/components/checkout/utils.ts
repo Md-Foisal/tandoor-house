@@ -1,7 +1,22 @@
 import type { CheckoutForm, CheckoutProps, Zone } from './types';
 
+/** True while the points reward is the discount on this order. */
+export function usingReward(form: CheckoutForm, props: CheckoutProps): boolean {
+    return form.use_loyalty && (props.summary.loyalty?.discount ?? 0) > 0;
+}
+
+/** A reward replaces a promo code, so only one of the two is ever taken off. */
+export function discountPence(
+    form: CheckoutForm,
+    props: CheckoutProps,
+): number {
+    return usingReward(form, props)
+        ? (props.summary.loyalty?.discount ?? 0)
+        : props.summary.discount;
+}
+
 export function tipPence(form: CheckoutForm, props: CheckoutProps): number {
-    const base = props.summary.subtotal - props.summary.discount;
+    const base = props.summary.subtotal - discountPence(form, props);
 
     if (form.tip_choice === 'custom') {
         const pounds = Number.parseFloat(form.tip_custom.replace(',', '.'));
@@ -27,7 +42,8 @@ export function liveTotals(
     props: CheckoutProps,
     zone: Zone | null,
 ) {
-    const { subtotal, discount } = props.summary;
+    const { subtotal } = props.summary;
+    const discount = discountPence(form, props);
     const base = subtotal - discount;
     const delivery = form.channel === 'delivery' ? (zone?.fee ?? 0) : 0;
     const serviceFull =
@@ -44,7 +60,9 @@ export function liveTotals(
         serviceFull,
         service,
         tip,
-        vat: props.summary.vat_total,
+        vat: usingReward(form, props)
+            ? (props.summary.loyalty?.vat_total ?? props.summary.vat_total)
+            : props.summary.vat_total,
         total: base + delivery + service + tip,
     };
 }
