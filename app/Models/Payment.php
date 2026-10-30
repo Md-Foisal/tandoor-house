@@ -66,9 +66,10 @@ class Payment extends Model
      */
     public function payableModel(): (Payable&Model)|null
     {
-        $payable = $this->payable_type !== null ? $this->payable : $this->order;
+        $relation = $this->payable_type !== null ? 'payable' : 'order';
+        $payable = $this->loadMissing($relation)->getRelation($relation);
 
-        return $payable instanceof Payable ? $payable : null;
+        return $payable instanceof Payable && $payable instanceof Model ? $payable : null;
     }
 
     public function remaining(): int
