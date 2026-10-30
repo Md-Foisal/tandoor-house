@@ -1,14 +1,15 @@
-import { router } from '@inertiajs/react';
-import { CreditCard } from 'lucide-react';
-import { useState } from 'react';
-import { useOnline } from '@/components/brand/states';
-import { ChoiceCard } from '@/components/checkout/choice-card';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Spinner } from '@/components/ui/spinner';
-import { useT } from '@/lib/i18n';
-import { formatMoney } from '@/lib/money';
-import type { BillProps } from './types';
+import { router } from "@inertiajs/react";
+import { CreditCard } from "lucide-react";
+import { useState } from "react";
+import { useOnline } from "@/components/brand/states";
+import { ChoiceCard } from "@/components/checkout/choice-card";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { PaymentSkeleton } from "@/components/payments/payment-skeleton";
+import { Spinner } from "@/components/ui/spinner";
+import { useT } from "@/lib/i18n";
+import { formatMoney } from "@/lib/money";
+import type { BillProps } from "./types";
 
 const MAX_TIP = 50000;
 
@@ -24,21 +25,21 @@ export function BillPay({
     tipPresets,
 }: {
     token: string;
-    totals: BillProps['totals'];
-    options: BillProps['options'];
-    split: BillProps['split'];
+    totals: BillProps["totals"];
+    options: BillProps["options"];
+    split: BillProps["split"];
     tipPresets: number[];
 }) {
     const t = useT();
     const online = useOnline();
-    const [pick, setPick] = useState('whole');
-    const [tipChoice, setTipChoice] = useState('0');
-    const [custom, setCustom] = useState('');
+    const [pick, setPick] = useState("whole");
+    const [tipChoice, setTipChoice] = useState("0");
+    const [custom, setCustom] = useState("");
     const [starting, setStarting] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
-    const shareIndex = pick.startsWith('share-')
-        ? Number(pick.slice('share-'.length))
+    const shareIndex = pick.startsWith("share-")
+        ? Number(pick.slice("share-".length))
         : null;
     const shareAmount =
         shareIndex !== null ? (split?.shares[shareIndex] ?? 0) : null;
@@ -46,14 +47,14 @@ export function BillPay({
         shareAmount !== null ? Math.min(shareAmount, totals.left) : totals.left;
 
     const tip =
-        tipChoice === 'custom'
+        tipChoice === "custom"
             ? customPence(custom)
             : Math.floor((amount * Number(tipChoice)) / 10000);
 
     const label = (index: number) =>
-        options.mode === 'even' || options.mode === 'items'
-            ? t('table.bill.share', { n: index + 1 })
-            : '';
+        options.mode === "even" || options.mode === "items"
+            ? t("table.bill.share", { n: index + 1 })
+            : "";
 
     const start = () => {
         setError(null);
@@ -67,8 +68,8 @@ export function BillPay({
             {
                 onStart: () => setStarting(true),
                 onError: (errors) =>
-                    setError(errors.amount ?? t('table.pay.failed')),
-                onNetworkError: () => setError(t('table.pay.failed')),
+                    setError(errors.amount ?? t("table.pay.failed")),
+                onNetworkError: () => setError(t("table.pay.failed")),
                 onFinish: () => setStarting(false),
             },
         );
@@ -84,11 +85,28 @@ export function BillPay({
                     id="pay-title"
                     className="font-display text-display-md text-ink"
                 >
-                    {t('table.pay.title')}
+                    {t("table.pay.title")}
                 </h2>
                 <p className="max-w-[56ch] text-ink-muted">
-                    {t('table.pay.none_left')}
+                    {t("table.pay.none_left")}
                 </p>
+            </section>
+        );
+    }
+
+    if (starting) {
+        return (
+            <section
+                aria-labelledby="pay-title"
+                className="flex flex-col gap-6"
+            >
+                <h2
+                    id="pay-title"
+                    className="font-display text-display-md text-ink"
+                >
+                    {t("table.pay.title")}
+                </h2>
+                <PaymentSkeleton />
             </section>
         );
     }
@@ -103,23 +121,23 @@ export function BillPay({
                     id="pay-title"
                     className="font-display text-display-md text-ink"
                 >
-                    {t('table.pay.title')}
+                    {t("table.pay.title")}
                 </h2>
                 <p className="max-w-[56ch] text-ink-muted">
-                    {t('table.pay.body')}
+                    {t("table.pay.body")}
                 </p>
             </div>
 
             <fieldset className="grid gap-2">
                 <legend className="mb-1 font-semibold text-ink">
-                    {t('table.pay.what')}
+                    {t("table.pay.what")}
                 </legend>
                 <ChoiceCard
                     name="pay-what"
                     value="whole"
-                    checked={pick === 'whole'}
+                    checked={pick === "whole"}
                     onSelect={setPick}
-                    title={t('table.pay.whole')}
+                    title={t("table.pay.whole")}
                     aside={
                         <span className="font-semibold tabular-nums">
                             {formatMoney(totals.left)}
@@ -134,7 +152,7 @@ export function BillPay({
                         checked={pick === `share-${index}`}
                         onSelect={setPick}
                         disabled={share < 1}
-                        title={t('table.pay.share', { who: label(index) })}
+                        title={t("table.pay.share", { who: label(index) })}
                         aside={
                             <span className="font-semibold tabular-nums">
                                 {formatMoney(share)}
@@ -144,22 +162,22 @@ export function BillPay({
                 ))}
                 {shares.length === 0 && (
                     <p className="text-sm text-ink-muted">
-                        {t('table.pay.share_none')}
+                        {t("table.pay.share_none")}
                     </p>
                 )}
                 {totals.paid > 0 && (
                     <p className="text-sm text-ink-muted">
-                        {t('table.bill.left_note')}
+                        {t("table.bill.left_note")}
                     </p>
                 )}
             </fieldset>
 
             <fieldset className="grid gap-3">
                 <legend className="font-semibold text-ink">
-                    {t('table.pay.tip_legend')}
+                    {t("table.pay.tip_legend")}
                 </legend>
                 <p className="text-sm text-ink-muted">
-                    {t('table.pay.tip_note')}
+                    {t("table.pay.tip_note")}
                 </p>
                 <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
                     {tipPresets.map((basisPoints) => (
@@ -172,7 +190,7 @@ export function BillPay({
                             onSelect={setTipChoice}
                             title={
                                 basisPoints === 0
-                                    ? t('table.pay.tip_none')
+                                    ? t("table.pay.tip_none")
                                     : `${basisPoints / 100}%`
                             }
                             detail={
@@ -190,18 +208,18 @@ export function BillPay({
                         tile
                         name="pay-tip"
                         value="custom"
-                        checked={tipChoice === 'custom'}
+                        checked={tipChoice === "custom"}
                         onSelect={setTipChoice}
-                        title={t('table.pay.tip_custom')}
+                        title={t("table.pay.tip_custom")}
                     />
                 </div>
-                {tipChoice === 'custom' && (
+                {tipChoice === "custom" && (
                     <div className="grid max-w-40 gap-1.5">
                         <label
                             htmlFor="pay-tip-custom"
                             className="text-sm font-semibold text-ink"
                         >
-                            {t('table.pay.tip_custom_label')}
+                            {t("table.pay.tip_custom_label")}
                         </label>
                         <div className="relative">
                             <span
@@ -220,7 +238,7 @@ export function BillPay({
                                     setCustom(
                                         event.target.value.replace(
                                             /[^0-9.,]/g,
-                                            '',
+                                            "",
                                         ),
                                     )
                                 }
@@ -229,7 +247,7 @@ export function BillPay({
                     </div>
                 )}
                 <p className="sr-only" aria-live="polite">
-                    {t('table.pay.tip_announce', { tip: formatMoney(tip) })}
+                    {t("table.pay.tip_announce", { tip: formatMoney(tip) })}
                 </p>
             </fieldset>
 
@@ -240,18 +258,18 @@ export function BillPay({
             >
                 <div className="flex justify-between gap-4">
                     <dt className="text-ink-muted">
-                        {t('table.pay.summary_bill')}
+                        {t("table.pay.summary_bill")}
                     </dt>
                     <dd className="tabular-nums">{formatMoney(amount)}</dd>
                 </div>
                 <div className="flex justify-between gap-4">
                     <dt className="text-ink-muted">
-                        {t('table.pay.summary_tip')}
+                        {t("table.pay.summary_tip")}
                     </dt>
                     <dd className="tabular-nums">{formatMoney(tip)}</dd>
                 </div>
                 <div className="flex justify-between gap-4 border-t border-line pt-2 font-semibold text-ink">
-                    <dt>{t('table.pay.summary_total')}</dt>
+                    <dt>{t("table.pay.summary_total")}</dt>
                     <dd className="font-display text-title tabular-nums">
                         {formatMoney(amount + tip)}
                     </dd>
@@ -265,7 +283,7 @@ export function BillPay({
             )}
             {!online && (
                 <p className="text-sm text-ink-muted">
-                    {t('table.pay.offline')}
+                    {t("table.pay.offline")}
                 </p>
             )}
 
@@ -279,12 +297,12 @@ export function BillPay({
                 {starting ? (
                     <>
                         <Spinner />
-                        {t('table.pay.starting')}
+                        {t("table.pay.starting")}
                     </>
                 ) : (
                     <>
                         <CreditCard aria-hidden="true" />
-                        {t('table.pay.pay_button', {
+                        {t("table.pay.pay_button", {
                             amount: formatMoney(amount + tip),
                         })}
                     </>
@@ -293,10 +311,10 @@ export function BillPay({
 
             <div className="grid gap-1 border-t border-line pt-4">
                 <h3 className="font-semibold text-ink">
-                    {t('table.pay.waiter_title')}
+                    {t("table.pay.waiter_title")}
                 </h3>
                 <p className="text-sm text-ink-muted">
-                    {t('table.pay.waiter_body')}
+                    {t("table.pay.waiter_body")}
                 </p>
             </div>
         </section>
@@ -304,7 +322,7 @@ export function BillPay({
 }
 
 function customPence(value: string): number {
-    const pounds = Number.parseFloat(value.replace(',', '.'));
+    const pounds = Number.parseFloat(value.replace(",", "."));
 
     return Number.isFinite(pounds) && pounds > 0
         ? Math.min(MAX_TIP, Math.round(pounds * 100))

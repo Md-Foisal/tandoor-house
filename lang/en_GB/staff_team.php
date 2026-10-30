@@ -127,6 +127,8 @@ return [
         'empty_title' => 'No hours to share tips across',
         'empty_body' => 'Tips are split once somebody has clocked in during the week.',
         'none' => 'No tips were left this week.',
+        'no_tips_title' => 'No tips to share yet',
+        'no_tips_body' => 'Tips left on completed orders this week will be split here by hours worked.',
         'record' => 'Record this week\'s split',
         'record_again' => 'Record again',
         'record_wait' => 'Available once the week has ended, on :date.',
