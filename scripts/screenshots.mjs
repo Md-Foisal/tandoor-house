@@ -73,6 +73,10 @@ for (const theme of themes) {
                 deviceScaleFactor: 1,
                 storageState: email === null ? undefined : sessions.get(email),
             });
+            // Laravel Herd injects its own dev toolbar; this flag stops it mounting.
+            await context.addInitScript(() => {
+                window.__HERD_STUDIO__ = true;
+            });
             const page = await context.newPage();
 
             page.on('console', (message) => {
@@ -100,10 +104,6 @@ for (const theme of themes) {
                 { timeout: 15000 },
             );
             await page.waitForTimeout(900);
-            // Laravel Herd injects its own dev toolbar; keep it out of the record.
-            await page.addStyleTag({
-                content: '#herd-ai-root { display: none !important; }',
-            });
             await page.screenshot({
                 path: `${outDir}/${name}-${width}-${theme}.jpg`,
                 fullPage: true,
