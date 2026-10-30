@@ -31,6 +31,7 @@ export type RealtimePayload = Record<string, unknown>;
 
 export type ConnectionState =
     | 'disabled'
+    | 'idle'
     | 'connecting'
     | 'live'
     | 'unavailable'
@@ -68,6 +69,11 @@ function connectionState(): ConnectionState {
 
     if (!online) {
         return 'offline';
+    }
+
+    // No page has subscribed yet, so no socket has been opened.
+    if (echo === null) {
+        return 'idle';
     }
 
     if (socketState === 'connected') {

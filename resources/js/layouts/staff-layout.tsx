@@ -80,7 +80,11 @@ function LiveStatus() {
     const t = useT();
     const connection = useConnectionState();
 
-    if (connection === 'disabled' || connection === 'offline') {
+    if (
+        connection === 'disabled' ||
+        connection === 'idle' ||
+        connection === 'offline'
+    ) {
         return null;
     }
 
