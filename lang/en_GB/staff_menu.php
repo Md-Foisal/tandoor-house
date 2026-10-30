@@ -183,7 +183,7 @@ return [
         'category_not_empty' => ':name still has dishes. Move or remove them first.',
         'max_below_min' => 'The most must be at least the fewest.',
         'group_needs_modifier' => 'Add at least one option to this group.',
-        'photo_small' => 'The photo is too small. Use one at least 800 by 600 pixels.',
+        'photo_small' => 'The photo needs to be between 800 by 600 and 6000 by 6000 pixels.',
         'photo_large' => 'The photo is over 5 MB. Choose a smaller file.',
         'photo_type' => 'Use a JPEG, PNG or WebP photo.',
         'foreign_row' => 'An option or size on this form belongs to a different dish. Reload the page and try again.',

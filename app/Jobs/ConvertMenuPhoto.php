@@ -29,6 +29,8 @@ class ConvertMenuPhoto implements ShouldQueue
 
     public const WIDTHS = [480, 960, 1600];
 
+    public const MAX_SIDE = 6000;
+
     public int $tries = 3;
 
     public int $backoff = 30;
@@ -103,8 +105,10 @@ class ConvertMenuPhoto implements ShouldQueue
      */
     private function convert(string $original, string $work): array
     {
+        $format = $this->verifiedFormat($original);
+
         if ($this->imagickCanWriteAvif()) {
-            return $this->withImagick($original, $work);
+            return $this->withImagick($original, $format, $work);
         }
 
         $node = $this->nodeBinary();
@@ -133,6 +137,27 @@ class ConvertMenuPhoto implements ShouldQueue
     }
 
     /**
+     * The request already validated the upload; this re-checks the stored bytes
+     * so no decoder is fed an oversized or mislabelled file.
+     */
+    private function verifiedFormat(string $path): string
+    {
+        $info = @getimagesize($path);
+        $format = match ($info['mime'] ?? null) {
+            'image/jpeg' => 'jpeg',
+            'image/png' => 'png',
+            'image/webp' => 'webp',
+            default => throw new RuntimeException('The uploaded photo is not a supported image.'),
+        };
+
+        if ($info[0] > self::MAX_SIDE || $info[1] > self::MAX_SIDE) {
+            throw new RuntimeException('The uploaded photo is too large to convert.');
+        }
+
+        return $format;
+    }
+
+    /**
      * @return array{width: int, height: int, placeholder: string}
      */
     private function withSharp(string $node, string $original, string $work): array
@@ -148,9 +173,15 @@ class ConvertMenuPhoto implements ShouldQueue
     /**
      * @return array{width: int, height: int, placeholder: string}
      */
-    private function withImagick(string $original, string $work): array
+    private function withImagick(string $original, string $format, string $work): array
     {
-        $source = new \Imagick($original);
+        \Imagick::setResourceLimit(\Imagick::RESOURCETYPE_MEMORY, 256 * 1024 * 1024);
+        \Imagick::setResourceLimit(\Imagick::RESOURCETYPE_MAP, 512 * 1024 * 1024);
+        \Imagick::setResourceLimit(\Imagick::RESOURCETYPE_AREA, self::MAX_SIDE * self::MAX_SIDE);
+        \Imagick::setResourceLimit(\Imagick::RESOURCETYPE_WIDTH, self::MAX_SIDE);
+        \Imagick::setResourceLimit(\Imagick::RESOURCETYPE_HEIGHT, self::MAX_SIDE);
+
+        $source = new \Imagick("$format:$original");
         $source->autoOrient();
         $source->stripImage();
 

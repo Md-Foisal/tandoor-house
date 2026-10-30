@@ -166,3 +166,13 @@ it('falls back to the manifest key without an upload', function () {
     $this->get("/menu/{$item->slug}")
         ->assertInertia(fn ($page) => $page->where('item.image', "dish/{$item->slug}"));
 });
+
+it('rejects a photo with oversize dimensions', function () {
+    Queue::fake();
+
+    $this->actingAs($this->manager)
+        ->post('/staff/menu/items', [...photoItemPayload(Category::factory()->create()), 'photo' => UploadedFile::fake()->image('big.jpg', 6001, 900)])
+        ->assertSessionHasErrors('photo');
+
+    Queue::assertNothingPushed();
+});

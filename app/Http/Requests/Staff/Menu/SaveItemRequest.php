@@ -66,7 +66,7 @@ class SaveItemRequest extends FormRequest
             'service_periods' => ['nullable', 'array'],
             'service_periods.*' => ['distinct', Rule::enum(ServicePeriod::class)],
             'remove_photo' => ['nullable', 'boolean'],
-            'photo' => ['nullable', 'file', 'mimes:jpg,jpeg,png,webp', 'mimetypes:image/jpeg,image/png,image/webp', 'max:5120', 'dimensions:min_width=800,min_height=600'],
+            'photo' => ['nullable', 'file', 'mimes:jpg,jpeg,png,webp', 'mimetypes:image/jpeg,image/png,image/webp', 'max:5120', 'dimensions:min_width=800,min_height=600,max_width=6000,max_height=6000'],
 
             'variants' => ['nullable', 'array', 'max:8'],
             'variants.*.id' => ['nullable', 'integer', Rule::exists('item_variants', 'id')->where('menu_item_id', $item instanceof MenuItem ? $item->id : 0)],
