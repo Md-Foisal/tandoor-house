@@ -11,12 +11,12 @@ final class Overview
     /** Metrics where a rise is good news, a fall is bad, or neither. */
     private const DIRECTION = [
         'sales' => 'up', 'gross' => 'up', 'net_of_vat' => 'up', 'orders' => 'up', 'aov' => 'up',
-        'discounts' => 'down', 'refunds' => 'down',
+        'discounts' => 'down', 'refunds' => 'down', 'tip_refunds' => 'down',
     ];
 
-    private const MONEY = ['sales', 'gross', 'net_of_vat', 'vat', 'discounts', 'delivery', 'service', 'tips', 'refunds', 'aov'];
+    private const MONEY = ['sales', 'gross', 'net_of_vat', 'vat', 'discounts', 'delivery', 'service', 'tips', 'refunds', 'tip_refunds', 'aov'];
 
-    private const ORDER = ['sales', 'gross', 'net_of_vat', 'vat', 'discounts', 'delivery', 'service', 'tips', 'refunds', 'orders', 'aov'];
+    private const ORDER = ['sales', 'gross', 'net_of_vat', 'vat', 'discounts', 'delivery', 'service', 'tips', 'refunds', 'tip_refunds', 'orders', 'aov'];
 
     /**
      * @return array<string, mixed>

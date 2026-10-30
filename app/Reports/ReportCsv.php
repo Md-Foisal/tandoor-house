@@ -2,6 +2,7 @@
 
 namespace App\Reports;
 
+use App\Support\Csv;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 final class ReportCsv
@@ -11,54 +12,73 @@ final class ReportCsv
         $data = ReportSections::build($section, $range);
         $filename = 'tandoor-house-'.str_replace('_', '-', $section).'-'.$range->fileSlug().'.csv';
 
-        return response()->streamDownload(function () use ($data, $range) {
-            $out = fopen('php://output', 'w');
+        // The byte order mark makes Excel open the file as UTF-8. Csv::download writes the
+        // header row first, so the mark gets a header row of its own, unquoted.
+        return Csv::download($filename, ["\xEF\xBB\xBF"], self::rows($data['tables'], $range));
+    }
 
-            if ($out === false) {
-                return;
+    /**
+     * @param  list<array<string, mixed>>  $tables
+     * @return \Generator<int, list<string|int|float>>
+     */
+    private static function rows(array $tables, ReportRange $range): \Generator
+    {
+        yield [(string) config('restaurant.name'), $range->label()];
+
+        foreach ($tables as $table) {
+            yield [];
+            yield [$table['title']];
+            yield array_values(array_map(self::heading(...), $table['columns']));
+
+            foreach ($table['rows'] as $row) {
+                yield self::line($table['columns'], $row);
             }
 
-            // The byte order mark makes Excel open the file as UTF-8.
-            fwrite($out, "\xEF\xBB\xBF");
-
-            fputcsv($out, [config('restaurant.name'), $range->label()]);
-
-            foreach ($data['tables'] as $table) {
-                fputcsv($out, []);
-                fputcsv($out, [self::safe($table['title'])]);
-                fputcsv($out, array_map(fn (array $c) => self::safe($c['label']), $table['columns']));
-
-                foreach ($table['rows'] as $row) {
-                    fputcsv($out, self::line($table['columns'], $row));
-                }
-
-                if ($table['totals'] !== null) {
-                    fputcsv($out, self::line($table['columns'], $table['totals']));
-                }
+            if ($table['totals'] !== null) {
+                yield self::line($table['columns'], $table['totals']);
             }
+        }
+    }
 
-            fclose($out);
-        }, $filename, ['Content-Type' => 'text/csv; charset=UTF-8']);
+    /**
+     * @param  array{key: string, label: string, type: string}  $column
+     */
+    private static function heading(array $column): string
+    {
+        return in_array($column['type'], ['percent', 'change'], true) ? $column['label'].' (%)' : $column['label'];
     }
 
     /**
      * @param  list<array{key: string, label: string, type: string}>  $columns
      * @param  array<string, mixed>  $row
-     * @return list<string>
+     * @return list<string|int|float>
      */
     private static function line(array $columns, array $row): array
     {
-        return array_map(
-            fn (array $c) => self::safe(ReportFormat::cell($row[$c['key']] ?? null, $c['type'], $row, csv: true)),
-            $columns,
-        );
+        return array_map(fn (array $c) => self::cell($row[$c['key']] ?? null, $c['type'], $row), $columns);
     }
 
     /**
-     * Stops a dish name that starts with = or + from running as a spreadsheet formula.
+     * Numbers go out as numbers so a negative figure is not mistaken for a formula
+     * by the shared guard in Csv and still sums in a spreadsheet.
+     *
+     * @param  array<string, mixed>  $row
      */
-    private static function safe(string $value): string
+    private static function cell(mixed $value, string $type, array $row): string|int|float
     {
-        return preg_match('/^[=@\t\r]/', $value) === 1 || preg_match('/^[+-][^0-9.]/', $value) === 1 ? "'".$value : $value;
+        if ($value === null || $value === '') {
+            return '';
+        }
+
+        if ($type === 'auto') {
+            $type = ($row['_format'] ?? 'int') === 'money' ? 'money' : 'int';
+        }
+
+        return match ($type) {
+            'money' => round((float) $value / 100, 2),
+            'int' => (int) $value,
+            'percent', 'change', 'minutes' => round((float) $value, 1),
+            default => ReportFormat::cell($value, $type, $row, csv: true),
+        };
     }
 }

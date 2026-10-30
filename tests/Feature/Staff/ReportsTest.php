@@ -13,6 +13,7 @@ use App\Models\Payment;
 use App\Models\User;
 use App\Reports\ReportRange;
 use App\Reports\ReportSections;
+use App\Reports\SalesQuery;
 use Illuminate\Support\Carbon;
 
 beforeEach(function () {
@@ -335,11 +336,11 @@ it('streams a CSV with a byte order mark, en-GB dates and pounds', function () {
         ->and($csv)->toContain('Tandoor House')
         ->and($csv)->toContain('Sales by day')
         ->and($csv)->toContain('Day,Orders,Sales')
-        ->and($csv)->toContain('28/10/2026,1,12.00')
+        ->and($csv)->toContain('28/10/2026,1,12')
         ->and($csv)->toContain('29/10/2026,3,52.49')
         ->and($csv)->toContain('Total,4,64.49')
         ->and($csv)->toContain('Card')
-        ->and($csv)->toContain('"Pay at venue",1,10.00');
+        ->and($csv)->toContain('"Pay at venue",1,10');
 });
 
 it('exports the overview with signed changes and the VAT report by rate', function () {
@@ -347,16 +348,16 @@ it('exports the overview with signed changes and the VAT report by rate', functi
 
     $overview = $this->actingAs(reportsUser())->get('/staff/reports/export/overview?period=today')->streamedContent();
 
-    expect($overview)->toContain('Measure,"This period","Previous period",Change')
-        ->and($overview)->toContain('"Sales after refunds",47.49,12.00,+295.8%')
-        ->and($overview)->toContain('Orders,3,1,+200.0%');
+    expect($overview)->toContain('Measure,"This period","Previous period","Change (%)"')
+        ->and($overview)->toContain('"Sales after refunds",47.49,12,295.8')
+        ->and($overview)->toContain('Orders,3,1,200');
 
     $vat = $this->actingAs(reportsUser())->get('/staff/reports/export/vat?period=today')->streamedContent();
 
     expect($vat)->toContain('"VAT rate",Net,VAT,Gross')
-        ->and($vat)->toContain('20%,29.17,5.83,35.00')
-        ->and($vat)->toContain('0%,15.00,0.00,15.00')
-        ->and($vat)->toContain('Total,44.17,5.83,50.00');
+        ->and($vat)->toContain('20%,29.17,5.83,35')
+        ->and($vat)->toContain('0%,15,0,15')
+        ->and($vat)->toContain('Total,44.17,5.83,50');
 });
 
 it('does not let a dish name run as a spreadsheet formula', function () {
@@ -408,4 +409,60 @@ it('refuses a custom range with missing or malformed dates, and unknown periods 
 
 it('gives an unknown export section a 404', function () {
     $this->actingAs(reportsUser())->get('/staff/reports/export/payroll')->assertNotFound();
+});
+
+it('exports a negative figure as a number and starts with a byte order mark', function () {
+    reportDataset();
+    Payment::factory()->forOrder(Order::query()->where('channel', OrderChannel::Pickup)->whereDate('placed_at', '2026-10-28')->firstOrFail())->refunded(6000)->create();
+
+    $csv = $this->actingAs(reportsUser())->get('/staff/reports/export/overview?period=today')->streamedContent();
+
+    expect(str_starts_with($csv, "\xEF\xBB\xBF"))->toBeTrue()
+        ->and($csv)->toContain('"Sales after refunds",-12.51,12')
+        ->and($csv)->not->toContain("'-");
+});
+
+it('takes refunds off food, drink and delivery only, and reports the tip share apart', function () {
+    $category = Category::factory()->create();
+    $item = MenuItem::factory()->for($category)->create(['price' => 1000]);
+    $order = reportOrder(['placed_at' => '2026-10-29 12:00:00'], [[$item, 1]], ['tip' => 250, 'vat_total' => 0]);
+    $order->forceFill(['total' => 1250])->save();
+
+    Payment::factory()->forOrder($order)->refunded(625)->create();
+
+    $totals = collect(ReportSections::build('overview', reportToday())['metrics'])->keyBy('key');
+
+    expect($totals['refunds']['value'])->toBe(500)
+        ->and($totals['tip_refunds']['value'])->toBe(125)
+        ->and($totals['sales']['value'])->toBe(500);
+});
+
+it('counts a refund in the period it was made, not the period of the order', function () {
+    $category = Category::factory()->create();
+    $item = MenuItem::factory()->for($category)->create(['price' => 1000]);
+    $order = reportOrder(['placed_at' => '2026-10-28 12:00:00'], [[$item, 1]], ['vat_total' => 0]);
+    $payment = Payment::factory()->forOrder($order)->create(['refunded' => 400, 'meta' => ['refunds' => [
+        ['amount' => 400, 'reason' => 'Cold', 'by' => 'Sam', 'at' => '2026-10-29T11:00:00+00:00', 'lines' => []],
+    ]]]);
+    $payment->forceFill(['updated_at' => '2026-10-29 11:00:00'])->saveQuietly();
+
+    $yesterday = ReportRange::resolve('yesterday');
+    $today = collect(ReportSections::build('overview', reportToday())['metrics'])->keyBy('key');
+    $before = collect(ReportSections::build('overview', $yesterday)['metrics'])->keyBy('key');
+
+    expect($today['refunds']['value'])->toBe(400)
+        ->and($before['refunds']['value'])->toBe(0)
+        ->and($before['sales']['value'])->toBe(1000);
+});
+
+it('buckets sales by local hour on the connected database', function () {
+    $category = Category::factory()->create();
+    $item = MenuItem::factory()->for($category)->create(['price' => 1000]);
+    reportOrder(['placed_at' => '2026-10-29 12:10:00'], [[$item, 1]], ['vat_total' => 0]);
+    reportOrder(['placed_at' => '2026-10-29 12:50:00'], [[$item, 1]], ['vat_total' => 0]);
+    reportOrder(['placed_at' => '2026-10-29 13:05:00'], [[$item, 1]], ['vat_total' => 0]);
+
+    $hours = SalesQuery::hourly(reportToday())->groupBy('hour')->map(fn ($rows) => $rows->sum('orders'));
+
+    expect($hours->all())->toBe([12 => 2, 13 => 1]);
 });

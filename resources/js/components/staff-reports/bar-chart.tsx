@@ -7,7 +7,7 @@ export type Bar = { key: string; label: string; values: number[] };
 
 export type Band = { from: number; to: number; label: string };
 
-const MARGIN = { top: 24, right: 8, bottom: 28, left: 44 };
+const MARGIN = { top: 24, right: 8, bottom: 28, left: 48 };
 const MAX_BAR = 24;
 const GAP = 2;
 
@@ -51,7 +51,7 @@ export function BarChart({
     const scale = (value: number) => (value / max) * plotH;
     const base = MARGIN.top + plotH;
     const widest = Math.max(1, ...bars.map((bar) => bar.label.length));
-    const every = Math.max(1, Math.ceil((widest * 6.5 + 10) / band));
+    const every = Math.max(1, Math.ceil((widest * 7.2 + 10) / band));
     const peak = totals.indexOf(Math.max(...totals));
     const activeBar = active === null ? null : bars[active];
     const tipX =
@@ -99,7 +99,7 @@ export function BarChart({
                             x={MARGIN.left + ((b.from + b.to + 1) / 2) * band}
                             y={MARGIN.top - 10}
                             textAnchor="middle"
-                            className="fill-ink-muted text-[11px] font-semibold"
+                            className="fill-ink-muted text-xs font-semibold"
                         >
                             {b.label}
                         </text>
@@ -124,7 +124,7 @@ export function BarChart({
                                     x={MARGIN.left - 6}
                                     y={y + 4}
                                     textAnchor="end"
-                                    className="fill-ink-muted text-[11px] tabular-nums"
+                                    className="fill-ink-muted text-xs tabular-nums"
                                 >
                                     {formatAxis(max * fraction)}
                                 </text>
@@ -184,7 +184,7 @@ export function BarChart({
                                         x={cx}
                                         y={base + 16}
                                         textAnchor="middle"
-                                        className="fill-ink-muted text-[11px]"
+                                        className="fill-ink-muted text-xs"
                                     >
                                         {bar.label}
                                     </text>
@@ -204,7 +204,7 @@ export function BarChart({
                             )}
                             y={base - scale(totals[peak]) - 6}
                             textAnchor="middle"
-                            className="fill-ink text-[11px] font-semibold tabular-nums"
+                            className="fill-ink text-xs font-semibold tabular-nums"
                         >
                             {formatValue(totals[peak])}
                         </text>

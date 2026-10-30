@@ -80,6 +80,9 @@ export function OverviewSection({
                         ]}
                     />
                     <p className="text-sm text-ink-muted">{sales.hint}</p>
+                    <p className="text-sm text-ink-muted">
+                        {t('staff_reports.overview.refund_note')}
+                    </p>
                 </div>
                 <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-1 [&>*]:min-w-0">
                     {tile(orders)}

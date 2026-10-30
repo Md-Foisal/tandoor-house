@@ -65,6 +65,7 @@ final class Vat
             ['label' => __('staff_reports.overview.metrics.service'), 'amount' => $sales['service']],
             ['label' => __('staff_reports.overview.metrics.tips'), 'amount' => $sales['tips']],
             ['label' => __('staff_reports.overview.metrics.refunds'), 'amount' => $sales['refunds']],
+            ['label' => __('staff_reports.overview.metrics.tip_refunds'), 'amount' => $sales['tip_refunds']],
         ], note: __('staff_reports.vat.outside_note'));
 
         return [
