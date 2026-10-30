@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Route;
 Route::prefix('team')->name('team.')->group(function () {
     Route::get('/', [TeamController::class, 'index'])->name('index');
 
-    Route::post('/people', [PeopleController::class, 'store'])->name('people.store');
+    Route::post('/people', [PeopleController::class, 'store'])->name('people.store')->middleware('throttle:staff-sensitive');
     Route::patch('/people/{user}', [PeopleController::class, 'update'])->name('people.update');
     Route::delete('/people/{user}', [PeopleController::class, 'destroy'])->name('people.destroy');
 

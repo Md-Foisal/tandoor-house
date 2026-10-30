@@ -74,6 +74,7 @@ class AppServiceProvider extends ServiceProvider
             $request->route()?->originalParameter('table').'|'.$key($request),
         ));
         RateLimiter::for('lookup', fn (Request $request) => Limit::perMinute(60)->by((string) $request->ip()));
+        RateLimiter::for('staff-sensitive', fn (Request $request) => Limit::perMinute(30)->by((string) ($request->user()?->getAuthIdentifier() ?? $request->ip())));
     }
 
     /**
