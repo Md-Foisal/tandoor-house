@@ -224,6 +224,29 @@ it('sets the estimate on accept and refreshes it when a line is bumped', functio
         ->and($slowOnly)->not->toBeNull();
 });
 
+it('logs the estimate once on accept, and falls back to the menu prep time when switched off', function () {
+    $order = newOrder();
+    $order->update(['estimated_ready_at' => null]);
+    runAutoAccept($order);
+
+    expect(ActivityLog::where('event', 'automation.order.estimated')->count())->toBe(1);
+
+    app(PrepTimeEstimator::class)->refresh($order->fresh());
+    $line = $order->lines()->first();
+    app(OrderStateMachine::class)->bump($line->fresh());
+    expect(ActivityLog::where('event', 'automation.order.estimated')->count())->toBe(1);
+
+    Setting::query()->updateOrCreate(['key' => 'automations'], ['value' => ['auto_accept' => true, 'prep_estimates' => false]]);
+    app(Settings::class)->flush();
+
+    $off = newOrder();
+    $off->update(['estimated_ready_at' => null]);
+    runAutoAccept($off);
+
+    expect($off->refresh()->estimated_ready_at->equalTo(now()->addMinutes(12)))->toBeTrue()
+        ->and(ActivityLog::where('event', 'automation.order.estimated')->count())->toBe(1);
+});
+
 it('cancels unpaid card orders after thirty minutes', function () {
     $stale = newOrder(['payment_status' => PaymentStatus::Pending, 'placed_at' => now()->subMinutes(31)]);
     $fresh = newOrder(['payment_status' => PaymentStatus::Pending, 'placed_at' => now()->subMinutes(10)]);
@@ -239,6 +262,22 @@ it('cancels unpaid card orders after thirty minutes', function () {
         ->and($paid->refresh()->status)->toBe(OrderStatus::Placed)
         ->and($venue->refresh()->status)->toBe(OrderStatus::Placed)
         ->and(ActivityLog::query()->where('event', 'automation.order.expired_unpaid')->count())->toBe(1);
+});
+
+it('cancels every stale unpaid order even when there are more than one chunk', function () {
+    foreach (range(1, 105) as $i) {
+        Order::factory()->pickup()->create([
+            'status' => OrderStatus::Placed,
+            'payment_method' => PaymentMethod::Card,
+            'payment_status' => PaymentStatus::Pending,
+            'placed_at' => now()->subMinutes(45),
+        ]);
+    }
+
+    $this->artisan('orders:expire-unpaid')->assertSuccessful();
+
+    expect(Order::query()->where('status', OrderStatus::Placed)->count())->toBe(0)
+        ->and(Order::query()->where('status', OrderStatus::Cancelled)->count())->toBe(105);
 });
 
 it('estimates through the real event when staff accept an order', function () {

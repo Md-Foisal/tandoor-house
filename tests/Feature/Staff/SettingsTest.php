@@ -68,7 +68,7 @@ it('shares the sections with the page and flags who can edit money', function ()
         ->where('section', 'tax')
         ->where('can_edit_money', false)
         ->where('tax.vat_rate', 2000)
-        ->has('automations', 10)
+        ->has('automations', 11)
         ->has('hours', 7));
 
     $this->actingAs(settingsUser(Role::Owner))->get('/staff/settings')->assertInertia(fn ($page) => $page
@@ -311,6 +311,10 @@ it('toggles automations and logs which ones changed', function () {
 
 it('requires every automation key', function () {
     $this->actingAs(settingsUser(Role::Owner))->put('/staff/settings/automations', ['loyalty' => true])->assertSessionHasErrors('auto_accept');
+
+    $all = array_fill_keys(SettingsController::AUTOMATIONS, true);
+    unset($all['prep_estimates']);
+    $this->put('/staff/settings/automations', $all)->assertSessionHasErrors('prep_estimates');
 });
 
 it('flushes the settings cache after every save', function () {

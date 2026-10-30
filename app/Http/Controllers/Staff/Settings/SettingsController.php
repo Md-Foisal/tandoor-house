@@ -19,6 +19,7 @@ class SettingsController extends Controller
     public const AUTOMATIONS = [
         'auto_accept', 'notifications', 'stock_deduction', 'reservation_reminders', 'no_show_release',
         'daily_close', 'weekly_report', 'review_requests', 'loyalty', 'abandoned_cart',
+        'prep_estimates',
     ];
 
     public function index(Request $request, Settings $settings, OpeningHours $hours): Response

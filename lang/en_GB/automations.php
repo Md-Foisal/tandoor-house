@@ -2,6 +2,7 @@
 
 return [
     'orders' => [
+        'estimated' => 'Order :number should be ready by :time.',
         'accepted' => 'Order :number accepted automatically.',
         'left_for_staff' => 'Order :number left for the team: :reasons.',
         'reasons' => [
@@ -25,6 +26,9 @@ return [
         'today' => 'This period',
         'last' => 'Before',
         'change' => 'Change',
+        'this_week' => 'This week',
+        'last_week' => 'Last week',
+        'figure' => 'Today',
         'net_sales' => 'Sales before VAT',
         'gross_sales' => 'Menu sales before discounts',
         'orders' => 'Orders',
@@ -145,7 +149,7 @@ return [
     'notification_sent' => 'Customer message sent',
 
     'bookings' => [
-        'reminded' => 'Reminder sent to :name for their booking today',
+        'reminded' => 'Reminder sent to :name about their booking',
         'reminders' => ':count booking reminder sent.|:count booking reminders sent.',
         'no_show' => ':name (party of :party) did not arrive; table released',
         'released' => ':count no-show released.|:count no-shows released.',

@@ -86,6 +86,7 @@ return [
             'review_requests' => true,
             'loyalty' => true,
             'abandoned_cart' => true,
+            'prep_estimates' => true,
         ],
     ],
 

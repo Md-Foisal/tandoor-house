@@ -5,6 +5,7 @@ return [
     'description' => 'Everything staff and the automations have done, newest first.',
     'retention' => 'Entries are kept for :months months.',
     'automation' => 'Automation',
+    'by_system' => 'By the system',
     'yes' => 'Yes',
     'no' => 'No',
     'today' => 'Today',

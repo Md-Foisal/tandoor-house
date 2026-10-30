@@ -10,13 +10,13 @@
 {{ __('automations.reports.no_sales') }}
 @else
 @if ($compare)
-| {{ __('automations.reports.measure') }} | {{ __('automations.reports.today') }} | {{ __('automations.reports.last') }} | {{ __('automations.reports.change') }} |
+| {{ __('automations.reports.measure') }} | {{ __('automations.reports.this_week') }} | {{ __('automations.reports.last_week') }} | {{ __('automations.reports.change') }} |
 |:--|--:|--:|--:|
 @foreach (['sales' => 'sales', 'orders' => 'orders', 'aov' => 'average_order', 'net_of_vat' => 'net_sales', 'refunds' => 'refunds', 'tips' => 'tips', 'service' => 'service_charge', 'vat' => 'vat'] as $key => $label)
 | {{ __('automations.reports.'.$label) }} | {{ $key === 'orders' ? $m[$key]['value'] : Money::format($m[$key]['value']) }} | {{ $key === 'orders' ? $m[$key]['previous'] : Money::format($m[$key]['previous']) }} | {{ \App\Reports\Digest::change($m[$key]['change']) }} |
 @endforeach
 @else
-| {{ __('automations.reports.measure') }} | |
+| {{ __('automations.reports.measure') }} | {{ __('automations.reports.figure') }} |
 |:--|--:|
 | {{ __('automations.reports.sales') }} | {{ Money::format($m['sales']['value']) }} |
 | {{ __('automations.reports.net_sales') }} | {{ Money::format($m['net_of_vat']['value']) }} |

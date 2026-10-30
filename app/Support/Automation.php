@@ -31,6 +31,8 @@ class Automation
 
     public const ABANDONED_CART = 'abandoned_cart';
 
+    public const PREP_ESTIMATES = 'prep_estimates';
+
     public function __construct(
         private readonly Settings $settings,
         private readonly ActivityRecorder $activity,
