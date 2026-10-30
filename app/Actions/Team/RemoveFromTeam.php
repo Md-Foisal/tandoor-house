@@ -6,6 +6,7 @@ use App\Enums\Role;
 use App\Models\Shift;
 use App\Models\User;
 use App\Support\ActivityRecorder;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
 class RemoveFromTeam
@@ -20,11 +21,14 @@ class RemoveFromTeam
             throw ValidationException::withMessages(['role' => __('staff_team.errors.own_role')]);
         }
 
-        TeamRules::ensureOwnerRemains($target, Role::Customer);
-
         $before = $target->role;
-        $target->forceFill(['role' => Role::Customer])->save();
-        Shift::query()->where('user_id', $target->id)->where('starts_at', '>', now())->delete();
+
+        DB::transaction(function () use ($target) {
+            TeamRules::ensureOwnerRemains($target, Role::Customer);
+
+            $target->forceFill(['role' => Role::Customer])->save();
+            Shift::query()->where('user_id', $target->id)->where('starts_at', '>', now())->delete();
+        });
 
         $this->activity->record('team.removed', __('staff_team.log.removed', [
             'user' => $actor->name,

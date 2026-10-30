@@ -429,3 +429,45 @@ it('flags on the rota which people the viewer may roster', function () {
         ->where('rota.people', fn ($people) => collect($people)->firstWhere('id', $owner->id)['can_roster'] === false
             && collect($people)->firstWhere('id', $manager->id)['can_roster'] === true));
 });
+
+it('stops a manager fixing their own, another manager\'s or the owner\'s clock-out', function (callable $pick) {
+    $manager = teamUser(Role::Manager);
+    $subject = $pick($manager);
+    $open = clock($subject, '2026-10-27 12:00', null);
+
+    $this->actingAs($manager)->patch("/staff/team/attendance/{$open->id}", ['clocked_out_at' => '2026-10-27T23:00', 'reason' => 'Left at close'])->assertForbidden();
+
+    expect($open->refresh()->clocked_out_at)->toBeNull();
+})->with([
+    'themselves' => [fn (User $m) => $m],
+    'another manager' => [fn () => teamUser(Role::Manager)],
+    'the owner' => [fn () => teamUser(Role::Owner)],
+]);
+
+it('lets an owner fix a manager\'s clock-out', function () {
+    $manager = teamUser(Role::Manager);
+    $open = clock($manager, '2026-10-27 12:00', null);
+
+    $this->actingAs(teamUser(Role::Owner))->patch("/staff/team/attendance/{$open->id}", ['clocked_out_at' => '2026-10-27T23:00', 'reason' => 'Left at close'])->assertSessionHasNoErrors();
+
+    expect($open->refresh()->clocked_out_at)->not->toBeNull();
+});
+
+it('rejects fixing a clock-out that has already been set', function () {
+    $done = clock(teamUser(Role::Waiter), '2026-10-27 12:00', '2026-10-27 20:00');
+
+    $this->actingAs(teamUser(Role::Manager))->patch("/staff/team/attendance/{$done->id}", ['clocked_out_at' => '2026-10-27T23:00', 'reason' => 'Left at close'])->assertSessionHasErrors('clocked_out_at');
+
+    expect($done->refresh()->clocked_out_at->toDateTimeString())->toBe('2026-10-27 20:00:00');
+});
+
+it('still blocks demoting or removing the last owner', function () {
+    $owner = teamUser(Role::Owner);
+
+    expect(fn () => TeamRules::ensureOwnerRemains($owner, Role::Manager))->toThrow(ValidationException::class);
+    expect(fn () => TeamRules::ensureOwnerRemains($owner, Role::Customer))->toThrow(ValidationException::class);
+
+    teamUser(Role::Owner);
+    TeamRules::ensureOwnerRemains($owner, Role::Manager);
+    expect(true)->toBeTrue();
+});

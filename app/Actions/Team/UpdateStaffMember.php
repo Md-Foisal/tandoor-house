@@ -5,6 +5,7 @@ namespace App\Actions\Team;
 use App\Enums\Role;
 use App\Models\User;
 use App\Support\ActivityRecorder;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
 class UpdateStaffMember
@@ -17,6 +18,15 @@ class UpdateStaffMember
     public function __invoke(User $actor, User $target, array $data): User
     {
         abort_unless(TeamRules::canEdit($actor, $target) && $target->role->isStaff(), 403);
+
+        return DB::transaction(fn () => $this->update($actor, $target, $data));
+    }
+
+    /**
+     * @param  array<string, mixed>  $data
+     */
+    private function update(User $actor, User $target, array $data): User
+    {
 
         $newRole = isset($data['role']) ? Role::from((string) $data['role']) : $target->role;
         $changesRole = $newRole !== $target->role;

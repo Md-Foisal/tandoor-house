@@ -60,13 +60,14 @@ class TeamRules
         }
     }
 
+    /** Call inside the transaction that changes the role, so the owner rows stay locked until it commits. */
     public static function ensureOwnerRemains(User $target, Role $newRole): void
     {
         if ($target->role !== Role::Owner || $newRole === Role::Owner) {
             return;
         }
 
-        $others = User::query()->where('role', Role::Owner)->whereKeyNot($target->id)->count();
+        $others = User::query()->where('role', Role::Owner)->whereKeyNot($target->id)->lockForUpdate()->pluck('id')->count();
 
         if ($others === 0) {
             throw ValidationException::withMessages(['role' => __('staff_team.errors.last_owner')]);

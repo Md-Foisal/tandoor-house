@@ -152,6 +152,7 @@ return [
         'not_staff' => 'Only people on the team can be rostered.',
         'too_long' => 'A shift can be at most :hours hours long.',
         'overlap' => ':name already works :from–:to on :day.',
+        'already_clocked_out' => 'This person has already clocked out.',
         'not_missed' => 'Only a clock-in left open for more than 14 hours can be fixed.',
         'bad_clock_out' => 'The clock-out must be after clocking in, not in the future, and within :hours hours.',
     ],
