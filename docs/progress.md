@@ -70,3 +70,25 @@
 - Refunds only update the payment row until the payment gateway arrives (Phase 4).
 - The weekly tip split is shown but not stored; `tip_allocations` is created in Phase 4.
 - Uploaded menu photos are served as uploaded; AVIF/WebP conversion with `srcset` comes in Phase 4.
+
+## Phase 4: backend
+
+**Done** (foundations built first, then builders in parallel, at most twelve at once)
+- Payments: one gateway interface with a fake driver for local work and tests, a venue driver (cash and the venue's own terminal) and Stripe in test mode through Laravel's HTTP client. Idempotent webhooks with signature, timestamp and currency checks. Amounts always come from the server.
+- Card checkout with a pay step (Stripe Payment Element, or a clearly labelled test form); unpaid card orders stay off the staff screens until paid. Booking deposits with a 15-minute hold. Paying the whole bill or a share at the table, with an optional tip and the discretionary service charge left off if the guest chooses.
+- Staff refunds and "take payment" go through the gateway. Customers cancel their own orders (before acceptance) and bookings (free up to 24 hours before, deposit refunded).
+- Stale or late payments are safe: starting a payment cancels earlier attempts, and money landing on something already paid, cancelled or expired is refunded automatically.
+- Laravel Reverb broadcasting for the order board, kitchen display, floor, rider runs, bookings and customer tracking, with polling as the fallback; a Live / Reconnecting marker in the staff header.
+- Queued customer email and SMS at the steps that matter, booking confirmations with an .ics file, signed links so guests can open their order or booking in any browser, and a WhatsApp-ready channel.
+- A model policy behind every staff write, with tests for all eight roles on every write route.
+- Weekly tip splits recorded and marked paid (`tip_allocations`). Uploaded menu photos converted to AVIF and WebP with `srcset`, ahead of the stock photos; staff can remove a photo. The booking form uses the shared form field.
+- Two reviews: a security pass (open payment attempts, late payments, deposit holds blocking tables, duplicate references, photo dimension limits, SMS logs, Markdown in emails) and a brief and UI pass (live order page, pay skeletons, tips empty state). All fixed with tests.
+- 1,744 tests, PHPStan, TypeScript, Vite+ lint and format, Pint and the production build all pass. Screenshots of 10 new views at 375, 768 and 1280 in light and dark, taken with Reverb running: `docs/screenshots/phase-4/`.
+
+**Decided:** see `docs/decisions.md` → Phase 4.
+
+**Open**
+- Stripe is wired but untested against Stripe itself until test keys are added to `.env` (`STRIPE_KEY`, `STRIPE_SECRET`, `STRIPE_WEBHOOK_SECRET`).
+- Lapsed deposit holds stop blocking tables at once, but the bookings themselves are closed by the Phase 5 scheduler; unpaid card orders are expired there too.
+- The real-time hook has no browser test; the project has no JavaScript test runner.
+- A real SMS provider is needed before SMS goes out in production; until then the null driver sends nothing.
