@@ -55,6 +55,12 @@ return [
         'manage' => 'View or change your booking',
         'ics_summary' => 'Dinner at :restaurant',
         'ics_description' => 'Table for :party. Reference :reference.',
+        'reminder' => [
+            'subject' => 'See you at :when at :restaurant',
+            'headline' => 'Your table is nearly ready.',
+            'body' => 'A quick note that we are expecting you at :when for a table for :party. If you cannot make it, please let us know so we can free the table.',
+            'sms' => ':restaurant: see you at :when, table for :party. Ref :reference.',
+        ],
         'confirmed' => [
             'subject' => 'Your table at :restaurant is booked',
             'headline' => 'Your table is booked.',

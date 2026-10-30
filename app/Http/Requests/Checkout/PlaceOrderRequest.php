@@ -75,6 +75,7 @@ class PlaceOrderRequest extends FormRequest
             'pickup_at' => ['nullable', 'date'],
             'tip' => ['nullable', 'integer', 'min:0', 'max:50000'],
             'remove_service_charge' => ['boolean'],
+            'use_loyalty' => ['boolean'],
             'payment_method' => ['required', Rule::enum(PaymentMethod::class)],
             'age_confirmed' => ['boolean'],
         ];
@@ -127,6 +128,14 @@ class PlaceOrderRequest extends FormRequest
         if ($summary['has_unavailable']) {
             $names = implode(', ', array_column(array_filter($summary['lines'], fn (array $line) => ! $line['is_available']), 'name'));
             $validator->errors()->add('cart', __('checkout.errors.unavailable', ['items' => $names]));
+        }
+
+        if ($this->boolean('use_loyalty')) {
+            if (($summary['loyalty']['discount'] ?? 0) < 1) {
+                $validator->errors()->add('use_loyalty', __('checkout.errors.loyalty_unavailable'));
+            } elseif ($summary['promo_code'] !== null) {
+                $validator->errors()->add('use_loyalty', __('checkout.errors.loyalty_with_promo'));
+            }
         }
 
         if ($summary['has_alcohol'] && ! $this->boolean('age_confirmed')) {

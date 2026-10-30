@@ -4,6 +4,7 @@ namespace App\Actions\Inventory;
 
 use App\Enums\StockMovementType;
 use App\Models\Ingredient;
+use App\Models\Order;
 use App\Models\StockMovement;
 use App\Models\User;
 use App\Support\ActivityRecorder;
@@ -43,11 +44,62 @@ class StockLedger
     }
 
     /**
+     * What an accepted order used. Never takes stock below zero (the shortfall is the caller's to log) and
+     * writes nothing when the order already has a sale movement for this ingredient.
+     */
+    public function sale(Ingredient $ingredient, int $quantity, Order $order, string $reason): ?StockMovement
+    {
+        return $this->forOrder($ingredient, $order, StockMovementType::Sale, $reason, fn (Ingredient $locked) => -min($quantity, max(0, $locked->stock)));
+    }
+
+    /** Puts back what a sale took when the order is rejected or cancelled. */
+    public function returnSale(Ingredient $ingredient, int $quantity, Order $order, string $reason): ?StockMovement
+    {
+        return $this->forOrder($ingredient, $order, StockMovementType::Adjust, $reason, fn () => $quantity);
+    }
+
+    /**
+     * @param  callable(Ingredient): int  $delta
+     */
+    private function forOrder(Ingredient $ingredient, Order $order, StockMovementType $type, string $reason, callable $delta): ?StockMovement
+    {
+        $before = 0;
+
+        $movement = DB::transaction(function () use ($ingredient, $order, $type, $reason, $delta, &$before) {
+            $locked = Ingredient::query()->whereKey($ingredient->id)->lockForUpdate()->firstOrFail();
+
+            if ($locked->movements()->where('order_id', $order->id)->where('type', $type)->exists()) {
+                return null;
+            }
+
+            $change = $delta($locked);
+
+            if ($change === 0) {
+                return null;
+            }
+
+            $movement = $locked->movements()->create(['type' => $type, 'quantity' => $change, 'reason' => $reason, 'order_id' => $order->id]);
+            $before = $locked->stock;
+            $locked->forceFill(['stock' => $before + $change])->save();
+
+            return $movement;
+        });
+
+        if ($movement !== null) {
+            ReviewStockLevels::dispatch($ingredient->id, $before, $movement->id)->afterCommit();
+        }
+
+        return $movement;
+    }
+
+    /**
      * @param  callable(Ingredient): int  $delta
      */
     private function apply(Ingredient $ingredient, StockMovementType $type, callable $delta, ?string $reason, User $by, string $event, string $line): StockMovement
     {
-        return DB::transaction(function () use ($ingredient, $type, $delta, $reason, $by, $event, $line) {
+        $before = 0;
+
+        $movement = DB::transaction(function () use ($ingredient, $type, $delta, $reason, $by, $event, $line, &$before) {
             $locked = Ingredient::query()->whereKey($ingredient->id)->lockForUpdate()->firstOrFail();
             $change = $delta($locked);
 
@@ -74,5 +126,9 @@ class StockLedger
 
             return $movement;
         });
+
+        ReviewStockLevels::dispatch($ingredient->id, $before, $movement->id)->afterCommit();
+
+        return $movement;
     }
 }

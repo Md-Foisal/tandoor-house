@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Staff\Team;
 
+use App\Actions\Team\InviteStatus;
 use App\Actions\Team\RotaBoard;
 use App\Actions\Team\TeamRules;
 use App\Actions\Team\TipSplit;
@@ -77,11 +78,16 @@ class TeamController extends Controller
         $hours = collect($report->build($week))->pluck('clocked_minutes', 'id');
         $onShift = Attendance::query()->whereNull('clocked_out_at')->where('clocked_in_at', '>', now()->subHours(WeekReport::MISSED_AFTER_HOURS))->pluck('user_id')->all();
 
-        return User::query()
+        $users = User::query()
             ->where('role', '!=', Role::Customer)
             ->orderBy('name')
-            ->get(['id', 'name', 'email', 'phone', 'role'])
+            ->get(['id', 'name', 'email', 'phone', 'role']);
+        $invites = app(InviteStatus::class)->forUsers($users);
+
+        return $users
             ->map(fn (User $user) => [
+                'invite' => $invites[$user->id],
+                'can_invite' => TeamRules::canEdit($actor, $user) && ! $user->is($actor),
                 'id' => $user->id,
                 'name' => $user->name,
                 'email' => $user->email,

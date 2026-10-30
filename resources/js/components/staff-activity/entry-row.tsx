@@ -21,7 +21,7 @@ export function EntryRow({
     const t = useT();
     const [open, setOpen] = useState(false);
     const automation = entry.actor === null;
-    const who = entry.actor?.name ?? t('staff_activity.automation');
+    const who = entry.actor?.name ?? t('staff_activity.by_system');
     const family =
         families.find((f) => f.value === entry.family)?.label ?? entry.family;
 

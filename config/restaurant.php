@@ -69,6 +69,12 @@ return [
             'reward_points' => 150,
             'reward_value' => 1000,
         ],
+        'orders' => [
+            // Above this many lines on the stoves the kitchen is left to a person to accept.
+            'auto_accept_max_open' => 25,
+            // Pence. Unusually large orders are checked by a person before they are accepted.
+            'auto_accept_max_total' => 15000,
+        ],
         'automations' => [
             'auto_accept' => true,
             'notifications' => true,
@@ -80,6 +86,7 @@ return [
             'review_requests' => true,
             'loyalty' => true,
             'abandoned_cart' => true,
+            'prep_estimates' => true,
         ],
     ],
 

@@ -2,6 +2,7 @@
 
 namespace App\Actions;
 
+use App\Actions\Loyalty\RedeemReward;
 use App\Enums\LineStatus;
 use App\Enums\OrderChannel;
 use App\Enums\OrderStatus;
@@ -33,6 +34,7 @@ class PlaceOrder
         private readonly FindDeliveryZone $zones,
         private readonly GenerateOrderNumber $numbers,
         private readonly GuestOrders $guestOrders,
+        private readonly RedeemReward $redeem,
     ) {}
 
     /**
@@ -45,6 +47,8 @@ class PlaceOrder
         $table = $channel === OrderChannel::DineIn ? DiningTable::query()->whereKey($summary['table'])->first() : null;
         $zone = $channel === OrderChannel::Delivery ? $this->zones->handle($data['postcode']) : null;
         $promo = $summary['promo_code'] !== null ? PromoCode::where('code', $summary['promo_code'])->first() : null;
+        $reward = $this->reward($data, $user, $summary['subtotal'], $promo);
+        $promo = $reward !== null ? null : $promo;
 
         $totals = $this->pricing->totals(
             array_map(fn (array $line) => ['total' => $line['total'], 'vat_rate' => $line['vat_rate']], $summary['lines']),
@@ -53,6 +57,7 @@ class PlaceOrder
             $promo,
             (int) ($data['tip'] ?? 0),
             ! ($channel === OrderChannel::DineIn && ($data['remove_service_charge'] ?? false)),
+            loyaltyDiscount: $reward['discount'] ?? 0,
         );
 
         $rawLines = collect($this->cart->lines())->keyBy('key');
@@ -60,7 +65,7 @@ class PlaceOrder
             ->whereIn('id', array_column($summary['lines'], 'menu_item_id'))
             ->pluck('station', 'id');
 
-        $order = DB::transaction(function () use ($data, $user, $channel, $summary, $table, $zone, $promo, $totals, $rawLines, $stations) {
+        $order = DB::transaction(function () use ($data, $user, $channel, $summary, $table, $zone, $promo, $reward, $totals, $rawLines, $stations) {
             if ($totals['discount'] > 0 && $promo !== null) {
                 $claimed = PromoCode::query()
                     ->whereKey($promo->id)
@@ -104,6 +109,10 @@ class PlaceOrder
                 'placed_at' => now(),
             ]);
 
+            if ($reward !== null && $user !== null) {
+                $this->redeem->handle($user, $order, $reward['reward_points'], $reward['discount']);
+            }
+
             foreach ($summary['lines'] as $line) {
                 $order->lines()->create([
                     'menu_item_id' => $line['menu_item_id'],
@@ -124,7 +133,7 @@ class PlaceOrder
 
             // Card orders reach the kitchen once paid (AnnounceOrderPaid).
             if (! PaymentPageProps::isOnline($order->payment_method)) {
-                OrderPlaced::dispatch($order);
+                DB::afterCommit(fn () => OrderPlaced::dispatch($order));
             }
 
             return $order;
@@ -137,5 +146,28 @@ class PlaceOrder
         }
 
         return $order;
+    }
+
+    /**
+     * The reward being spent, if the customer asked for one. A reward replaces
+     * a promo code; the form request refuses both together, and this is the
+     * same check again for callers that skip it.
+     *
+     * @param  array<string, mixed>  $data
+     * @return array{points: int, reward_points: int, reward_value: int, discount: int}|null
+     */
+    private function reward(array $data, ?User $user, int $subtotal, ?PromoCode $promo): ?array
+    {
+        if (empty($data['use_loyalty'])) {
+            return null;
+        }
+
+        $reward = $this->pricing->loyaltyReward($user, $subtotal);
+
+        if ($reward === null || $reward['discount'] < 1 || $promo !== null) {
+            throw ValidationException::withMessages(['use_loyalty' => __($promo !== null ? 'checkout.errors.loyalty_with_promo' : 'checkout.errors.loyalty_unavailable')]);
+        }
+
+        return $reward;
     }
 }

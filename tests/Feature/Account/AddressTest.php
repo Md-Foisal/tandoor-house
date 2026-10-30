@@ -129,7 +129,7 @@ it('removes an address and promotes another when the default goes', function () 
 
 it('forbids changing or removing another customer\'s address', function () {
     $user = User::factory()->create();
-    $theirs = Address::factory()->default()->create();
+    $theirs = Address::factory()->default()->create(['line1' => '8 Bow Lane']);
 
     $this->actingAs($user)->put("/account/addresses/{$theirs->id}", addressPayload())->assertForbidden();
     $this->actingAs($user)->delete("/account/addresses/{$theirs->id}")->assertForbidden();

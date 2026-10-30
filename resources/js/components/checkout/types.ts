@@ -37,6 +37,17 @@ export type CheckoutSummary = {
     tip: number;
     vat_total: number;
     total: number;
+    loyalty: LoyaltyOffer | null;
+};
+
+export type LoyaltyOffer = {
+    points: number;
+    reward_points: number;
+    reward_value: number;
+    /** Pence off; 0 while the basket is worth less than the reward. */
+    discount: number;
+    /** VAT inside the order once the reward is taken off. */
+    vat_total: number;
 };
 
 export type PickupData = {
@@ -116,6 +127,7 @@ export type CheckoutForm = {
     payment_method: PaymentMethod;
     age_confirmed: boolean;
     remove_service_charge: boolean;
+    use_loyalty: boolean;
 };
 
 export type CheckoutFormApi = InertiaFormProps<CheckoutForm>;
@@ -132,5 +144,5 @@ export const STEP_FIELDS: Record<number, string[]> = {
         'instructions',
         'marketing_opt_in',
     ],
-    2: ['tip', 'payment_method', 'age_confirmed', 'cart'],
+    2: ['tip', 'payment_method', 'age_confirmed', 'cart', 'use_loyalty'],
 };

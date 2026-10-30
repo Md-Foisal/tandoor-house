@@ -67,6 +67,56 @@ class PurchaseOrders
     }
 
     /**
+     * The low-stock automation's order: tops up the supplier's open draft with this ingredient (up to par)
+     * or starts one. Returns null when the ingredient has no supplier or nothing to order.
+     */
+    public function draftForLowStock(Ingredient $ingredient): ?PurchaseOrder
+    {
+        if ($ingredient->supplier_id === null) {
+            return null;
+        }
+
+        return DB::transaction(function () use ($ingredient) {
+            $fresh = Ingredient::query()->whereKey($ingredient->id)->firstOrFail();
+            $quantity = $fresh->par_level - $fresh->stock;
+
+            if ($quantity <= 0) {
+                return null;
+            }
+
+            $order = PurchaseOrder::query()
+                ->where('supplier_id', $fresh->supplier_id)
+                ->where('status', PurchaseOrderStatus::Draft)
+                ->lockForUpdate()
+                ->latest('id')
+                ->first();
+
+            $created = $order === null;
+
+            $order ??= PurchaseOrder::create([
+                'reference' => CodeGenerator::unique(PurchaseOrder::class, 'reference', 'PO-', 8),
+                'supplier_id' => $fresh->supplier_id,
+                'status' => PurchaseOrderStatus::Draft,
+                'total' => 0,
+            ]);
+
+            $lines = $order->lines()->get()
+                ->reject(fn ($line) => $line->ingredient_id === $fresh->id)
+                ->map(fn ($line) => ['ingredient_id' => $line->ingredient_id, 'quantity' => $line->quantity])
+                ->push(['ingredient_id' => $fresh->id, 'quantity' => $quantity])
+                ->all();
+
+            $this->setLines($order, $lines);
+
+            $this->activity->record('automation.stock.draft_order', __($created ? 'automations.stock.draft_started' : 'automations.stock.draft_extended', [
+                'reference' => $order->reference, 'ingredient' => $fresh->name,
+            ]), $order, ['ingredient_id' => $fresh->id, 'quantity' => $quantity], automated: true);
+
+            return $order;
+        });
+    }
+
+    /**
      * @param  array<int, array{ingredient_id: int, quantity: int}>  $lines
      */
     public function replaceLines(PurchaseOrder $order, array $lines, User $by): void

@@ -28,6 +28,9 @@ export function AutomationsSection({
                 })
             }
         >
+            <p className="mb-2 text-sm text-ink-muted">
+                {t('staff_settings.automations.always')}
+            </p>
             <ul className="grid divide-y divide-line">
                 {Object.keys(automations).map((key) => (
                     <li

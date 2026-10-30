@@ -98,3 +98,32 @@ Non-obvious choices and why. Newest at the bottom of each phase.
 - Payment webhooks in another currency, or without one, are ignored.
 - Uploaded photos are limited to 6000 px a side and read with an explicit format, so a crafted file cannot exhaust memory.
 - SMS in local work go to a log with the number masked and link query strings removed; in production the default SMS driver sends nothing until a real provider is configured.
+
+## Phase 5
+
+- Every automation goes through `App\Support\Automation`: it checks the owner's switch and logs what happened as automated. Housekeeping (closing lapsed deposit holds, expiring unpaid card orders) runs whatever the switches say.
+- Booking reminders go to confirmed bookings starting within the next two hours; a booking made inside that window gets none, because its confirmation has just gone out. No-shows are released 20 minutes after the start time and keep their deposit. The reason a lapsed hold was cancelled lives in the activity log, as bookings have no reason column.
+- Customer notifications respect the notifications switch and log the kind and channels sent, never the address or number.
+- Auto-accept takes an order only when the restaurant is open, the kitchen has fewer than 25 open lines, a delivery postcode is inside an active zone, an online payment has gone through, and the total is under £150. Alcohol for pickup or delivery always goes to a person for the ID check; dine-in alcohol is accepted once the guest has confirmed their age. Anything else is left for staff, with the reasons logged.
+- The prep estimate is the median start-to-ready time per dish over the last 30 days (at least three samples, otherwise the dish's set prep time), plus a minute for every two lines already cooking at that station (at most 30), taking the slowest dish and adding the zone's delivery time.
+- Card orders still unpaid after 30 minutes are cancelled, after their open payment attempts are cancelled and the payment is checked once more.
+- New staff get an email to set their own password, valid for seven days; nobody else ever sees or types it. Invites live in their own table (`staff_invites`) holding only a hash of a single-use token, so an ordinary password-reset link never works as an invite and clearing reset tokens never wipes an invite. An invite can be resent up to three times an hour until it is accepted.
+- The nightly close and the Monday report go to owners only, are built from the same report sections as the Reports screen so the numbers always agree, and are sent once per day or week even if the command runs twice. The weekly email attaches each report section as CSV.
+- Stock comes off when an order is accepted (recipe quantity times portions; variants and options have no recipes of their own) and goes back exactly if the order is later rejected or cancelled. A sale never takes stock below zero; a shortfall is logged.
+- A dish is hidden as sold out as soon as one ingredient cannot cover a portion, and comes back after a restock only if nobody has edited it since the system hid it (`menu_items.sold_out_at`).
+- Crossing the low-stock line sends one alert to managers and the owner and tops up the supplier's newest draft purchase order to the par level (or starts one).
+- Sending a purchase order emails the supplier with the PDF attached, whatever the automation switches say, because a person chose to send it.
+- Points are earned on food after discounts; tips, delivery and the service charge earn nothing. A full refund takes the points back, a partial refund does not. Redeemed points come back if the order is cancelled or rejected, whatever the switch says.
+- A loyalty reward replaces a promo code (one discount per order) and applies only when the food is worth at least the reward, so no points are wasted.
+- Only signed-in customers are asked for a review, an hour after completion, because reviews belong to an account.
+- An abandoned basket is reminded once, when it has sat untouched for between two and 48 hours.
+- Deducting and restoring stock both lock the order first, so a quick accept-then-cancel ends with the right stock whichever runs first.
+- An abandoned-basket email counts as direct marketing under PECR, so it goes only to customers who opted in to marketing.
+- No-shows are released only for bookings that started within the last six hours, so switching the automation on never sweeps up old bookings.
+- Closing a lapsed hold cancels the open payment first and checks the booking again under a lock; a deposit that turned out to be paid is confirmed instead.
+- Scheduled commands walk rows by id, so changing a row while looping never skips the next ones.
+- Loyalty entries are kept unique by order and kind (earned, reversed, redeemed, returned), never by their wording. A full refund takes back earned points and returns any points spent on the order.
+- Prep estimates have their own switch; with it off, an accepted order gets the slowest dish's set prep time, as the board did before.
+- Kitchen stations are set on every line as the order is placed, from the dish's station, so routing needs no separate job or switch.
+- Pages that subscribe to no live channel open no socket and show no Live marker.
+- In tests, auto-accept is off unless a test turns it on, because it depends on the clock (opening hours).

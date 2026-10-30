@@ -98,6 +98,7 @@ Route::controller(StyleguideController::class)->prefix('styleguide')->name('styl
 
 require __DIR__.'/settings.php';
 require __DIR__.'/staff.php';
+require __DIR__.'/invite.php';
 
 Route::post('webhooks/payments/{driver}', PaymentWebhookController::class)
     ->withoutMiddleware(ValidateCsrfToken::class)

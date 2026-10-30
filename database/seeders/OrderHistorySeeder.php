@@ -632,6 +632,7 @@ class OrderHistorySeeder extends Seeder
                         'user_id' => $bundle['user_id'],
                         'order_id' => $id,
                         'points' => $bundle['points'],
+                        'kind' => 'earned',
                         'reason' => "Order TH-{$number}",
                         'created_at' => $bundle['order']['completed_at'],
                     ];

@@ -8,7 +8,7 @@ import { cn } from '@/lib/utils';
 import { ChoiceCard } from './choice-card';
 import { Field } from '@/components/form/field';
 import type { CheckoutFormApi, CheckoutProps, PaymentMethod } from './types';
-import { tipPence } from './utils';
+import { discountPence, tipPence } from './utils';
 
 const methodIcons = {
     card: CreditCard,
@@ -37,7 +37,7 @@ export function PayStep({
         data.payment_method !== 'cash' &&
         data.payment_method !== 'pay_at_venue';
     const testMode = props.paymentDriver === 'fake';
-    const base = props.summary.subtotal - props.summary.discount;
+    const base = props.summary.subtotal - discountPence(data, props);
 
     return (
         <div className="grid gap-8">

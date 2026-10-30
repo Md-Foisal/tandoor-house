@@ -21,6 +21,7 @@ import {
     postJson,
     stepOfField,
     tipPence,
+    usingReward,
 } from '@/components/checkout/utils';
 import { Button } from '@/components/ui/button';
 import { Spinner } from '@/components/ui/spinner';
@@ -73,6 +74,7 @@ export default function Checkout(props: CheckoutProps) {
         payment_method: 'card',
         age_confirmed: false,
         remove_service_charge: false,
+        use_loyalty: false,
     });
     const errors = form.errors as Record<string, string | undefined>;
     const zone = postcode.status === 'covered' ? postcode.zone : null;
@@ -274,6 +276,7 @@ export default function Checkout(props: CheckoutProps) {
             payment_method: data.payment_method,
             age_confirmed: data.age_confirmed,
             remove_service_charge: data.remove_service_charge,
+            use_loyalty: usingReward(data, props),
         }));
 
         form.post(store.url(), {
