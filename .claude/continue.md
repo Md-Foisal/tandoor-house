@@ -46,7 +46,7 @@ The owner has already said to go on (30 Oct), so continue straight to Step 3.
 ### Step 3 — Phases 4, 5 and 6
 Follow `docs/brief.md` → Phases and Definition of done, and `docs/plan.md` §5–7. Work on branches `feat/phase-4-backend`, `feat/phase-5-automations` and `feat/phase-6-hardening`, using the same rhythm as before:
 1. The main session builds the shared parts first.
-2. Builders work in parallel, at most 4 at a time.
+2. Builders work in parallel (up to 20 at a time, model chosen per task).
 3. Run the reviewer and fix what it finds.
 4. Take screenshots, write the progress report, merge the PR.
 
