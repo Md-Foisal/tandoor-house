@@ -92,3 +92,22 @@
 - Lapsed deposit holds stop blocking tables at once, but the bookings themselves are closed by the Phase 5 scheduler; unpaid card orders are expired there too.
 - The real-time hook has no browser test; the project has no JavaScript test runner.
 - A real SMS provider is needed before SMS goes out in production; until then the null driver sends nothing.
+
+## Phase 5: automations
+
+**Done** (one switchboard built first, then six builders in parallel)
+- `App\Support\Automation` checks the owner's switch in Settings and logs every automated action as "By the system". The scheduler runs bookings, unpaid-order, basket and report jobs.
+- Orders: auto-accept by opening hours, kitchen load, delivery zone, payment, alcohol and order size; prep-time estimate from the last 30 days and the live queue; unpaid card orders closed after 30 minutes.
+- Stock: recipe deduction on acceptance and return on cancellation, dishes sold out and brought back automatically, one low-stock alert per crossing with a draft purchase order, and purchase orders emailed to the supplier with the PDF.
+- Bookings: reminder two hours before, no-show release after 20 minutes, lapsed deposit holds closed.
+- The owner's nightly close and Monday report, built from the same sections as the Reports screen.
+- Customers: review request an hour after completion, loyalty points earned and redeemed at checkout, one abandoned-basket reminder for customers who opted in to marketing.
+- Team: new staff get an invite email to set their own password (single-use, hashed, seven days).
+- Two reviews (security and correctness, then brief and UI). Fixed: invite tokens kept apart from password resets, stock locked against an accept-then-cancel race, safe hold closing, marketing consent, a no-show cut-off, paging commands by id, loyalty keyed by kind, events after commit, a prep-estimate switch, switch descriptions matching what each one does, and a Live marker that no longer shows "Reconnecting" on screens without live data.
+- 1,843 tests, PHPStan, TypeScript, Vite+ lint and format, Pint and the production build all pass. Screenshots of 5 views at 375, 768 and 1280 in light and dark: `docs/screenshots/phase-5/`.
+
+**Decided:** see `docs/decisions.md` → Phase 5.
+
+**Open**
+- Real SMS and WhatsApp providers, and a production mail service, are needed before messages reach real customers.
+- The scheduler needs `php artisan schedule:work` (or a cron entry for `schedule:run`) and a queue worker on the server.
