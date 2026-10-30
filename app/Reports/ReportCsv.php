@@ -10,9 +10,34 @@ final class ReportCsv
     public static function download(string $section, ReportRange $range): StreamedResponse
     {
         $data = ReportSections::build($section, $range);
-        $filename = 'tandoor-house-'.str_replace('_', '-', $section).'-'.$range->fileSlug().'.csv';
+        $filename = self::filename($section, $range);
 
         return Csv::download($filename, null, self::rows($data['tables'], $range), bom: true);
+    }
+
+    /**
+     * The same file as download(), as a string for an email attachment.
+     */
+    public static function contents(string $section, ReportRange $range): string
+    {
+        $data = ReportSections::build($section, $range);
+        $out = fopen('php://temp', 'w+') ?: throw new \RuntimeException('Cannot open a temporary stream.');
+        fwrite($out, "\xEF\xBB\xBF");
+
+        foreach (self::rows($data['tables'], $range) as $row) {
+            fputcsv($out, array_map(Csv::safe(...), $row), ',', '"', '');
+        }
+
+        rewind($out);
+        $csv = (string) stream_get_contents($out);
+        fclose($out);
+
+        return $csv;
+    }
+
+    public static function filename(string $section, ReportRange $range): string
+    {
+        return 'tandoor-house-'.str_replace('_', '-', $section).'-'.$range->fileSlug().'.csv';
     }
 
     /**
