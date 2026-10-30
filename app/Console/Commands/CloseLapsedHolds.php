@@ -54,7 +54,7 @@ class CloseLapsedHolds extends Command
                 }
             });
 
-        $this->info(__('automations.bookings.closed', ['count' => $closed]));
+        $this->info(trans_choice('automations.bookings.closed', $closed, ['count' => $closed]));
 
         return self::SUCCESS;
     }

@@ -141,4 +141,15 @@ return [
             'no_email' => 'There is no email address for :supplier, so download the PDF and send it yourself.',
         ],
     ],
+
+    'notification_sent' => 'Customer message sent',
+
+    'bookings' => [
+        'reminded' => 'Reminder sent to :name for their booking today',
+        'reminders' => ':count booking reminder sent.|:count booking reminders sent.',
+        'no_show' => ':name (party of :party) did not arrive; table released',
+        'released' => ':count no-show released.|:count no-shows released.',
+        'hold_lapsed' => 'Booking for :name cancelled: the deposit was not paid in time',
+        'closed' => ':count lapsed hold closed.|:count lapsed holds closed.',
+    ],
 ];

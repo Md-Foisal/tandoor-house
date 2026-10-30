@@ -60,5 +60,6 @@ return [
         'body_short' => 'Write at least 20 characters so we know what you meant.',
         'body_long' => 'Keep it to 1000 characters.',
         'area' => 'Keep the neighbourhood to 60 characters.',
+        'already' => 'You have already reviewed this order. Thank you for telling us.',
     ],
 ];

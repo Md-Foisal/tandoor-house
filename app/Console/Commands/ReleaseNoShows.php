@@ -33,7 +33,7 @@ class ReleaseNoShows extends Command
                 }
             });
 
-        $this->info(__('automations.bookings.released', ['count' => $released]));
+        $this->info(trans_choice('automations.bookings.released', $released, ['count' => $released]));
 
         return self::SUCCESS;
     }

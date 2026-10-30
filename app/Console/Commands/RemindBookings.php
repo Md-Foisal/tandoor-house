@@ -68,7 +68,7 @@ class RemindBookings extends Command
                 $sent++;
             });
 
-        $this->info(__('automations.bookings.reminders', ['count' => $sent]));
+        $this->info(trans_choice('automations.bookings.reminders', $sent, ['count' => $sent]));
 
         return self::SUCCESS;
     }
