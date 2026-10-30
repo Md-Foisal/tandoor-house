@@ -5,8 +5,8 @@ namespace App\Actions\Loyalty;
 use App\Models\Order;
 
 /**
- * The wording of each ledger row. It doubles as the row's identity per
- * order, which is what keeps every loyalty step safe to run twice.
+ * The wording of each ledger row, for display only. A row's identity per
+ * order is its LoyaltyKind, which keeps every step safe to run twice.
  */
 class LoyaltyReason
 {

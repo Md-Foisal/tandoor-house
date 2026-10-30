@@ -2,6 +2,7 @@
 
 namespace App\Actions\Loyalty;
 
+use App\Enums\LoyaltyKind;
 use App\Enums\OrderStatus;
 use App\Enums\PaymentStatus;
 use App\Models\LoyaltyTransaction;
@@ -10,6 +11,7 @@ use App\Models\User;
 use App\Support\Automation;
 use App\Support\Money;
 use App\Support\Settings;
+use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -39,9 +41,7 @@ class CreditOrderPoints
                 return null;
             }
 
-            $reason = LoyaltyReason::earned($locked);
-
-            if (LoyaltyTransaction::query()->where('order_id', $locked->id)->where('reason', $reason)->exists()) {
+            if (LoyaltyTransaction::query()->where('order_id', $locked->id)->where('kind', LoyaltyKind::Earned)->exists()) {
                 return null;
             }
 
@@ -51,7 +51,12 @@ class CreditOrderPoints
                 return null;
             }
 
-            $transaction = LoyaltyTransaction::create(['user_id' => $user->id, 'order_id' => $locked->id, 'points' => $points, 'reason' => $reason]);
+            try {
+                $transaction = LoyaltyTransaction::create(['user_id' => $user->id, 'order_id' => $locked->id, 'points' => $points, 'kind' => LoyaltyKind::Earned, 'reason' => LoyaltyReason::earned($locked)]);
+            } catch (UniqueConstraintViolationException) {
+                return null;
+            }
+
             $user->forceFill(['loyalty_points' => $user->loyalty_points + $points])->save();
 
             $this->automation->log('automation.loyalty.credited', __('automations.customers.loyalty.log_earned', [

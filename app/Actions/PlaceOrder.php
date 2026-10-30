@@ -133,7 +133,7 @@ class PlaceOrder
 
             // Card orders reach the kitchen once paid (AnnounceOrderPaid).
             if (! PaymentPageProps::isOnline($order->payment_method)) {
-                OrderPlaced::dispatch($order);
+                DB::afterCommit(fn () => OrderPlaced::dispatch($order));
             }
 
             return $order;

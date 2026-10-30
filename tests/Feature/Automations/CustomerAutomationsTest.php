@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\LoyaltyKind;
 use App\Enums\OrderStatus;
 use App\Enums\PaymentStatus;
 use App\Events\OrderStatusChanged;
@@ -160,11 +161,40 @@ describe('loyalty credit', function () {
 
         expect($user->fresh()->loyalty_points)->toBe(0)->and(LoyaltyTransaction::where('order_id', $order->id)->count())->toBe(2);
     });
+
+    it('stays idempotent when the ledger wording changes', function () {
+        $user = User::factory()->create(['loyalty_points' => 0]);
+        $order = custOrder($user, ['subtotal' => 2000, 'total' => 2000]);
+        custComplete($order);
+
+        LoyaltyTransaction::query()->update(['reason' => 'Reworded entirely']);
+        custComplete($order);
+
+        expect($user->fresh()->loyalty_points)->toBe(20)->and(LoyaltyTransaction::count())->toBe(1);
+    });
+
+    it('claws back on a full refund even with the loyalty switch off, and returns a spent reward once', function () {
+        $user = User::factory()->create(['loyalty_points' => 0]);
+        $order = custOrder($user, ['subtotal' => 2000, 'total' => 2000]);
+        custComplete($order);
+        LoyaltyTransaction::create(['user_id' => $user->id, 'order_id' => $order->id, 'points' => -150, 'kind' => LoyaltyKind::Redeemed, 'reason' => 'Reward']);
+        $user->forceFill(['loyalty_points' => 20 - 150 + 200])->save();
+
+        custSwitchOff('loyalty');
+        $order->forceFill(['payment_status' => PaymentStatus::Refunded])->save();
+        $payment = $order->payments()->create(['gateway' => 'venue', 'method' => $order->payment_method, 'amount' => 2000, 'refunded' => 2000, 'status' => PaymentStatus::Refunded]);
+        event(new PaymentUpdated($payment, PaymentStatus::Paid));
+        event(new PaymentUpdated($payment, PaymentStatus::Paid));
+
+        expect($user->fresh()->loyalty_points)->toBe(70 - 20 + 150)
+            ->and(LoyaltyTransaction::where('order_id', $order->id)->count())->toBe(4);
+    });
 });
 
 describe('abandoned basket', function () {
-    function custBasket(User $user, int $hoursAgo = 3): Cart
+    function custBasket(User $user, int $hoursAgo = 3, bool $optedIn = true): Cart
     {
+        $user->forceFill(['marketing_opt_in' => $optedIn])->save();
         $cart = Cart::create(['user_id' => $user->id, 'lines' => [['key' => 'a', 'menu_item_id' => 1, 'item_variant_id' => null, 'modifier_ids' => [], 'quantity' => 2, 'notes' => null]]]);
         $cart->forceFill(['updated_at' => now()->subHours($hoursAgo)->toDateTimeString()])->save();
 
@@ -189,7 +219,7 @@ describe('abandoned basket', function () {
         custBasket(User::factory()->create(), 1);
         custBasket(User::factory()->create(), 72);
         Cart::create(['session_id' => 'guest-token', 'lines' => [['quantity' => 1]]])->forceFill(['updated_at' => now()->subHours(3)->toDateTimeString()])->save();
-        $empty = User::factory()->create();
+        $empty = User::factory()->create(['marketing_opt_in' => true]);
         Cart::create(['user_id' => $empty->id, 'lines' => []])->forceFill(['updated_at' => now()->subHours(3)->toDateTimeString()])->save();
         $ordered = User::factory()->create();
         custBasket($ordered);
@@ -198,6 +228,17 @@ describe('abandoned basket', function () {
         $this->artisan('baskets:remind')->assertSuccessful();
 
         Notification::assertNothingSent();
+    });
+
+    it('only emails customers who opted in to marketing', function () {
+        Notification::fake();
+        $optedOut = User::factory()->create();
+        $cart = custBasket($optedOut, 3, false);
+
+        $this->artisan('baskets:remind')->assertSuccessful();
+
+        Notification::assertNothingSent();
+        expect($cart->fresh()->reminded_at)->toBeNull();
     });
 
     it('does nothing when the switch is off', function () {

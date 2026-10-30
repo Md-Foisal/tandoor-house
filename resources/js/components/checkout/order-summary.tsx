@@ -1,6 +1,6 @@
 import { router } from '@inertiajs/react';
 import { Gift, Tag, X } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Price } from '@/components/brand/price';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -287,13 +287,21 @@ function LoyaltyControl({
 }) {
     const t = useT();
     const offer = props.summary.loyalty;
+    const hasPromo = props.summary.promo_code !== null;
+    const { data, setData } = form;
+
+    // A promo and a reward never go together: clear a stale choice so it is not submitted.
+    useEffect(() => {
+        if (hasPromo && data.use_loyalty) {
+            setData('use_loyalty', false);
+        }
+    }, [hasPromo, data.use_loyalty, setData]);
 
     if (!offer) {
         return null;
     }
 
     const ready = offer.discount > 0;
-    const hasPromo = props.summary.promo_code !== null;
     const blocked = !ready || hasPromo;
     const error = (form.errors as Record<string, string | undefined>)
         .use_loyalty;

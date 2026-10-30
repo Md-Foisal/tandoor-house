@@ -2,28 +2,32 @@
 
 namespace App\Actions\Loyalty;
 
+use App\Enums\LoyaltyKind;
 use App\Enums\PaymentStatus;
 use App\Models\LoyaltyTransaction;
 use App\Models\Order;
 use App\Models\User;
 use App\Support\Automation;
+use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Facades\DB;
 
 /**
- * Takes back what an order earned once it is refunded in full. A partial
- * refund keeps the points. The balance never goes below zero.
+ * Takes back what an order earned once it is refunded in full, and hands
+ * back any reward it spent. A partial refund keeps the points. The balance
+ * never goes below zero. It ignores the loyalty switch: a refund is a
+ * refund whatever the owner has since switched off.
  */
 class ReverseOrderPoints
 {
-    public function __construct(private readonly Automation $automation) {}
+    public function __construct(private readonly Automation $automation, private readonly ReturnRedeemedPoints $return) {}
 
     public function handle(Order $order): ?LoyaltyTransaction
     {
-        if ($order->user_id === null || ! $this->automation->enabled(Automation::LOYALTY)) {
+        if ($order->user_id === null) {
             return null;
         }
 
-        return DB::transaction(function () use ($order) {
+        $reversal = DB::transaction(function () use ($order) {
             $user = User::query()->lockForUpdate()->whereKey($order->user_id)->first();
             $locked = Order::query()->lockForUpdate()->whereKey($order->getKey())->first();
 
@@ -33,18 +37,21 @@ class ReverseOrderPoints
 
             $earned = LoyaltyTransaction::query()
                 ->where('order_id', $locked->id)
-                ->where('reason', LoyaltyReason::earned($locked))
+                ->where('kind', LoyaltyKind::Earned)
                 ->sum('points');
 
-            $reason = LoyaltyReason::reversed($locked);
-
-            if ($earned < 1 || LoyaltyTransaction::query()->where('order_id', $locked->id)->where('reason', $reason)->exists()) {
+            if ($earned < 1 || LoyaltyTransaction::query()->where('order_id', $locked->id)->where('kind', LoyaltyKind::Reversed)->exists()) {
                 return null;
             }
 
             $taken = min((int) $earned, $user->loyalty_points);
 
-            $transaction = LoyaltyTransaction::create(['user_id' => $user->id, 'order_id' => $locked->id, 'points' => -$taken, 'reason' => $reason]);
+            try {
+                $transaction = LoyaltyTransaction::create(['user_id' => $user->id, 'order_id' => $locked->id, 'points' => -$taken, 'kind' => LoyaltyKind::Reversed, 'reason' => LoyaltyReason::reversed($locked)]);
+            } catch (UniqueConstraintViolationException) {
+                return null;
+            }
+
             $user->forceFill(['loyalty_points' => $user->loyalty_points - $taken])->save();
 
             $this->automation->log('automation.loyalty.reversed', __('automations.customers.loyalty.log_reversed', [
@@ -55,5 +62,11 @@ class ReverseOrderPoints
 
             return $transaction;
         });
+
+        if ($order->fresh()?->payment_status === PaymentStatus::Refunded) {
+            $this->return->handle($order);
+        }
+
+        return $reversal;
     }
 }

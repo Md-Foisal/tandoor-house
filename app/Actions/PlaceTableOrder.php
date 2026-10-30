@@ -88,7 +88,7 @@ class PlaceTableOrder
 
             $order->events()->create(['from' => null, 'to' => OrderStatus::Placed, 'user_id' => $user?->id]);
 
-            OrderPlaced::dispatch($order);
+            DB::afterCommit(fn () => OrderPlaced::dispatch($order));
 
             return $order;
         });

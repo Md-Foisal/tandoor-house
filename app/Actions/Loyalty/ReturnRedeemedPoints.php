@@ -2,15 +2,17 @@
 
 namespace App\Actions\Loyalty;
 
+use App\Enums\LoyaltyKind;
 use App\Models\LoyaltyTransaction;
 use App\Models\Order;
 use App\Models\User;
 use App\Support\Automation;
+use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Facades\DB;
 
 /**
- * Gives the points back when an order that used a reward is cancelled or
- * rejected. It ignores the loyalty switch: the points were spent in good
+ * Gives the points back when an order that used a reward is cancelled,
+ * rejected or refunded in full. It ignores the loyalty switch: the points were spent in good
  * faith and are the customer's either way.
  */
 class ReturnRedeemedPoints
@@ -32,16 +34,19 @@ class ReturnRedeemedPoints
 
             $spent = (int) -LoyaltyTransaction::query()
                 ->where('order_id', $order->id)
-                ->where('reason', LoyaltyReason::redeemed($order))
+                ->where('kind', LoyaltyKind::Redeemed)
                 ->sum('points');
 
-            $reason = LoyaltyReason::returned($order);
-
-            if ($spent < 1 || LoyaltyTransaction::query()->where('order_id', $order->id)->where('reason', $reason)->exists()) {
+            if ($spent < 1 || LoyaltyTransaction::query()->where('order_id', $order->id)->where('kind', LoyaltyKind::Returned)->exists()) {
                 return null;
             }
 
-            $transaction = LoyaltyTransaction::create(['user_id' => $user->id, 'order_id' => $order->id, 'points' => $spent, 'reason' => $reason]);
+            try {
+                $transaction = LoyaltyTransaction::create(['user_id' => $user->id, 'order_id' => $order->id, 'points' => $spent, 'kind' => LoyaltyKind::Returned, 'reason' => LoyaltyReason::returned($order)]);
+            } catch (UniqueConstraintViolationException) {
+                return null;
+            }
+
             $user->forceFill(['loyalty_points' => $user->loyalty_points + $spent])->save();
 
             $this->automation->log('automation.loyalty.returned', __('automations.customers.loyalty.log_returned', [

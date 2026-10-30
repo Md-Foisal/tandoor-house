@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\LoyaltyKind;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
@@ -12,13 +13,22 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int $user_id
  * @property int|null $order_id
  * @property int $points
+ * @property LoyaltyKind $kind
  * @property string $reason
  * @property CarbonImmutable $created_at
  */
-#[Fillable(['user_id', 'order_id', 'points', 'reason'])]
+#[Fillable(['user_id', 'order_id', 'points', 'kind', 'reason'])]
 class LoyaltyTransaction extends Model
 {
     public const UPDATED_AT = null;
+
+    /**
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return ['kind' => LoyaltyKind::class];
+    }
 
     /**
      * @return BelongsTo<User, $this>

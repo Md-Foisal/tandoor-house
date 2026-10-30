@@ -2,6 +2,7 @@
 
 namespace App\Actions\Loyalty;
 
+use App\Enums\LoyaltyKind;
 use App\Models\LoyaltyTransaction;
 use App\Models\Order;
 use App\Models\User;
@@ -26,6 +27,16 @@ class RedeemReward
             throw ValidationException::withMessages(['use_loyalty' => __('checkout.errors.loyalty_points')]);
         }
 
+        // The unique (order, kind) row goes first: a second redemption for the
+        // same order fails here and rolls the whole checkout back.
+        $transaction = LoyaltyTransaction::create([
+            'user_id' => $locked->id,
+            'order_id' => $order->id,
+            'points' => -$points,
+            'kind' => LoyaltyKind::Redeemed,
+            'reason' => LoyaltyReason::redeemed($order),
+        ]);
+
         $locked->forceFill(['loyalty_points' => $locked->loyalty_points - $points])->save();
 
         $this->automation->log('automation.loyalty.redeemed', __('automations.customers.loyalty.log_redeemed', [
@@ -35,11 +46,6 @@ class RedeemReward
             'number' => $order->number,
         ]), $order, ['user_id' => $locked->id, 'points' => -$points, 'value' => $value]);
 
-        return LoyaltyTransaction::create([
-            'user_id' => $locked->id,
-            'order_id' => $order->id,
-            'points' => -$points,
-            'reason' => LoyaltyReason::redeemed($order),
-        ]);
+        return $transaction;
     }
 }
