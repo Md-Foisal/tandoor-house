@@ -4,8 +4,10 @@ namespace App\Http\Controllers\Staff\Team;
 
 use App\Actions\Team\CreateStaffMember;
 use App\Actions\Team\RemoveFromTeam;
+use App\Actions\Team\SendStaffInvite;
 use App\Actions\Team\UpdateStaffMember;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Staff\Team\ResendInviteRequest;
 use App\Http\Requests\Staff\Team\StoreStaffRequest;
 use App\Http\Requests\Staff\Team\UpdateStaffRequest;
 use App\Models\User;
@@ -20,7 +22,16 @@ class PeopleController extends Controller
     {
         $user = $create($request->user(), $request->validated());
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => __('staff_team.toast.added', ['name' => $user->name])]);
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('staff_team.toast.invited', ['name' => $user->name, 'email' => $user->email])]);
+
+        return back();
+    }
+
+    public function invite(ResendInviteRequest $request, User $user, SendStaffInvite $invite): RedirectResponse
+    {
+        $invite->resend($request->user(), $user);
+
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('staff_team.toast.invite_resent', ['name' => $user->name])]);
 
         return back();
     }

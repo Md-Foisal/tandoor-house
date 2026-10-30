@@ -9,11 +9,11 @@ use Illuminate\Support\Str;
 
 class CreateStaffMember
 {
-    public function __construct(private readonly ActivityRecorder $activity) {}
+    public function __construct(private readonly ActivityRecorder $activity, private readonly SendStaffInvite $invite) {}
 
     /**
-     * The password is random and never shown: they set their own from the
-     * sign-in page. Phase 5 sends the invite email.
+     * The password is random and never shown to anyone: the invite email
+     * lets the new person set their own.
      *
      * @param  array<string, mixed>  $data
      */
@@ -35,6 +35,8 @@ class CreateStaffMember
             'name' => $user->name,
             'role' => $role->label(),
         ]), $user, ['role' => $role->value], $actor);
+
+        ($this->invite)($actor, $user);
 
         return $user;
     }

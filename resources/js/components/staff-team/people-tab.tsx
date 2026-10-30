@@ -1,6 +1,7 @@
 import { router } from '@inertiajs/react';
-import { Pencil, Phone, Plus, UserMinus } from 'lucide-react';
+import { MailPlus, Pencil, Phone, Plus, UserMinus } from 'lucide-react';
 import { useState } from 'react';
+import { toast } from 'sonner';
 import { EmptyState } from '@/components/brand/states';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -29,6 +30,38 @@ function OnShift({ person }: { person: Person }) {
     );
 }
 
+function InviteNote({ person }: { person: Person }) {
+    const t = useT();
+    const { state, sent_at } = person.invite;
+
+    if ((state !== 'pending' && state !== 'expired') || !sent_at) {
+        return null;
+    }
+
+    const date = new Intl.DateTimeFormat('en-GB', {
+        day: 'numeric',
+        month: 'short',
+        timeZone: 'Europe/London',
+    }).format(new Date(sent_at));
+
+    return (
+        <p
+            className={
+                state === 'expired'
+                    ? 'text-sm font-medium text-chilli'
+                    : 'text-sm text-ink-muted'
+            }
+        >
+            {t(
+                state === 'expired'
+                    ? 'staff_team.people.invite_expired'
+                    : 'staff_team.people.invite_pending',
+                { date },
+            )}
+        </p>
+    );
+}
+
 export function PeopleTab({
     people,
     context,
@@ -41,6 +74,17 @@ export function PeopleTab({
     const [editing, setEditing] = useState<Person | null>(null);
     const [removing, setRemoving] = useState<Person | null>(null);
     const [busy, setBusy] = useState(false);
+    const [resending, setResending] = useState<number | null>(null);
+
+    const resend = (person: Person) => {
+        setResending(person.id);
+        router.post(`/staff/team/people/${person.id}/invite`, undefined, {
+            preserveScroll: true,
+            only: ['people'],
+            onError: (errors) => toast.error(Object.values(errors)[0]),
+            onFinish: () => setResending(null),
+        });
+    };
 
     const remove = () => {
         if (!removing) {
@@ -75,6 +119,30 @@ export function PeopleTab({
                     </span>
                 </Button>
             )}
+            {person.can_invite &&
+                (person.invite.state === 'pending' ||
+                    person.invite.state === 'expired') && (
+                    <Button
+                        type="button"
+                        variant={
+                            person.invite.state === 'expired'
+                                ? 'default'
+                                : 'outline'
+                        }
+                        size="sm"
+                        className="min-h-11"
+                        disabled={!context.online || resending === person.id}
+                        aria-label={t('staff_team.people.invite_resend_for', {
+                            name: person.name,
+                        })}
+                        onClick={() => resend(person)}
+                    >
+                        <MailPlus aria-hidden="true" />
+                        <span className="hidden lg:inline">
+                            {t('staff_team.people.invite_resend')}
+                        </span>
+                    </Button>
+                )}
             {person.can_remove && (
                 <Button
                     type="button"
@@ -163,6 +231,7 @@ export function PeopleTab({
                                         <p className="text-sm text-ink-muted">
                                             {person.email}
                                         </p>
+                                        <InviteNote person={person} />
                                     </td>
                                     <td className="py-3 pr-3">
                                         <Badge variant="outline">
@@ -211,6 +280,7 @@ export function PeopleTab({
                                         <p className="truncate text-sm text-ink-muted">
                                             {person.email}
                                         </p>
+                                        <InviteNote person={person} />
                                     </div>
                                     <Badge variant="outline">
                                         {t(`roles.${person.role}`)}

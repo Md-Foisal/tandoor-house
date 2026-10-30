@@ -10,6 +10,8 @@ export type WeekInfo = {
     is_current: boolean;
 };
 
+export type InviteState = 'none' | 'pending' | 'expired' | 'accepted';
+
 export type Person = {
     id: number;
     name: string;
@@ -21,6 +23,8 @@ export type Person = {
     can_edit: boolean;
     can_remove: boolean;
     is_me: boolean;
+    can_invite: boolean;
+    invite: { state: InviteState; sent_at: string | null };
 };
 
 export type ShiftBlock = {
