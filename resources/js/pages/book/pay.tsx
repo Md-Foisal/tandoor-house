@@ -86,6 +86,7 @@ export default function BookPay({
                             key={payment.reference}
                             {...payment}
                             initialError={declined}
+                            successMessage="payments.panel.success_booking"
                         />
 
                         <p className="mt-4 text-sm text-ink-muted">

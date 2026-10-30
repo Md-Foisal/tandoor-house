@@ -7,6 +7,7 @@ use App\Enums\OrderStatus;
 use App\Enums\PaymentStatus;
 use App\Models\Order;
 use App\Models\OrderLine;
+use App\Support\GuestOrders;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -34,6 +35,12 @@ class OrderTrackingController extends Controller
      */
     public function show(Request $request, Order $order): Response|InertiaResponse
     {
+        // A valid signed link (from a notification) opens the order in any
+        // browser; remembering it lets the same guest pay or cancel.
+        if ($request->hasValidSignature()) {
+            app(GuestOrders::class)->remember($order);
+        }
+
         if (! Gate::allows('view', $order)) {
             abort_if($request->user() !== null, 403);
 

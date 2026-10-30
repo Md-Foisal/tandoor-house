@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Actions\ConfirmBookingDeposit;
 use App\Enums\PaymentMethod;
 use App\Enums\PaymentStatus;
 use App\Enums\ReservationStatus;
-use App\Events\ReservationUpdated;
 use App\Http\Requests\Checkout\ConfirmPaymentRequest;
 use App\Models\Payment;
 use App\Models\Reservation;
@@ -20,7 +20,6 @@ use Carbon\CarbonImmutable;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -33,7 +32,7 @@ class ReservationPaymentController extends Controller
 {
     private const OPEN = [PaymentStatus::Pending, PaymentStatus::Failed];
 
-    public function __construct(private readonly Payments $payments, private readonly DepositHold $hold) {}
+    public function __construct(private readonly Payments $payments, private readonly DepositHold $hold, private readonly ConfirmBookingDeposit $confirm) {}
 
     public function show(Request $request, Reservation $reservation): Response|RedirectResponse
     {
@@ -105,33 +104,10 @@ class ReservationPaymentController extends Controller
         $outcome = $this->outcome($payment);
 
         if ($outcome === 'paid') {
-            $this->confirmReservation($reservation);
+            $this->confirm->handle($reservation);
         }
 
         return $this->answer($reservation, $outcome, $payment->meta['failure'] ?? null);
-    }
-
-    /**
-     * Moves a paid booking to confirmed once. The status is re-read under a
-     * lock so two confirmations at once announce it a single time.
-     */
-    private function confirmReservation(Reservation $reservation): void
-    {
-        $moved = DB::transaction(function () use ($reservation) {
-            $locked = Reservation::query()->lockForUpdate()->findOrFail($reservation->id);
-
-            if ($locked->status !== ReservationStatus::PendingDeposit) {
-                return false;
-            }
-
-            $locked->forceFill(['status' => ReservationStatus::Confirmed])->save();
-
-            return true;
-        });
-
-        if ($moved) {
-            ReservationUpdated::dispatch($reservation->refresh());
-        }
     }
 
     private function isDone(Reservation $reservation): bool
@@ -175,7 +151,7 @@ class ReservationPaymentController extends Controller
         $settled = $this->payments->confirm((string) $payment->reference);
 
         if ($this->outcome($settled) === 'paid') {
-            $this->confirmReservation($reservation);
+            $this->confirm->handle($reservation);
         }
     }
 

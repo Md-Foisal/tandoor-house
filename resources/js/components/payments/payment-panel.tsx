@@ -48,9 +48,12 @@ export function PaymentPanel({
     confirmUrl,
     returnUrl,
     initialError,
+    successMessage,
     onPaid,
 }: PaymentPanelProps & {
     initialError?: string | null;
+    /** Translation key shown once paid; defaults to the order wording. */
+    successMessage?: string;
     onPaid?: (redirect: string | null) => void;
 }) {
     const t = useT();
@@ -222,7 +225,7 @@ export function PaymentPanel({
                 {status === 'success' && (
                     <p className="flex items-center gap-2 font-semibold text-leaf">
                         <CheckCircle2 className="size-5" aria-hidden="true" />
-                        {t('payments.panel.success')}
+                        {t(successMessage ?? 'payments.panel.success')}
                     </p>
                 )}
                 {message && status !== 'success' && (

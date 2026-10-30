@@ -30,6 +30,7 @@ return [
         'pay' => 'Pay :amount',
         'processing' => 'Taking payment',
         'success' => 'Paid. Taking you to your order.',
+        'success_booking' => 'Deposit paid. Taking you to your booking.',
         'declined' => 'That payment did not go through. You have not been charged. Try again or use another card.',
         'error' => 'We could not complete that just now. You have not been charged. Please try again.',
         'pending' => 'Your bank is still confirming. Give it a moment, then check your order.',

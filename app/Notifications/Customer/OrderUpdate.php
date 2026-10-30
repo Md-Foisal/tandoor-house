@@ -8,6 +8,7 @@ use App\Models\Order;
 use App\Notifications\Messages\SmsMessage;
 use App\Notifications\Messages\WhatsAppMessage;
 use App\Notifications\NotificationChannels;
+use App\Support\GuestLinks;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
@@ -84,7 +85,7 @@ class OrderUpdate extends Notification implements ShouldQueue
 
     private function url(): string
     {
-        return route('orders.show', $this->order);
+        return GuestLinks::order($this->order);
     }
 
     private function firstName(): string
