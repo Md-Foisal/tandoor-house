@@ -28,7 +28,7 @@ class RemindAbandonedBaskets extends Command
 
         Cart::query()
             ->with('user')
-            ->whereNotNull('user_id')
+            ->whereHas('user', fn ($user) => $user->where('marketing_opt_in', true))
             ->whereNull('reminded_at')
             ->where('updated_at', '<=', now()->subHours(self::QUIET_HOURS))
             ->where('updated_at', '>=', now()->subHours(self::GIVE_UP_HOURS))

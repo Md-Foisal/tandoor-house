@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Enums\PaymentStatus;
 use App\Enums\ReservationStatus;
 use App\Enums\TableStatus;
 use App\Events\ReservationUpdated;
@@ -18,6 +19,8 @@ use Illuminate\Support\Facades\DB;
 #[Description('Cancel bookings whose deposit was not paid before the hold ran out')]
 class CloseLapsedHolds extends Command
 {
+    protected const CHUNK = 100;
+
     public function handle(Automation $automation, DepositHold $hold, Payments $payments): int
     {
         $closed = 0;
@@ -25,11 +28,19 @@ class CloseLapsedHolds extends Command
         Reservation::query()
             ->where('status', ReservationStatus::PendingDeposit)
             ->where('created_at', '<=', $hold->cutoff())
+            ->lazyById(self::CHUNK)
             ->each(function (Reservation $reservation) use ($automation, $hold, $payments, &$closed) {
+                // Close the open attempts first: one that lands afterwards is refunded by the payment layer.
+                $payments->cancelOpen($reservation);
+
                 $done = DB::transaction(function () use ($reservation, $automation, $hold) {
                     $locked = Reservation::query()->whereKey($reservation->id)->lockForUpdate()->first();
 
-                    if ($locked === null || ! $hold->expired($locked)) {
+                    // A deposit that landed meanwhile is left for ConfirmBookingDeposit.
+                    if ($locked === null
+                        || $locked->status !== ReservationStatus::PendingDeposit
+                        || $locked->deposit_status === PaymentStatus::Paid
+                        || ! $hold->expired($locked)) {
                         return null;
                     }
 
@@ -49,7 +60,6 @@ class CloseLapsedHolds extends Command
                 });
 
                 if ($done !== null) {
-                    $payments->cancelOpen($done);
                     $closed++;
                 }
             });

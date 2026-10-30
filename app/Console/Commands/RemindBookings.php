@@ -18,6 +18,8 @@ class RemindBookings extends Command
 {
     public const LEAD_MINUTES = 120;
 
+    protected const CHUNK = 100;
+
     public function handle(Automation $automation): int
     {
         if (! $automation->enabled(Automation::RESERVATION_REMINDERS)) {
@@ -31,6 +33,7 @@ class RemindBookings extends Command
             ->whereNull('reminded_at')
             ->where('starts_at', '>', now())
             ->where('starts_at', '<=', now()->addMinutes(self::LEAD_MINUTES))
+            ->lazyById(self::CHUNK)
             ->each(function (Reservation $reservation) use ($automation, &$sent) {
                 // Someone who booked inside the window has only just been told; a reminder now is noise.
                 if ($reservation->created_at !== null && $reservation->created_at->greaterThan($reservation->starts_at->copy()->subMinutes(self::LEAD_MINUTES))) {

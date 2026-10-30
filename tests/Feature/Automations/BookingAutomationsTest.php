@@ -1,5 +1,7 @@
 <?php
 
+use App\Enums\PaymentMethod;
+use App\Enums\PaymentStatus;
 use App\Enums\ReservationStatus;
 use App\Enums\TableStatus;
 use App\Events\ReservationUpdated;
@@ -9,6 +11,9 @@ use App\Models\DiningTable;
 use App\Models\Reservation;
 use App\Notifications\Customer\BookingNotice;
 use App\Notifications\Customer\BookingReminder;
+use App\Payments\AttemptStatus;
+use App\Payments\Payments;
+use App\Payments\WebhookOutcome;
 use App\Support\Automation;
 use App\Support\Settings;
 use Illuminate\Support\Facades\Event;
@@ -109,6 +114,57 @@ it('cancels bookings whose deposit hold has lapsed', function () {
         ->and($holding->fresh()->status)->toBe(ReservationStatus::PendingDeposit)
         ->and(ActivityLog::where('event', 'automation.booking.hold_lapsed')->count())->toBe(1);
     Event::assertDispatchedTimes(ReservationUpdated::class, 1);
+});
+
+it('leaves a booking whose deposit has landed for confirmation', function () {
+    $paid = Reservation::factory()->pendingDeposit()->create(['created_at' => now()->subMinutes(30), 'deposit_status' => PaymentStatus::Paid]);
+
+    $this->artisan('bookings:close-lapsed-holds')->assertSuccessful();
+
+    expect($paid->fresh()->status)->toBe(ReservationStatus::PendingDeposit);
+});
+
+it('closes the open payment and refunds a deposit that lands after the hold was closed', function () {
+    $reservation = Reservation::factory()->pendingDeposit(8)->create(['created_at' => now()->subMinutes(30)]);
+    $payment = app(Payments::class)->start($reservation, PaymentMethod::Card)->payment;
+    $reservation->forceFill(['created_at' => now()->subMinutes(30)])->save();
+
+    $this->artisan('bookings:close-lapsed-holds')->assertSuccessful();
+
+    expect($reservation->fresh()->status)->toBe(ReservationStatus::Cancelled)
+        ->and($payment->fresh()->meta['cancelled'])->toBeTrue();
+
+    $payments = app(Payments::class);
+    $payments->applyWebhook($payments->gateway($payment->gateway), new WebhookOutcome((string) $payment->reference, AttemptStatus::Succeeded, $payment->amount));
+
+    expect($payment->fresh()->status)->toBe(PaymentStatus::Refunded)
+        ->and($reservation->fresh()->status)->toBe(ReservationStatus::Cancelled);
+});
+
+it('closes every lapsed hold even when there are more than one chunk', function () {
+    Reservation::factory()->pendingDeposit()->count(105)->create(['created_at' => now()->subMinutes(30)]);
+
+    $this->artisan('bookings:close-lapsed-holds')->assertSuccessful();
+
+    expect(Reservation::query()->where('status', ReservationStatus::PendingDeposit)->count())->toBe(0);
+});
+
+it('releases every late booking even when there are more than one chunk', function () {
+    foreach (range(1, 105) as $i) {
+        bookingIn(-30);
+    }
+
+    $this->artisan('bookings:release-no-shows')->assertSuccessful();
+
+    expect(Reservation::query()->where('status', ReservationStatus::Confirmed)->count())->toBe(0);
+});
+
+it('ignores bookings that started more than six hours ago', function () {
+    $old = bookingIn(-60 * 7);
+
+    $this->artisan('bookings:release-no-shows')->assertSuccessful();
+
+    expect($old->fresh()->status)->toBe(ReservationStatus::Confirmed);
 });
 
 it('logs a sent booking confirmation without personal data', function () {

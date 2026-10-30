@@ -15,6 +15,11 @@ use Illuminate\Console\Command;
 #[Description('Mark confirmed bookings nobody has turned up for as no-shows and free their tables')]
 class ReleaseNoShows extends Command
 {
+    protected const CHUNK = 100;
+
+    /** Older bookings are history; switching the automation on must not notify last week's guests. */
+    private const GIVE_UP_HOURS = 6;
+
     public function handle(Automation $automation, Settings $settings, MarkNoShow $markNoShow): int
     {
         if (! $automation->enabled(Automation::NO_SHOW_RELEASE)) {
@@ -27,6 +32,8 @@ class ReleaseNoShows extends Command
         Reservation::query()
             ->where('status', ReservationStatus::Confirmed)
             ->where('starts_at', '<=', now()->subMinutes($grace))
+            ->where('starts_at', '>=', now()->subHours(self::GIVE_UP_HOURS))
+            ->lazyById(self::CHUNK)
             ->each(function (Reservation $reservation) use ($markNoShow, &$released) {
                 if ($markNoShow->handle($reservation)) {
                     $released++;

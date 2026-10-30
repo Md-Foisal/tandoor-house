@@ -20,6 +20,8 @@ class ExpireUnpaidOrders extends Command
 {
     private const GRACE_MINUTES = 30;
 
+    protected const CHUNK = 100;
+
     public function handle(Payments $payments, OrderStateMachine $machine, Automation $automation): int
     {
         $cancelled = 0;
@@ -29,6 +31,7 @@ class ExpireUnpaidOrders extends Command
             ->whereIn('payment_method', [PaymentMethod::Card, PaymentMethod::ApplePay, PaymentMethod::GooglePay])
             ->where('payment_status', '!=', PaymentStatus::Paid)
             ->where('placed_at', '<=', now()->subMinutes(self::GRACE_MINUTES))
+            ->lazyById(self::CHUNK)
             ->each(function (Order $order) use ($payments, $machine, $automation, &$cancelled) {
                 $payments->cancelOpen($order);
 
