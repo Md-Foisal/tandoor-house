@@ -21,6 +21,8 @@ export const events = {
     kitchenLineUpdated: 'kitchen.line',
     tableRequestRaised: 'table.request',
     reservationUpdated: 'reservation.updated',
+    riderAssigned: 'rider.assigned',
+    tableStatusChanged: 'table.status',
 } as const;
 
 export type RealtimeEvent = (typeof events)[keyof typeof events];

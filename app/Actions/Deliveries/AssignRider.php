@@ -5,6 +5,7 @@ namespace App\Actions\Deliveries;
 use App\Enums\OrderChannel;
 use App\Enums\OrderStatus;
 use App\Enums\Role;
+use App\Events\RiderAssigned;
 use App\Models\Order;
 use App\Models\User;
 use App\Policies\DeliveryPolicy;
@@ -39,6 +40,7 @@ class AssignRider
                 throw ValidationException::withMessages(['rider_id' => __('staff_deliveries.errors.cannot_assign')]);
             }
 
+            $previous = $locked->rider_id;
             $locked->forceFill(['rider_id' => $rider?->id])->save();
 
             $this->activity->record(
@@ -49,6 +51,10 @@ class AssignRider
                 $locked,
                 by: $by,
             );
+
+            if ($previous !== $locked->rider_id) {
+                RiderAssigned::dispatch($locked, $locked->rider_id, $previous);
+            }
 
             return $locked;
         });

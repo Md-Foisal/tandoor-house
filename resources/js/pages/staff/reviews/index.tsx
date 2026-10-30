@@ -1,4 +1,4 @@
-import { Head, router, usePoll } from '@inertiajs/react';
+import { Head, router } from '@inertiajs/react';
 import type { RequestPayload } from '@inertiajs/core';
 import { useEffect, useRef, useState } from 'react';
 import { EmptyState, ErrorState, useOnline } from '@/components/brand/states';
@@ -27,6 +27,7 @@ import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { useT } from '@/lib/i18n';
+import { useLive } from '@/lib/realtime';
 import { cn } from '@/lib/utils';
 
 const POLL_MS = 15000;
@@ -71,22 +72,12 @@ export default function Reviews(props: Props) {
     const [removing, setRemoving] = useState<ReviewRow | null>(null);
     const [error, setError] = useState<string | null>(null);
 
-    const poll = usePoll(
-        POLL_MS,
-        { only: ['counts', 'reviews'] },
-        { autoStart: false },
-    );
-
-    useEffect(() => {
-        if (online) {
-            poll.start();
-        } else {
-            poll.stop();
-        }
-
-        return poll.stop;
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [online]);
+    // No event is broadcast for reviews, so this stays on the quiet poll.
+    useLive(['counts', 'reviews'], {
+        channel: null,
+        events: [],
+        fallbackMs: POLL_MS,
+    });
 
     useEffect(() => {
         const offs = [

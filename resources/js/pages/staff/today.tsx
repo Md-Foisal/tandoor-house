@@ -1,4 +1,4 @@
-import { Deferred, Head, router, usePage, usePoll } from '@inertiajs/react';
+import { Deferred, Head, router, usePage } from '@inertiajs/react';
 import { WifiOff } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { ErrorState, useOnline } from '@/components/brand/states';
@@ -21,6 +21,7 @@ import type {
 import { StaffPageHeader } from '@/components/staff/page-header';
 import { Badge } from '@/components/ui/badge';
 import { useT } from '@/lib/i18n';
+import { channels, events, useLive } from '@/lib/realtime';
 
 type TodayProps = {
     first_name: string;
@@ -58,18 +59,19 @@ export default function Today({
     const { errors } = usePage().props;
     const [failed, setFailed] = useState(false);
 
-    const poll = usePoll(POLL_MS, { only: PROPS }, { autoStart: false });
+    const riderId = usePage().props.auth.user?.id ?? null;
 
-    useEffect(() => {
-        if (online) {
-            poll.start();
-        } else {
-            poll.stop();
-        }
-
-        return poll.stop;
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [online]);
+    useLive(PROPS, {
+        channel:
+            view === 'rider' && riderId !== null
+                ? channels.rider(riderId)
+                : channels.staffOrders,
+        events:
+            view === 'rider'
+                ? [events.orderStatusChanged, events.riderAssigned]
+                : [events.orderPlaced, events.orderStatusChanged],
+        fallbackMs: POLL_MS,
+    });
 
     useEffect(() => {
         const offs = [

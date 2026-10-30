@@ -1,7 +1,7 @@
-import { Head, router, usePoll } from '@inertiajs/react';
+import { Head, router } from '@inertiajs/react';
 import { Search, X } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { EmptyState, useOnline } from '@/components/brand/states';
+import { EmptyState } from '@/components/brand/states';
 import { StaffPageHeader } from '@/components/staff/page-header';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -24,6 +24,7 @@ import {
     type OrderCardData,
 } from '@/components/staff-orders/types';
 import { useT } from '@/lib/i18n';
+import { channels as liveChannels, events, useLive } from '@/lib/realtime';
 import { cn } from '@/lib/utils';
 import type { OrderChannel, OrderStatus } from '@/types';
 
@@ -89,7 +90,6 @@ export default function OrderBoard({
     filters: Filters;
 }) {
     const t = useT();
-    const online = useOnline();
     const searchRef = useRef<HTMLInputElement>(null);
     const [query, setQuery] = useState(filters.q);
     const [active, setActive] = useState<BoardColumnKey>('new');
@@ -101,26 +101,19 @@ export default function OrderBoard({
     const chimeRef = useRef(chimeOn);
     chimeRef.current = chimeOn;
 
-    const poll = usePoll(POLL_MS, { only: ['orders'] }, { autoStart: false });
+    useLive(['orders'], {
+        channel: liveChannels.staffOrders,
+        events: [
+            events.orderPlaced,
+            events.orderStatusChanged,
+            events.riderAssigned,
+        ],
+        fallbackMs: POLL_MS,
+    });
 
     useEffect(() => {
         setChimeOn(readChime());
     }, []);
-
-    const pollRef = useRef(poll);
-    pollRef.current = poll;
-
-    useEffect(() => {
-        const current = pollRef.current;
-
-        if (online) {
-            current.start();
-        } else {
-            current.stop();
-        }
-
-        return current.stop;
-    }, [online]);
 
     useEffect(() => {
         const offFail = [

@@ -1,4 +1,4 @@
-import { Deferred, router, usePoll } from '@inertiajs/react';
+import { Deferred, router } from '@inertiajs/react';
 import { PackagePlus, Pencil, Plus, Search, X } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { EmptyState, useOnline } from '@/components/brand/states';
@@ -32,6 +32,7 @@ import {
 } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { useT } from '@/lib/i18n';
+import { channels, events, useLive } from '@/lib/realtime';
 import { formatMoney } from '@/lib/money';
 import { cn } from '@/lib/utils';
 
@@ -71,22 +72,14 @@ export default function Ingredients({
         ingredient: IngredientRow;
     } | null>(null);
 
-    const poll = usePoll(
-        POLL_MS,
-        { only: ['ingredients', 'summary', 'lowCount'] },
-        { autoStart: false },
-    );
-
-    useEffect(() => {
-        if (online) {
-            poll.start();
-        } else {
-            poll.stop();
-        }
-
-        return poll.stop;
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [online]);
+    // Stock is drawn down as orders are accepted, so order changes are the
+    // only signal there is; manual adjustments reload through the poll.
+    useLive(['ingredients', 'summary', 'lowCount'], {
+        channel: channels.staffOrders,
+        events: [events.orderStatusChanged],
+        fallbackMs: POLL_MS,
+        debounceMs: 2000,
+    });
 
     useEffect(() => {
         const onKey = (event: KeyboardEvent) => {

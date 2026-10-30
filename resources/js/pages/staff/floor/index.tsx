@@ -1,4 +1,4 @@
-import { Deferred, Head, router, usePage, usePoll } from '@inertiajs/react';
+import { Deferred, Head, router, usePage } from '@inertiajs/react';
 import { Link2, WifiOff, X } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { EmptyState, useOnline } from '@/components/brand/states';
@@ -20,6 +20,7 @@ import { StaffPageHeader } from '@/components/staff/page-header';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useT } from '@/lib/i18n';
+import { channels, events, useLive } from '@/lib/realtime';
 
 const POLL_MS = 10_000;
 const STALE_MS = 35_000;
@@ -37,28 +38,21 @@ export default function Floor({ tables, upcoming }: FloorProps) {
     const [picked, setPicked] = useState<Set<number>>(new Set());
     const actions = useFloorActions();
 
-    const poll = usePoll(
-        POLL_MS,
-        {
-            only: ['tables', 'upcoming'],
-            onSuccess: () => setLastOk(Date.now()),
-        },
-        { autoStart: false },
-    );
+    const { live } = useLive(['tables', 'upcoming'], {
+        channel: channels.staffFloor,
+        events: [
+            events.tableRequestRaised,
+            events.tableStatusChanged,
+            events.orderStatusChanged,
+        ],
+        fallbackMs: POLL_MS,
+    });
 
-    useEffect(() => {
-        if (online) {
-            poll.start();
-        } else {
-            poll.stop();
-        }
-
-        return poll.stop;
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [online]);
+    useEffect(() => router.on('success', () => setLastOk(Date.now())), []);
 
     const now = useNow(5_000);
-    const stale = online && now - lastOk > STALE_MS;
+    // A quiet live socket sends nothing, so only a silent poll can be stale.
+    const stale = online && !live && now - lastOk > STALE_MS;
     const initial = useMemo(() => initialArea(url), [url]);
 
     const toggleSelecting = () => {

@@ -1,6 +1,6 @@
-import { Head, router, usePoll } from '@inertiajs/react';
+import { Head, router, usePage } from '@inertiajs/react';
 import { useEffect, useState } from 'react';
-import { EmptyState, useOnline } from '@/components/brand/states';
+import { EmptyState } from '@/components/brand/states';
 import { CashSummaryPanel } from '@/components/deliveries/cash-summary';
 import {
     DeliveryCard,
@@ -14,6 +14,7 @@ import type {
 } from '@/components/deliveries/types';
 import { StaffPageHeader } from '@/components/staff/page-header';
 import { useT } from '@/lib/i18n';
+import { channels, events, useLive } from '@/lib/realtime';
 import { cn } from '@/lib/utils';
 
 const tabs: DeliveryTab[] = ['ready', 'road', 'done'];
@@ -34,25 +35,20 @@ export default function Deliveries({
     riders,
 }: Props) {
     const t = useT();
-    const online = useOnline();
     const [tab, setTab] = useState<DeliveryTab>(initialTab);
     const [stale, setStale] = useState(false);
-    const poll = usePoll(
-        15_000,
-        { only: ['deliveries', 'cash'] },
-        { autoStart: false },
-    );
+    const userId = usePage().props.auth.user?.id ?? null;
 
-    useEffect(() => {
-        if (online) {
-            poll.start();
-        } else {
-            poll.stop();
-        }
-
-        return poll.stop;
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [online]);
+    // Managers see every run; a rider hears only about their own.
+    useLive(['deliveries', 'cash'], {
+        channel: manages
+            ? channels.staffOrders
+            : userId === null
+              ? null
+              : channels.rider(userId),
+        events: [events.orderStatusChanged, events.riderAssigned],
+        fallbackMs: 15_000,
+    });
 
     useEffect(() => {
         const off = [
