@@ -20,6 +20,7 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Queue;
 
 beforeEach(function () {
+    config(['restaurant.defaults.automations.auto_accept' => true]);
     Cache::flush();
     // A Wednesday lunchtime, inside opening hours.
     $this->travelTo(now('Europe/London')->next('Wednesday')->setTime(13, 0));

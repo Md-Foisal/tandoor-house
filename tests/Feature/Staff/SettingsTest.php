@@ -288,6 +288,7 @@ it('will not switch WhatsApp on or accept a bad rating or email', function () {
 });
 
 it('toggles automations and logs which ones changed', function () {
+    config(['restaurant.defaults.automations.auto_accept' => true]);
     $all = array_fill_keys(SettingsController::AUTOMATIONS, true);
     $this->actingAs(settingsUser(Role::Manager));
 
