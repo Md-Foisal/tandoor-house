@@ -1,4 +1,4 @@
-import { Head, Link, router } from "@inertiajs/react";
+import { Head, Link, router } from '@inertiajs/react';
 import {
     ArrowLeft,
     Banknote,
@@ -8,39 +8,39 @@ import {
     Phone,
     Printer,
     RotateCcw,
-} from "lucide-react";
-import { useState } from "react";
-import { useOnline } from "@/components/brand/states";
-import { Elapsed } from "@/components/staff/elapsed";
-import { StaffPageHeader } from "@/components/staff/page-header";
+} from 'lucide-react';
+import { useState } from 'react';
+import { useOnline } from '@/components/brand/states';
+import { Elapsed } from '@/components/staff/elapsed';
+import { StaffPageHeader } from '@/components/staff/page-header';
 import {
     ChannelBadge,
     OrderStatusBadge,
-} from "@/components/staff/status-badge";
-import { Button } from "@/components/ui/button";
+} from '@/components/staff/status-badge';
+import { Button } from '@/components/ui/button';
 import {
     Select,
     SelectContent,
     SelectItem,
     SelectTrigger,
     SelectValue,
-} from "@/components/ui/select";
-import { EditDialog } from "@/components/staff-orders/edit-dialog";
-import { OrderActions } from "@/components/staff-orders/order-actions";
-import { PaymentLine } from "@/components/staff-orders/order-card";
-import { TakePaymentDialog } from "@/components/staff-orders/take-payment-dialog";
-import { RefundDialog } from "@/components/staff-orders/refund-dialog";
+} from '@/components/ui/select';
+import { EditDialog } from '@/components/staff-orders/edit-dialog';
+import { OrderActions } from '@/components/staff-orders/order-actions';
+import { PaymentLine } from '@/components/staff-orders/order-card';
+import { TakePaymentDialog } from '@/components/staff-orders/take-payment-dialog';
+import { RefundDialog } from '@/components/staff-orders/refund-dialog';
 import {
     isLive,
     type OrderAbilities,
     type OrderDetailData,
-} from "@/components/staff-orders/types";
-import { useT } from "@/lib/i18n";
-import { channels, events, useLive } from "@/lib/realtime";
-import { formatMoney } from "@/lib/money";
-import { cn } from "@/lib/utils";
-import { AlertTriangle, IdCard } from "lucide-react";
-import { formatStamp } from "@/components/staff-orders/format";
+} from '@/components/staff-orders/types';
+import { useT } from '@/lib/i18n';
+import { channels, events, useLive } from '@/lib/realtime';
+import { formatMoney } from '@/lib/money';
+import { cn } from '@/lib/utils';
+import { AlertTriangle, IdCard } from 'lucide-react';
+import { formatStamp } from '@/components/staff-orders/format';
 
 const PAUSED_MS = 2_147_483_647;
 
@@ -56,7 +56,7 @@ function Panel({
     return (
         <section
             className={cn(
-                "rounded-lg border border-line bg-surface p-4",
+                'rounded-lg border border-line bg-surface p-4',
                 className,
             )}
         >
@@ -86,7 +86,7 @@ export default function OrderShow({
 
     // useLive cannot be paused, so while a dialog is open it listens to
     // nothing and its fallback poll is pushed out of reach.
-    useLive(["order", "abilities"], {
+    useLive(['order', 'abilities'], {
         channel: paused ? null : channels.staffOrders,
         events: [events.orderStatusChanged, events.riderAssigned],
         fallbackMs: paused ? PAUSED_MS : 5_000,
@@ -95,27 +95,27 @@ export default function OrderShow({
     const live = isLive(order.status);
     const totals = order.totals;
     const totalRows: [string, number, boolean?][] = [
-        ["subtotal", totals.subtotal],
-        ["discount", -totals.discount],
-        ["delivery_fee", totals.delivery_fee],
-        ["service_charge", totals.service_charge],
-        ["tip", totals.tip],
+        ['subtotal', totals.subtotal],
+        ['discount', -totals.discount],
+        ['delivery_fee', totals.delivery_fee],
+        ['service_charge', totals.service_charge],
+        ['tip', totals.tip],
     ];
 
     const assign = (value: string) =>
         router.patch(
             `/staff/orders/${order.number}/rider`,
-            { rider_id: value === "none" ? null : Number(value) },
+            { rider_id: value === 'none' ? null : Number(value) },
             { preserveScroll: true },
         );
 
     return (
         <>
             <Head
-                title={t("staff_orders.detail.title", { number: order.number })}
+                title={t('staff_orders.detail.title', { number: order.number })}
             />
             <StaffPageHeader
-                title={t("staff_orders.detail.title", { number: order.number })}
+                title={t('staff_orders.detail.title', { number: order.number })}
                 description={
                     <span className="inline-flex flex-wrap items-center gap-x-3 gap-y-1">
                         <OrderStatusBadge status={order.status} />
@@ -131,7 +131,7 @@ export default function OrderShow({
                         <Button variant="ghost" asChild>
                             <Link href="/staff/orders">
                                 <ArrowLeft aria-hidden="true" />
-                                {t("staff_orders.detail.back")}
+                                {t('staff_orders.detail.back')}
                             </Link>
                         </Button>
                         <Button variant="outline" asChild>
@@ -141,7 +141,7 @@ export default function OrderShow({
                                 rel="noreferrer"
                             >
                                 <Printer aria-hidden="true" />
-                                {t("staff_orders.detail.print")}
+                                {t('staff_orders.detail.print')}
                             </a>
                         </Button>
                         <Button variant="outline" asChild>
@@ -149,7 +149,7 @@ export default function OrderShow({
                                 href={`/staff/orders/${order.number}/receipt.pdf`}
                             >
                                 <Download aria-hidden="true" />
-                                {t("staff_orders.detail.download")}
+                                {t('staff_orders.detail.download')}
                             </a>
                         </Button>
                     </>
@@ -166,7 +166,7 @@ export default function OrderShow({
                                         className="mt-0.5 size-5 shrink-0"
                                         aria-hidden="true"
                                     />
-                                    {t("staff_orders.detail.allergy_note")}
+                                    {t('staff_orders.detail.allergy_note')}
                                 </p>
                             )}
                             {order.age_check && (
@@ -175,13 +175,13 @@ export default function OrderShow({
                                         className="mt-0.5 size-5 shrink-0"
                                         aria-hidden="true"
                                     />
-                                    {t("staff_orders.detail.age_note")}
+                                    {t('staff_orders.detail.age_note')}
                                 </p>
                             )}
                         </div>
                     )}
 
-                    <Panel title={t("staff_orders.detail.lines")}>
+                    <Panel title={t('staff_orders.detail.lines')}>
                         <ul className="divide-y divide-line">
                             {order.lines.map((line) => (
                                 <li
@@ -192,11 +192,11 @@ export default function OrderShow({
                                         <p className="font-semibold">
                                             <span className="tabular-nums">
                                                 {line.quantity}×
-                                            </span>{" "}
+                                            </span>{' '}
                                             {line.name}
                                             {line.variant && (
                                                 <span className="font-normal text-ink-muted">
-                                                    {" "}
+                                                    {' '}
                                                     ({line.variant})
                                                 </span>
                                             )}
@@ -207,7 +207,7 @@ export default function OrderShow({
                                                 className="pl-6 text-sm text-ink-muted"
                                             >
                                                 {t(
-                                                    "staff_orders.detail.modifier",
+                                                    'staff_orders.detail.modifier',
                                                     { name: modifier.name },
                                                 )}
                                             </p>
@@ -227,7 +227,7 @@ export default function OrderShow({
                         {order.notes && (
                             <div className="mt-3 rounded-md bg-turmeric-soft px-3 py-2 text-turmeric">
                                 <p className="text-label uppercase">
-                                    {t("staff_orders.detail.notes")}
+                                    {t('staff_orders.detail.notes')}
                                 </p>
                                 <p className="whitespace-pre-line">
                                     {order.notes}
@@ -243,19 +243,19 @@ export default function OrderShow({
                                         onClick={() => setEditing(true)}
                                     >
                                         <Pencil aria-hidden="true" />
-                                        {t("staff_orders.edit.button")}
+                                        {t('staff_orders.edit.button')}
                                     </Button>
                                 )}
                             </div>
                         )}
                     </Panel>
 
-                    <Panel title={t("staff_orders.detail.totals")}>
+                    <Panel title={t('staff_orders.detail.totals')}>
                         <dl className="grid gap-1.5">
                             {totalRows
                                 .filter(
                                     ([key, value]) =>
-                                        key === "subtotal" || value !== 0,
+                                        key === 'subtotal' || value !== 0,
                                 )
                                 .map(([key, value]) => (
                                     <div
@@ -271,13 +271,13 @@ export default function OrderShow({
                                     </div>
                                 ))}
                             <div className="flex justify-between gap-3 border-t border-line pt-2 text-title font-semibold">
-                                <dt>{t("staff_orders.totals.total")}</dt>
+                                <dt>{t('staff_orders.totals.total')}</dt>
                                 <dd className="tabular-nums">
                                     {formatMoney(totals.total)}
                                 </dd>
                             </div>
                             <div className="flex justify-between gap-3 text-sm text-ink-muted">
-                                <dt>{t("staff_orders.totals.vat_total")}</dt>
+                                <dt>{t('staff_orders.totals.vat_total')}</dt>
                                 <dd className="tabular-nums">
                                     {formatMoney(totals.vat_total)}
                                 </dd>
@@ -285,7 +285,7 @@ export default function OrderShow({
                         </dl>
                     </Panel>
 
-                    <Panel title={t("staff_orders.detail.payments")}>
+                    <Panel title={t('staff_orders.detail.payments')}>
                         <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
                             <PaymentLine
                                 method={order.payment_method}
@@ -293,7 +293,7 @@ export default function OrderShow({
                             />
                             {order.refunded > 0 && (
                                 <span className="text-sm text-ink-muted">
-                                    {t("staff_orders.detail.refunded_of", {
+                                    {t('staff_orders.detail.refunded_of', {
                                         refunded: formatMoney(order.refunded),
                                         amount: formatMoney(order.paid),
                                     })}
@@ -302,7 +302,7 @@ export default function OrderShow({
                         </div>
                         {order.payments.length === 0 ? (
                             <p className="text-sm text-ink-muted">
-                                {t("staff_orders.detail.no_payments")}
+                                {t('staff_orders.detail.no_payments')}
                             </p>
                         ) : (
                             <ul className="divide-y divide-line text-sm">
@@ -317,13 +317,13 @@ export default function OrderShow({
                                             )}
                                             {payment.reference && (
                                                 <span className="text-ink-muted">
-                                                    {" "}
+                                                    {' '}
                                                     · {payment.reference}
                                                 </span>
                                             )}
                                         </span>
                                         <span className="tabular-nums">
-                                            {formatMoney(payment.amount)} ·{" "}
+                                            {formatMoney(payment.amount)} ·{' '}
                                             {t(
                                                 `staff_orders.payment.status.${payment.status}`,
                                             )}
@@ -339,13 +339,13 @@ export default function OrderShow({
                                 disabled={!online}
                                 title={
                                     !online
-                                        ? t("staff_orders.offline_reason")
+                                        ? t('staff_orders.offline_reason')
                                         : undefined
                                 }
                                 onClick={() => setTaking(true)}
                             >
                                 <Banknote aria-hidden="true" />
-                                {t("staff_orders.take_payment.button")}
+                                {t('staff_orders.take_payment.button')}
                             </Button>
                         )}
                         {abilities.refund && (
@@ -356,7 +356,7 @@ export default function OrderShow({
                                 onClick={() => setRefunding(true)}
                             >
                                 <RotateCcw aria-hidden="true" />
-                                {t("staff_orders.refund.button")}
+                                {t('staff_orders.refund.button')}
                             </Button>
                         )}
                     </Panel>
@@ -365,20 +365,20 @@ export default function OrderShow({
                 <div className="grid content-start gap-4">
                     {(order.next || order.can_reject || order.can_cancel) && (
                         <Panel
-                            title={t("staff_orders.detail.title", {
+                            title={t('staff_orders.detail.title', {
                                 number: order.number,
                             })}
                         >
                             <OrderActions order={order} />
                         </Panel>
                     )}
-                    {!abilities.edit && live && order.status !== "placed" && (
+                    {!abilities.edit && live && order.status !== 'placed' && (
                         <p className="rounded-md bg-clay px-3 py-2 text-sm text-ink-muted">
-                            {t("staff_orders.edit.locked")}
+                            {t('staff_orders.edit.locked')}
                         </p>
                     )}
 
-                    <Panel title={t("staff_orders.detail.contact")}>
+                    <Panel title={t('staff_orders.detail.contact')}>
                         <p className="font-semibold">{order.contact.name}</p>
                         {order.contact.phone && (
                             <Button
@@ -387,10 +387,10 @@ export default function OrderShow({
                                 asChild
                             >
                                 <a
-                                    href={`tel:${order.contact.phone.replace(/\s+/g, "")}`}
+                                    href={`tel:${order.contact.phone.replace(/\s+/g, '')}`}
                                 >
                                     <Phone aria-hidden="true" />
-                                    {t("staff_orders.detail.call", {
+                                    {t('staff_orders.detail.call', {
                                         phone: order.contact.phone,
                                     })}
                                 </a>
@@ -404,7 +404,7 @@ export default function OrderShow({
                     </Panel>
 
                     {order.address && (
-                        <Panel title={t("staff_orders.detail.address")}>
+                        <Panel title={t('staff_orders.detail.address')}>
                             <address className="not-italic">
                                 {Object.values(order.address).map((line) => (
                                     <span key={line} className="block">
@@ -414,7 +414,7 @@ export default function OrderShow({
                             </address>
                             {order.instructions && (
                                 <p className="mt-2 rounded-md bg-turmeric-soft px-2.5 py-1.5 text-sm text-turmeric">
-                                    {t("staff_orders.detail.instructions")}:{" "}
+                                    {t('staff_orders.detail.instructions')}:{' '}
                                     {order.instructions}
                                 </p>
                             )}
@@ -430,21 +430,21 @@ export default function OrderShow({
                                         rel="noreferrer"
                                     >
                                         <MapPin aria-hidden="true" />
-                                        {t("staff_orders.detail.maps")}
+                                        {t('staff_orders.detail.maps')}
                                     </a>
                                 </Button>
                             )}
                         </Panel>
                     )}
 
-                    {order.channel === "delivery" && (
-                        <Panel title={t("staff_orders.rider.title")}>
+                    {order.channel === 'delivery' && (
+                        <Panel title={t('staff_orders.rider.title')}>
                             {abilities.assign_rider ? (
                                 <Select
                                     value={
                                         order.rider_id
                                             ? String(order.rider_id)
-                                            : "none"
+                                            : 'none'
                                     }
                                     onValueChange={assign}
                                     disabled={!online}
@@ -452,14 +452,14 @@ export default function OrderShow({
                                     <SelectTrigger
                                         className="min-h-11 w-full"
                                         aria-label={t(
-                                            "staff_orders.rider.assign",
+                                            'staff_orders.rider.assign',
                                         )}
                                     >
                                         <SelectValue />
                                     </SelectTrigger>
                                     <SelectContent>
                                         <SelectItem value="none">
-                                            {t("staff_orders.rider.none")}
+                                            {t('staff_orders.rider.none')}
                                         </SelectItem>
                                         {(riders ?? []).map((rider) => (
                                             <SelectItem
@@ -474,13 +474,13 @@ export default function OrderShow({
                             ) : (
                                 <p>
                                     {order.rider ??
-                                        t("staff_orders.rider.unassigned")}
+                                        t('staff_orders.rider.unassigned')}
                                 </p>
                             )}
                         </Panel>
                     )}
 
-                    <Panel title={t("staff_orders.detail.timeline")}>
+                    <Panel title={t('staff_orders.detail.timeline')}>
                         <ol className="relative grid gap-3 border-l-2 border-line pl-4">
                             {order.events.map((event, index) => (
                                 <li key={index} className="relative">
@@ -492,12 +492,12 @@ export default function OrderShow({
                                         {t(`staff.status.${event.to}`)}
                                     </p>
                                     <p className="text-sm text-ink-muted">
-                                        {formatStamp(event.at)} ·{" "}
+                                        {formatStamp(event.at)} ·{' '}
                                         {event.by
-                                            ? t("staff_orders.detail.by", {
+                                            ? t('staff_orders.detail.by', {
                                                   name: event.by,
                                               })
-                                            : t("staff_orders.detail.system")}
+                                            : t('staff_orders.detail.system')}
                                     </p>
                                 </li>
                             ))}
@@ -505,8 +505,8 @@ export default function OrderShow({
                         {order.rejection_reason && (
                             <p className="mt-3 rounded-md bg-chilli-soft px-3 py-2 text-sm text-chilli">
                                 <strong>
-                                    {t("staff_orders.detail.rejection")}:
-                                </strong>{" "}
+                                    {t('staff_orders.detail.rejection')}:
+                                </strong>{' '}
                                 {order.rejection_reason}
                             </p>
                         )}

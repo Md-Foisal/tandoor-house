@@ -1,9 +1,9 @@
-import { router } from "@inertiajs/react";
-import { AlertTriangle, Download, Lock } from "lucide-react";
-import { useState } from "react";
-import { EmptyState } from "@/components/brand/states";
-import { StatTile } from "@/components/staff/stat-tile";
-import { Button } from "@/components/ui/button";
+import { router } from '@inertiajs/react';
+import { AlertTriangle, Download, Lock } from 'lucide-react';
+import { useState } from 'react';
+import { EmptyState } from '@/components/brand/states';
+import { StatTile } from '@/components/staff/stat-tile';
+import { Button } from '@/components/ui/button';
 import {
     Dialog,
     DialogContent,
@@ -11,11 +11,11 @@ import {
     DialogFooter,
     DialogHeader,
     DialogTitle,
-} from "@/components/ui/dialog";
-import { useT } from "@/lib/i18n";
-import { formatMoney } from "@/lib/money";
-import type { TeamContext, TipRecording, Tips } from "./types";
-import { hours, shortDate } from "./types";
+} from '@/components/ui/dialog';
+import { useT } from '@/lib/i18n';
+import { formatMoney } from '@/lib/money';
+import type { TeamContext, TipRecording, Tips } from './types';
+import { hours, shortDate } from './types';
 
 export function TipsTab({
     tips,
@@ -26,11 +26,11 @@ export function TipsTab({
 }) {
     const t = useT();
     const rec = tips.recording;
-    const [confirm, setConfirm] = useState<"record" | "pay" | null>(null);
+    const [confirm, setConfirm] = useState<'record' | 'pay' | null>(null);
     const [busy, setBusy] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
-    const submit = (kind: "record" | "pay") => {
+    const submit = (kind: 'record' | 'pay') => {
         setBusy(true);
         setError(null);
         router.post(
@@ -38,7 +38,7 @@ export function TipsTab({
             { week: context.week.start },
             {
                 preserveScroll: true,
-                only: ["tips"],
+                only: ['tips'],
                 onSuccess: () => setConfirm(null),
                 onError: (errors) => {
                     setConfirm(null);
@@ -50,14 +50,14 @@ export function TipsTab({
     };
 
     const recordBlocked = !rec.can_record
-        ? rec.status === "paid"
+        ? rec.status === 'paid'
             ? null
-            : t("staff_team.tips.record_wait", {
+            : t('staff_team.tips.record_wait', {
                   date: shortDate(rec.available_on),
               })
         : null;
     const canAct = context.online && !busy;
-    const showRecorded = rec.status !== "none";
+    const showRecorded = rec.status !== 'none';
 
     return (
         <>
@@ -71,7 +71,7 @@ export function TipsTab({
                         className="flex items-center gap-2 font-display text-title"
                     >
                         {t(`staff_team.tips.status_${rec.status}`)}
-                        {rec.status === "paid" && (
+                        {rec.status === 'paid' && (
                             <Lock
                                 aria-hidden="true"
                                 className="size-4 text-ink-muted"
@@ -79,61 +79,61 @@ export function TipsTab({
                         )}
                     </h2>
                     <p className="mt-1 text-sm text-ink-muted">
-                        {rec.status === "none" &&
-                            (recordBlocked ?? t("staff_team.tips.record_body"))}
-                        {rec.status === "recorded" &&
+                        {rec.status === 'none' &&
+                            (recordBlocked ?? t('staff_team.tips.record_body'))}
+                        {rec.status === 'recorded' &&
                             rec.recorded_at &&
-                            t("staff_team.tips.recorded_by", {
-                                name: rec.recorded_by ?? "",
+                            t('staff_team.tips.recorded_by', {
+                                name: rec.recorded_by ?? '',
                                 date: shortDate(rec.recorded_at),
                             })}
-                        {rec.status === "paid" &&
+                        {rec.status === 'paid' &&
                             rec.paid_at &&
-                            t("staff_team.tips.paid_on", {
+                            t('staff_team.tips.paid_on', {
                                 date: shortDate(rec.paid_at),
                             })}
                     </p>
                     {!context.online && (
                         <p className="mt-1 text-sm text-ink-muted">
-                            {t("staff_team.tips.offline")}
+                            {t('staff_team.tips.offline')}
                         </p>
                     )}
                 </div>
                 <div className="flex flex-wrap gap-2">
-                    {rec.status !== "paid" && (
+                    {rec.status !== 'paid' && (
                         <Button
                             type="button"
                             size="lg"
                             variant={
-                                rec.status === "none" ? "default" : "outline"
+                                rec.status === 'none' ? 'default' : 'outline'
                             }
                             disabled={!canAct || !rec.can_record}
-                            onClick={() => setConfirm("record")}
+                            onClick={() => setConfirm('record')}
                         >
-                            {rec.status === "none"
-                                ? t("staff_team.tips.record")
-                                : t("staff_team.tips.record_again")}
+                            {rec.status === 'none'
+                                ? t('staff_team.tips.record')
+                                : t('staff_team.tips.record_again')}
                         </Button>
                     )}
-                    {rec.status === "recorded" && (
+                    {rec.status === 'recorded' && (
                         <Button
                             type="button"
                             size="lg"
                             disabled={!canAct || !rec.can_pay}
-                            onClick={() => setConfirm("pay")}
+                            onClick={() => setConfirm('pay')}
                             title={
                                 rec.can_pay
                                     ? undefined
-                                    : t("staff_team.tips.owner_only")
+                                    : t('staff_team.tips.owner_only')
                             }
                         >
-                            {t("staff_team.tips.pay")}
+                            {t('staff_team.tips.pay')}
                         </Button>
                     )}
                 </div>
-                {rec.status === "recorded" && !rec.can_pay && (
+                {rec.status === 'recorded' && !rec.can_pay && (
                     <p className="text-sm text-ink-muted sm:col-span-2">
-                        {t("staff_team.tips.owner_only")}
+                        {t('staff_team.tips.owner_only')}
                     </p>
                 )}
             </section>
@@ -157,29 +157,29 @@ export function TipsTab({
                         className="mt-0.5 size-4 shrink-0"
                     />
                     <span>
-                        <strong>{t("staff_team.tips.changed_title")}.</strong>{" "}
-                        {rec.status === "paid"
-                            ? t("staff_team.tips.changed_locked")
-                            : t("staff_team.tips.changed_body")}
+                        <strong>{t('staff_team.tips.changed_title')}.</strong>{' '}
+                        {rec.status === 'paid'
+                            ? t('staff_team.tips.changed_locked')
+                            : t('staff_team.tips.changed_body')}
                     </span>
                 </p>
             )}
 
             <div className="grid gap-3 sm:grid-cols-2">
                 <StatTile
-                    label={t("staff_team.tips.pot")}
+                    label={t('staff_team.tips.pot')}
                     value={formatMoney(tips.total)}
                     hint={
                         tips.total === 0
-                            ? t("staff_team.tips.none")
-                            : t("staff_team.tips.pot_hint", {
+                            ? t('staff_team.tips.none')
+                            : t('staff_team.tips.pot_hint', {
                                   count: tips.orders,
                               })
                     }
                 />
                 <StatTile
-                    label={t("staff_team.tips.hours")}
-                    value={t("staff_team.hours", {
+                    label={t('staff_team.tips.hours')}
+                    value={t('staff_team.hours', {
                         hours: hours(tips.minutes),
                     })}
                 />
@@ -190,7 +190,7 @@ export function TipsTab({
                     role="alert"
                     className="rounded-md border border-turmeric bg-turmeric-soft p-3 text-sm"
                 >
-                    {t("staff_team.tips.warning", { count: tips.unfixed })}
+                    {t('staff_team.tips.warning', { count: tips.unfixed })}
                 </p>
             )}
 
@@ -201,13 +201,13 @@ export function TipsTab({
                 <EmptyState
                     title={
                         tips.shares.length === 0
-                            ? t("staff_team.tips.empty_title")
-                            : t("staff_team.tips.no_tips_title")
+                            ? t('staff_team.tips.empty_title')
+                            : t('staff_team.tips.no_tips_title')
                     }
                     description={
                         tips.shares.length === 0
-                            ? t("staff_team.tips.empty_body")
-                            : t("staff_team.tips.no_tips_body")
+                            ? t('staff_team.tips.empty_body')
+                            : t('staff_team.tips.no_tips_body')
                     }
                 />
             ) : (
@@ -218,7 +218,7 @@ export function TipsTab({
                                 href={`/staff/team/tips/export?week=${context.week.start}`}
                             >
                                 <Download aria-hidden="true" />
-                                {t("staff_team.tips.export")}
+                                {t('staff_team.tips.export')}
                             </a>
                         </Button>
                     </div>
@@ -226,13 +226,13 @@ export function TipsTab({
                         <thead className="text-label text-ink-muted uppercase">
                             <tr className="border-b border-line">
                                 <th className="py-2">
-                                    {t("staff_team.tips.name")}
+                                    {t('staff_team.tips.name')}
                                 </th>
                                 <th className="py-2 text-right">
-                                    {t("staff_team.tips.hours")}
+                                    {t('staff_team.tips.hours')}
                                 </th>
                                 <th className="py-2 text-right">
-                                    {t("staff_team.tips.share")}
+                                    {t('staff_team.tips.share')}
                                 </th>
                             </tr>
                         </thead>
@@ -248,7 +248,7 @@ export function TipsTab({
                                         </p>
                                     </td>
                                     <td className="py-3 text-right tabular-nums">
-                                        {t("staff_team.hours", {
+                                        {t('staff_team.hours', {
                                             hours: hours(row.minutes),
                                         })}
                                     </td>
@@ -261,10 +261,10 @@ export function TipsTab({
                         <tfoot>
                             <tr className="border-t-2 border-ink/80">
                                 <th className="py-3">
-                                    {t("staff_team.rota.total")}
+                                    {t('staff_team.rota.total')}
                                 </th>
                                 <td className="py-3 text-right tabular-nums">
-                                    {t("staff_team.hours", {
+                                    {t('staff_team.hours', {
                                         hours: hours(tips.minutes),
                                     })}
                                 </td>
@@ -285,18 +285,18 @@ export function TipsTab({
             <section className="grid gap-3 rounded-lg border border-line bg-surface p-4 md:grid-cols-2">
                 <div>
                     <h2 className="font-display text-title">
-                        {t("staff_team.tips.rule_title")}
+                        {t('staff_team.tips.rule_title')}
                     </h2>
                     <p className="mt-1 text-ink-muted">
-                        {t("staff_team.tips.rule")}
+                        {t('staff_team.tips.rule')}
                     </p>
                 </div>
                 <div>
                     <h2 className="font-display text-title">
-                        {t("staff_team.tips.policy_title")}
+                        {t('staff_team.tips.policy_title')}
                     </h2>
                     <p className="mt-1 text-ink-muted">
-                        {t("staff_team.tips.policy")}
+                        {t('staff_team.tips.policy')}
                     </p>
                 </div>
             </section>
@@ -307,10 +307,10 @@ export function TipsTab({
                 <DialogContent>
                     <DialogHeader>
                         <DialogTitle>
-                            {t(`staff_team.tips.${confirm ?? "record"}_title`)}
+                            {t(`staff_team.tips.${confirm ?? 'record'}_title`)}
                         </DialogTitle>
                         <DialogDescription>
-                            {t(`staff_team.tips.${confirm ?? "record"}_body`)}
+                            {t(`staff_team.tips.${confirm ?? 'record'}_body`)}
                         </DialogDescription>
                     </DialogHeader>
                     <DialogFooter>
@@ -319,7 +319,7 @@ export function TipsTab({
                             variant="outline"
                             onClick={() => setConfirm(null)}
                         >
-                            {t("staff_team.tips.cancel")}
+                            {t('staff_team.tips.cancel')}
                         </Button>
                         <Button
                             type="button"
@@ -327,9 +327,9 @@ export function TipsTab({
                             disabled={!canAct}
                             onClick={() => confirm && submit(confirm)}
                         >
-                            {confirm === "pay"
-                                ? t("staff_team.tips.pay_confirm")
-                                : t("staff_team.tips.record")}
+                            {confirm === 'pay'
+                                ? t('staff_team.tips.pay_confirm')
+                                : t('staff_team.tips.record')}
                         </Button>
                     </DialogFooter>
                 </DialogContent>
@@ -355,23 +355,23 @@ function RecordedTable({
                         href={`/staff/team/tips/export?week=${context.week.start}`}
                     >
                         <Download aria-hidden="true" />
-                        {t("staff_team.tips.export")}
+                        {t('staff_team.tips.export')}
                     </a>
                 </Button>
             </div>
             <table className="w-full text-left">
                 <thead className="text-label text-ink-muted uppercase">
                     <tr className="border-b border-line">
-                        <th className="py-2">{t("staff_team.tips.name")}</th>
+                        <th className="py-2">{t('staff_team.tips.name')}</th>
                         <th className="py-2 text-right">
-                            {t("staff_team.tips.hours")}
+                            {t('staff_team.tips.hours')}
                         </th>
                         <th className="py-2 text-right">
-                            {t("staff_team.tips.recorded_share")}
+                            {t('staff_team.tips.recorded_share')}
                         </th>
                         {rec.differs && (
                             <th className="py-2 text-right">
-                                {t("staff_team.tips.live_share")}
+                                {t('staff_team.tips.live_share')}
                             </th>
                         )}
                     </tr>
@@ -386,7 +386,7 @@ function RecordedTable({
                                 </p>
                             </td>
                             <td className="py-3 text-right tabular-nums">
-                                {t("staff_team.hours", {
+                                {t('staff_team.hours', {
                                     hours: hours(row.minutes),
                                 })}
                             </td>
@@ -395,7 +395,7 @@ function RecordedTable({
                             </td>
                             {rec.differs && (
                                 <td
-                                    className={`py-3 text-right tabular-nums ${row.live === row.amount ? "text-ink-muted" : "font-semibold text-chilli"}`}
+                                    className={`py-3 text-right tabular-nums ${row.live === row.amount ? 'text-ink-muted' : 'font-semibold text-chilli'}`}
                                 >
                                     {formatMoney(row.live)}
                                 </td>
@@ -405,7 +405,7 @@ function RecordedTable({
                 </tbody>
                 <tfoot>
                     <tr className="border-t-2 border-ink/80">
-                        <th className="py-3">{t("staff_team.rota.total")}</th>
+                        <th className="py-3">{t('staff_team.rota.total')}</th>
                         <td />
                         <td className="py-3 text-right font-semibold tabular-nums">
                             {formatMoney(rec.total)}
