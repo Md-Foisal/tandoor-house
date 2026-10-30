@@ -2,7 +2,7 @@
 
 Status key: "stock photo" = a real, close match sourced from Unsplash, to be replaced by our own shot; "stand-in" = closest real photo of a similar dish, not the dish itself; MISSING = nothing suitable, site shows a branded placeholder.
 
-Totals: 20 close-match stock, 19 stand-ins, 1 missing (of 40 dishes).
+Totals: 20 close-match stock, 20 stand-ins, 0 missing (of 40 dishes).
 
 ## Style brief (all shots)
 Warm, low-angle, natural window light plus tungsten accents. Real tableware and surfaces. Hands, steam, char and flame welcome. Shoot every dish in 4:5 portrait, then a 3:2 landscape variant where possible. Supply originals at 4000px minimum on the long edge, sRGB.
@@ -18,7 +18,7 @@ Warm, low-angle, natural window light plus tungsten accents. Real tableware and 
 | dish/cheese-and-chilli-kulcha | Cheese and chilli kulcha | stand-in | Low 3/4 angle, warm side light, real serving ware (copper karahi, steel thali, dark slate), garnish and steam visible, no white seamless background. 4:5 portrait, shoot 4000px wide. |
 | dish/chicken-chettinad | Chicken chettinad | stand-in | Low 3/4 angle, warm side light, real serving ware (copper karahi, steel thali, dark slate), garnish and steam visible, no white seamless background. 4:5 portrait, shoot 4000px wide. |
 | dish/chicken-tikka | Chicken tikka | stand-in | Low 3/4 angle, warm side light, real serving ware (copper karahi, steel thali, dark slate), garnish and steam visible, no white seamless background. 4:5 portrait, shoot 4000px wide. |
-| dish/chilli-cheese-toast | Chilli cheese toast | MISSING (UI placeholder) | Low 3/4 angle, warm side light, real serving ware (copper karahi, steel thali, dark slate), garnish and steam visible, no white seamless background. 4:5 portrait, shoot 4000px wide. |
+| dish/chilli-cheese-toast | Chilli cheese toast | stand-in | Low 3/4 angle, warm side light, real serving ware (copper karahi, steel thali, dark slate), garnish and steam visible, no white seamless background. 4:5 portrait, shoot 4000px wide. |
 | dish/cucumber-raita | Cucumber raita | stand-in | Low 3/4 angle, warm side light, real serving ware (copper karahi, steel thali, dark slate), garnish and steam visible, no white seamless background. 4:5 portrait, shoot 4000px wide. |
 | dish/fresh-lime-soda | Fresh lime soda | stock photo (replace when possible) | Low 3/4 angle, warm side light, real serving ware (copper karahi, steel thali, dark slate), garnish and steam visible, no white seamless background. 4:5 portrait, shoot 4000px wide. |
 | dish/garlic-and-coriander-naan | Garlic and coriander naan | stock photo (replace when possible) | Low 3/4 angle, warm side light, real serving ware (copper karahi, steel thali, dark slate), garnish and steam visible, no white seamless background. 4:5 portrait, shoot 4000px wide. |
