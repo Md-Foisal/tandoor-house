@@ -1,4 +1,4 @@
-import { ImagePlus, Undo2 } from 'lucide-react';
+import { ImageOff, ImagePlus, Trash2, Undo2 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { Thumb } from './thumb';
 import { Button } from '@/components/ui/button';
@@ -8,17 +8,24 @@ export function PhotoField({
     file,
     photoUrl,
     mediaKey,
+    removed,
     error,
     onChange,
+    onRemoveChange,
 }: {
     file: File | null;
     photoUrl: string | null;
     mediaKey: string | null;
+    removed: boolean;
     error?: string;
     onChange: (file: File | null) => void;
+    onRemoveChange: (removed: boolean) => void;
 }) {
     const t = useT();
     const input = useRef<HTMLInputElement>(null);
+    const removeButton = useRef<HTMLButtonElement>(null);
+    const undoButton = useRef<HTMLButtonElement>(null);
+    const firstRender = useRef(true);
     const [preview, setPreview] = useState<string | null>(null);
 
     useEffect(() => {
@@ -34,7 +41,32 @@ export function PhotoField({
         return () => URL.revokeObjectURL(url);
     }, [file]);
 
-    const shown = preview ?? photoUrl;
+    // The button that was pressed disappears; keep keyboard focus on its replacement.
+    useEffect(() => {
+        if (firstRender.current) {
+            firstRender.current = false;
+
+            return;
+        }
+
+        (removed ? undoButton : removeButton).current?.focus();
+    }, [removed]);
+
+    const hasUpload = photoUrl !== null;
+    const currentUrl = removed ? null : photoUrl;
+    const shown = preview ?? currentUrl;
+
+    let status: string;
+
+    if (file) {
+        status = `${t('staff_menu.editor.photo_new')}: ${file.name}`;
+    } else if (removed) {
+        status = t('staff_menu.editor.photo_removing');
+    } else if (currentUrl) {
+        status = t('staff_menu.editor.photo_current');
+    } else {
+        status = t('staff_menu.editor.photo_none');
+    }
 
     return (
         <div className="grid gap-3">
@@ -45,6 +77,10 @@ export function PhotoField({
                         alt=""
                         className="size-full object-cover"
                     />
+                ) : removed ? (
+                    <div className="grid size-full place-items-center text-ink-muted">
+                        <ImageOff aria-hidden="true" className="size-8" />
+                    </div>
                 ) : mediaKey ? (
                     <Thumb
                         photoUrl={null}
@@ -53,12 +89,8 @@ export function PhotoField({
                     />
                 ) : null}
             </div>
-            <p className="text-sm text-ink-muted">
-                {file
-                    ? `${t('staff_menu.editor.photo_new')}: ${file.name}`
-                    : photoUrl
-                      ? t('staff_menu.editor.photo_current')
-                      : t('staff_menu.editor.photo_none')}
+            <p aria-live="polite" className="text-sm text-ink-muted">
+                {status}
             </p>
             <div className="flex flex-wrap gap-2">
                 <input
@@ -81,7 +113,7 @@ export function PhotoField({
                 >
                     <ImagePlus aria-hidden="true" />
                     {t(
-                        photoUrl || file
+                        currentUrl || file
                             ? 'staff_menu.editor.photo_replace'
                             : 'staff_menu.editor.photo_choose',
                     )}
@@ -98,6 +130,30 @@ export function PhotoField({
                     >
                         <Undo2 aria-hidden="true" />
                         {t('staff_menu.editor.photo_remove')}
+                    </Button>
+                )}
+                {hasUpload && !file && !removed && (
+                    <Button
+                        ref={removeButton}
+                        type="button"
+                        variant="ghost"
+                        size="lg"
+                        onClick={() => onRemoveChange(true)}
+                    >
+                        <Trash2 aria-hidden="true" />
+                        {t('staff_menu.editor.photo_remove_saved')}
+                    </Button>
+                )}
+                {removed && (
+                    <Button
+                        ref={undoButton}
+                        type="button"
+                        variant="ghost"
+                        size="lg"
+                        onClick={() => onRemoveChange(false)}
+                    >
+                        <Undo2 aria-hidden="true" />
+                        {t('staff_menu.editor.photo_undo_removal')}
                     </Button>
                 )}
             </div>

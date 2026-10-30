@@ -51,5 +51,9 @@ return [
     'sign_out' => 'Sign out',
     'view_site' => 'View the website',
     'collapse' => 'Collapse menu',
+    'live' => [
+        'on' => 'Live',
+        'reconnecting' => 'Reconnecting',
+    ],
     'open_menu' => 'Open menu',
 ];

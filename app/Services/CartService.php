@@ -325,7 +325,7 @@ class CartService
             'total' => $unit * $line['quantity'],
             'vat_rate' => $item->vat_rate,
             'allergens' => $allergens->all(),
-            'image' => 'dish/'.$item->slug,
+            'image' => $item->imagePayload(),
             'is_available' => $item->is_available,
             'is_alcoholic' => $item->is_alcoholic,
         ];

@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Storage;
 
 /**
  * @property int $id
@@ -29,6 +30,7 @@ use Illuminate\Support\Collection;
  * @property Station $station
  * @property int $prep_minutes
  * @property string|null $image
+ * @property array{width: int, height: int, placeholder: string, sources: array{avif: list<array{int, string}>, webp: list<array{int, string}>}}|null $photo
  * @property bool $is_available
  * @property bool $is_special
  * @property bool $is_hot
@@ -39,7 +41,7 @@ use Illuminate\Support\Collection;
 #[Fillable([
     'category_id', 'name', 'slug', 'description', 'price', 'kcal', 'spice_level',
     'is_vegetarian', 'is_vegan', 'allergens', 'vat_rate', 'station', 'prep_minutes',
-    'image', 'is_available', 'is_special', 'is_hot', 'is_alcoholic', 'service_periods', 'position',
+    'image', 'photo', 'is_available', 'is_special', 'is_hot', 'is_alcoholic', 'service_periods', 'position',
 ])]
 class MenuItem extends Model
 {
@@ -61,6 +63,51 @@ class MenuItem extends Model
             'allergens' => AsEnumCollection::of(Allergen::class),
             'station' => Station::class,
             'service_periods' => 'array',
+            'photo' => 'array',
+        ];
+    }
+
+    /**
+     * Disk paths of every derived file of the uploaded photo.
+     *
+     * @return list<string>
+     */
+    public function photoPaths(): array
+    {
+        $paths = [];
+
+        foreach ($this->photo['sources'] ?? [] as $list) {
+            foreach ($list as [, $path]) {
+                $paths[] = $path;
+            }
+        }
+
+        return $paths;
+    }
+
+    /**
+     * What the front end hands to <Picture>: the converted upload (urls, not
+     * disk paths) when there is one, otherwise the static manifest key.
+     *
+     * @return string|array<string, mixed>
+     */
+    public function imagePayload(): string|array
+    {
+        if ($this->photo === null) {
+            return 'dish/'.$this->slug;
+        }
+
+        $disk = Storage::disk('public');
+        $sources = array_map(
+            fn (array $list) => array_map(fn (array $source) => [$source[0], $disk->url($source[1])], $list),
+            $this->photo['sources'],
+        );
+
+        return [
+            'width' => $this->photo['width'],
+            'height' => $this->photo['height'],
+            'placeholder' => $this->photo['placeholder'],
+            'sources' => $sources,
         ];
     }
 

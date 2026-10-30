@@ -2,16 +2,13 @@
 
 namespace App\Http\Requests\Staff\Inventory;
 
-use App\Policies\InventoryPolicy;
 use Illuminate\Foundation\Http\FormRequest;
 
 class RecipeRequest extends FormRequest
 {
-    public function authorize(InventoryPolicy $policy): bool
+    public function authorize(): bool
     {
-        $user = $this->user();
-
-        return $user !== null && $user->can('staff.inventory') && $policy->manage($user);
+        return $this->user()?->can('updateRecipe', $this->route('menuItem')) ?? false;
     }
 
     /**

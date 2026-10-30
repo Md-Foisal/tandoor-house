@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Staff\Team;
 
 use App\Enums\Role;
+use App\Models\Shift;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -10,7 +11,9 @@ class SaveShiftRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return $this->user()?->can('staff.team') ?? false;
+        return ($shift = $this->route('shift')) instanceof Shift
+            ? ($this->user()?->can('update', $shift) ?? false)
+            : ($this->user()?->can('create', Shift::class) ?? false);
     }
 
     /**

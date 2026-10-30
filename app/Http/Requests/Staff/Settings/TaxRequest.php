@@ -2,11 +2,13 @@
 
 namespace App\Http\Requests\Staff\Settings;
 
+use App\Models\Setting;
+
 class TaxRequest extends SettingsRequest
 {
     public function authorize(): bool
     {
-        return parent::authorize() && $this->isOwner();
+        return $this->user()?->can('updateMoney', Setting::class) ?? false;
     }
 
     /**

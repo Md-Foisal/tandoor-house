@@ -6,6 +6,7 @@ use App\Enums\OrderChannel;
 use App\Enums\OrderStatus;
 use App\Enums\PaymentStatus;
 use App\Enums\Role;
+use App\Enums\StaffArea;
 use App\Models\Order;
 use App\Models\User;
 use Illuminate\Auth\Access\Response;
@@ -55,6 +56,25 @@ class OrderBoardPolicy
     }
 
     /**
+     * Cashiers, managers and owners take any payment; a waiter only on the
+     * tables they serve, so dine-in orders.
+     */
+    public function takePayment(User $user, Order $order): Response
+    {
+        $allowed = match ($user->role) {
+            Role::Cashier, Role::Manager, Role::Owner => true,
+            Role::Waiter => $order->channel === OrderChannel::DineIn,
+            default => false,
+        };
+
+        if (in_array($order->status, [OrderStatus::Rejected, OrderStatus::Cancelled], true)) {
+            return Response::deny(__('staff_orders.take_payment.nothing_due'));
+        }
+
+        return $allowed ? Response::allow() : Response::deny(__('staff_orders.take_payment.not_allowed'));
+    }
+
+    /**
      * Which board steps each role may take. Reject and cancel are the
      * cashier's and above; the two delivery steps belong to riders (through
      * their own screen) and to managers.
@@ -101,6 +121,35 @@ class OrderBoardPolicy
         return $user->role->isManagement()
             && $order->channel === OrderChannel::Delivery
             && in_array($order->status, [OrderStatus::Ready, OrderStatus::OutForDelivery], true);
+    }
+
+    /** Changing lines and quantities on an order from the board. */
+    public function edit(User $user, Order $order): bool
+    {
+        return StaffArea::Orders->allows($user->role);
+    }
+
+    /** Receipts for any order on the board. */
+    public function receipt(User $user, Order $order): bool
+    {
+        return StaffArea::Orders->allows($user->role);
+    }
+
+    /** Status changes are checked again against the target step inside the transaction. */
+    public function move(User $user, Order $order): bool
+    {
+        return StaffArea::Orders->allows($user->role);
+    }
+
+    public function assignRider(User $user, Order $order): bool
+    {
+        return StaffArea::Orders->allows($user->role) && $user->role->isManagement();
+    }
+
+    /** Starting, bumping and recalling tickets on the kitchen display. */
+    public function cook(User $user): bool
+    {
+        return StaffArea::Kitchen->allows($user->role);
     }
 
     public function canEdit(Order $order): bool

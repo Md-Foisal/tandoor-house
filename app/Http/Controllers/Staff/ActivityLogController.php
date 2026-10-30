@@ -9,6 +9,7 @@ use App\Http\Requests\Staff\Activity\ActivityFilterRequest;
 use App\Models\ActivityLog;
 use App\Support\Csv;
 use Illuminate\Support\Facades\Date;
+use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 use Inertia\Response;
 use Inertia\ScrollMetadata;
@@ -46,6 +47,8 @@ class ActivityLogController extends Controller
 
     public function export(ActivityFilterRequest $request): StreamedResponse
     {
+        Gate::authorize('export', ActivityLog::class);
+
         $filters = $request->filters();
         $rows = function () use ($filters) {
             foreach (ActivityQuery::build($filters)->with('user:id,name')->lazy(500)->chunk(500) as $chunk) {

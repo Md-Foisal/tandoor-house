@@ -9,11 +9,18 @@ use App\Http\Controllers\CartLineController;
 use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\MenuController;
+use App\Http\Controllers\OrderCancellationController;
+use App\Http\Controllers\OrderPaymentController;
 use App\Http\Controllers\OrderTrackingController;
 use App\Http\Controllers\PageController;
+use App\Http\Controllers\PaymentWebhookController;
+use App\Http\Controllers\ReservationCancellationController;
 use App\Http\Controllers\ReservationController;
+use App\Http\Controllers\ReservationPaymentController;
 use App\Http\Controllers\StyleguideController;
 use App\Http\Controllers\TableOrderingController;
+use App\Http\Controllers\TablePaymentController;
+use Illuminate\Foundation\Http\Middleware\ValidateCsrfToken;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', HomeController::class)->name('home');
@@ -44,6 +51,12 @@ Route::controller(CheckoutController::class)->prefix('checkout')->name('checkout
 });
 
 Route::get('orders/{order:number}', [OrderTrackingController::class, 'show'])->middleware('throttle:lookup')->name('orders.show');
+Route::controller(OrderPaymentController::class)->prefix('orders/{order:number}/pay')->name('orders.pay')->group(function () {
+    Route::get('/', 'show')->middleware('throttle:lookup')->name('');
+    Route::post('confirm', 'confirm')->middleware('throttle:checkout')->name('.confirm');
+    Route::post('venue', 'venue')->middleware('throttle:checkout')->name('.venue');
+});
+Route::post('orders/{order:number}/cancel', OrderCancellationController::class.'@store')->middleware('throttle:10,1')->name('orders.cancel');
 
 Route::controller(ReservationController::class)->prefix('book')->name('book.')->group(function () {
     Route::get('/', 'create')->name('create');
@@ -52,11 +65,21 @@ Route::controller(ReservationController::class)->prefix('book')->name('book.')->
     Route::get('{reservation:reference}', 'show')->name('show');
 });
 
+Route::controller(ReservationPaymentController::class)->prefix('book/{reservation:reference}/pay')->name('book.pay')->group(function () {
+    Route::get('/', 'show')->middleware('throttle:lookup')->name('');
+    Route::post('confirm', 'confirm')->middleware('throttle:checkout')->name('.confirm');
+});
+
+Route::post('book/{reservation:reference}/cancel', ReservationCancellationController::class.'@store')->middleware('throttle:10,1')->name('book.cancel');
+
 Route::controller(TableOrderingController::class)->prefix('t/{table:qr_token}')->name('table.')->group(function () {
     Route::get('/', 'show')->name('show');
     Route::post('requests', 'request')->middleware('throttle:table')->name('request');
     Route::get('bill', 'bill')->name('bill');
     Route::post('order', 'order')->middleware('throttle:table')->name('order');
+    Route::post('pay', [TablePaymentController::class, 'store'])->middleware('throttle:table')->name('pay.store');
+    Route::get('pay/{payment}', [TablePaymentController::class, 'show'])->name('pay.show');
+    Route::post('pay/{payment}/confirm', [TablePaymentController::class, 'confirm'])->middleware('throttle:table')->name('pay.confirm');
 });
 
 Route::middleware(['auth', 'verified'])->prefix('account')->name('account.')->group(function () {
@@ -75,3 +98,8 @@ Route::controller(StyleguideController::class)->prefix('styleguide')->name('styl
 
 require __DIR__.'/settings.php';
 require __DIR__.'/staff.php';
+
+Route::post('webhooks/payments/{driver}', PaymentWebhookController::class)
+    ->withoutMiddleware(ValidateCsrfToken::class)
+    ->middleware('throttle:120,1')
+    ->name('webhooks.payments');

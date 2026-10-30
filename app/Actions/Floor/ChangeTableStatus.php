@@ -4,6 +4,7 @@ namespace App\Actions\Floor;
 
 use App\Enums\TableRequestType;
 use App\Enums\TableStatus;
+use App\Events\TableStatusChanged;
 use App\Models\DiningTable;
 use App\Models\User;
 use App\Support\ActivityRecorder;
@@ -92,6 +93,8 @@ class ChangeTableStatus
                 'to' => $to->value,
                 'party_size' => $partySize,
             ], $by);
+
+            TableStatusChanged::dispatch($table, $from, $to);
 
             return $table;
         });

@@ -71,6 +71,7 @@ export type CheckoutProps = {
         marketing_opt_in: boolean;
     };
     tipPresets: number[];
+    paymentDriver: string;
     serviceChargeRate: number;
 };
 

@@ -2,9 +2,11 @@
 
 namespace App\Services;
 
+use App\Enums\PaymentStatus;
 use App\Enums\ReservationStatus;
 use App\Models\DiningTable;
 use App\Models\Reservation;
+use App\Support\DepositHold;
 use App\Support\Settings;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Collection;
@@ -26,6 +28,7 @@ class TableAvailability
     public function __construct(
         private readonly OpeningHours $hours,
         private readonly Settings $settings,
+        private readonly DepositHold $hold,
     ) {}
 
     public function maxParty(): int
@@ -175,7 +178,14 @@ class TableAvailability
     {
         return Reservation::query()
             ->whereIn('dining_table_id', $tables->modelKeys())
-            ->whereIn('status', [ReservationStatus::Confirmed, ReservationStatus::PendingDeposit, ReservationStatus::Seated])
+            ->where(fn ($query) => $query
+                ->whereIn('status', [ReservationStatus::Confirmed, ReservationStatus::Seated])
+                // An unpaid deposit only holds the table while its hold lasts.
+                ->orWhere(fn ($pending) => $pending
+                    ->where('status', ReservationStatus::PendingDeposit)
+                    ->where(fn ($held) => $held
+                        ->where('created_at', '>=', $this->hold->cutoff())
+                        ->orWhere('deposit_status', PaymentStatus::Paid))))
             ->where('starts_at', '<', $to)
             ->where('ends_at', '>', $from)
             ->when($lock, fn ($query) => $query->lockForUpdate())

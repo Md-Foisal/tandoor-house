@@ -10,7 +10,7 @@ class ChangeTableStatusRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return $this->user()?->can('staff.floor') ?? false;
+        return $this->user()?->can('updateStatus', $this->route('table')) ?? false;
     }
 
     /**

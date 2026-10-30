@@ -1,13 +1,12 @@
-import { Deferred, Head, usePoll } from '@inertiajs/react';
-import { useEffect } from 'react';
+import { Deferred, Head } from '@inertiajs/react';
 import { EmberLine } from '@/components/brand/ember-line';
-import { useOnline } from '@/components/brand/states';
 import { MenuErrorBoundary } from '@/components/menu-page/menu-error-boundary';
 import { OrderBar } from '@/components/table/order-bar';
 import { SentOrders } from '@/components/table/sent-orders';
 import { TableMenu, TableMenuSkeleton } from '@/components/table/table-menu';
 import type { TableShowProps } from '@/components/table/types';
 import { useT } from '@/lib/i18n';
+import { events, useLive } from '@/lib/realtime';
 
 const POLL_MS = 15_000;
 
@@ -20,23 +19,11 @@ export default function TableShow({
     requests,
 }: TableShowProps) {
     const t = useT();
-    const online = useOnline();
-    const poll = usePoll(
-        POLL_MS,
-        { only: ['orders', 'requests'] },
-        { autoStart: false },
-    );
-
-    useEffect(() => {
-        if (online) {
-            poll.start();
-        } else {
-            poll.stop();
-        }
-
-        return poll.stop;
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [online]);
+    useLive(['orders', 'requests'], {
+        channel: null,
+        events: [events.tableRequestRaised],
+        fallbackMs: POLL_MS,
+    });
 
     return (
         <>

@@ -4,6 +4,7 @@ namespace App\Actions\Floor;
 
 use App\Enums\ReservationStatus;
 use App\Enums\TableStatus;
+use App\Events\ReservationUpdated;
 use App\Models\DiningTable;
 use App\Models\Reservation;
 use App\Models\User;
@@ -70,6 +71,8 @@ class SeatReservation
                 'table' => $table->label,
                 'party_size' => $reservation->party_size,
             ], $by);
+
+            ReservationUpdated::dispatch($reservation);
 
             return $reservation;
         });

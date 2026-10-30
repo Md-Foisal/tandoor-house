@@ -1,4 +1,5 @@
 import type { AllergenCode } from '@/components/brand/allergen-icon';
+import type { MenuImage } from '@/lib/media';
 import type { MenuItem } from '@/types';
 
 export type BasketChannel = 'delivery' | 'pickup' | 'dine_in';
@@ -17,7 +18,7 @@ export type BasketLineData = {
     unit_price: number;
     total: number;
     allergens: AllergenCode[];
-    image: string;
+    image: MenuImage;
     is_available: boolean;
     is_alcoholic: boolean;
 };

@@ -11,11 +11,7 @@ class TransitionReservationRequest extends FormRequest
 
     public function authorize(): bool
     {
-        if (! ($this->user()?->can('staff.reservations') ?? false)) {
-            return false;
-        }
-
-        return $this->input('action') !== 'confirm' || $this->user()->role->isManagement();
+        return $this->user()?->can('staff.reservations.transition', [$this->route('reservation'), $this->input('action')]) ?? false;
     }
 
     /**

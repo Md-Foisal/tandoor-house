@@ -3,7 +3,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useT } from '@/lib/i18n';
-import { Field } from './field';
+import { Field } from '@/components/form/field';
 import type { BookingForm } from './types';
 
 export function DetailsForm({
@@ -36,6 +36,7 @@ export function DetailsForm({
                 </p>
             )}
             <Field
+                idPrefix="book"
                 name="name"
                 label={t('booking.details.name')}
                 error={errors.name}
@@ -53,6 +54,7 @@ export function DetailsForm({
                 )}
             </Field>
             <Field
+                idPrefix="book"
                 name="email"
                 label={t('booking.details.email')}
                 hint={t('booking.details.email_hint')}
@@ -73,6 +75,7 @@ export function DetailsForm({
                 )}
             </Field>
             <Field
+                idPrefix="book"
                 name="phone"
                 label={t('booking.details.phone')}
                 hint={t('booking.details.phone_hint')}
@@ -93,6 +96,7 @@ export function DetailsForm({
                 )}
             </Field>
             <Field
+                idPrefix="book"
                 name="occasion"
                 label={`${t('booking.details.occasion')} (${t('booking.details.occasion_optional').toLowerCase()})`}
                 error={errors.occasion}
@@ -119,6 +123,7 @@ export function DetailsForm({
                 )}
             </Field>
             <Field
+                idPrefix="book"
                 name="notes"
                 label={t('booking.details.notes')}
                 hint={t('booking.details.notes_hint')}

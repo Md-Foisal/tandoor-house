@@ -23,4 +23,6 @@ Route::prefix('team')->name('team.')->group(function () {
     Route::patch('/attendance/{attendance}', [AttendanceController::class, 'fix'])->name('attendance.fix');
 
     Route::get('/tips/export', [TipsController::class, 'export'])->name('tips.export');
+    Route::post('/tips/record', [TipsController::class, 'record'])->name('tips.record')->middleware('throttle:staff-sensitive');
+    Route::post('/tips/pay', [TipsController::class, 'pay'])->name('tips.pay')->middleware('throttle:staff-sensitive');
 });

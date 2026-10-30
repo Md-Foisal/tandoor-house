@@ -1,4 +1,4 @@
-import { Head, router, usePoll } from '@inertiajs/react';
+import { Head, router } from '@inertiajs/react';
 import { Moon, Sun, UtensilsCrossed } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
@@ -27,6 +27,7 @@ import {
 } from '@/components/ui/dialog';
 import { setKitchenTheme } from '@/layouts/kitchen-layout';
 import { useT } from '@/lib/i18n';
+import { channels, events, useLive } from '@/lib/realtime';
 
 const clockFormat = new Intl.DateTimeFormat(DISPLAY_LOCALE, {
     hour: '2-digit',
@@ -97,28 +98,16 @@ export default function Kitchen({
             : document.documentElement.classList.contains('dark'),
     );
 
-    const { start: startPoll, stop: stopPoll } = usePoll(
-        POLL_MS,
-        { only: PROPS },
-        { autoStart: false },
-    );
-    const pollControls = useRef({ startPoll, stopPoll });
-
-    useEffect(() => {
-        pollControls.current = { startPoll, stopPoll };
+    useLive(PROPS, {
+        channel: channels.staffKitchen,
+        events: [
+            events.orderPlaced,
+            events.orderStatusChanged,
+            events.kitchenLineUpdated,
+        ],
+        fallbackMs: POLL_MS,
+        debounceMs: 150,
     });
-
-    useEffect(() => {
-        const controls = pollControls.current;
-
-        if (online) {
-            controls.startPoll();
-        } else {
-            controls.stopPoll();
-        }
-
-        return () => pollControls.current.stopPoll();
-    }, [online]);
 
     useEffect(() => {
         const offs = [

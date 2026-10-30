@@ -10,6 +10,7 @@ use App\Http\Requests\Staff\Menu\MoveCategoryRequest;
 use App\Http\Requests\Staff\Menu\SaveCategoryRequest;
 use App\Models\Category;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 
 class CategoryController extends Controller
@@ -30,6 +31,8 @@ class CategoryController extends Controller
 
     public function destroy(Category $category, DeleteCategory $action): RedirectResponse
     {
+        Gate::authorize('delete', $category);
+
         $name = $category->name;
         $action->handle($category, request()->user());
 

@@ -11,6 +11,7 @@ use App\Http\Requests\Checkout\PostcodeRequest;
 use App\Http\Requests\Checkout\PromoRequest;
 use App\Models\DiningTable;
 use App\Models\PromoCode;
+use App\Payments\PaymentPageProps;
 use App\Services\CartService;
 use App\Support\Money;
 use App\Support\Settings;
@@ -69,6 +70,7 @@ class CheckoutController extends Controller
                 'marketing_opt_in' => false,
             ],
             'tipPresets' => array_values((array) $settings->get('tip_presets')),
+            'paymentDriver' => PaymentPageProps::driver(),
             'serviceChargeRate' => (int) $settings->get('service_charge_rate'),
         ]);
     }
@@ -146,6 +148,10 @@ class CheckoutController extends Controller
         $this->cart->useChannel($channel, $table);
 
         $order = $placeOrder->handle($request->validated(), $request->user());
+
+        if (PaymentPageProps::isOnline($order->payment_method)) {
+            return redirect()->route('orders.pay', $order->number);
+        }
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __('checkout.placed', ['number' => $order->number])]);
 

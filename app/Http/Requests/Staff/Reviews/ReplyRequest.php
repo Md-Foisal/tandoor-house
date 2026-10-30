@@ -10,7 +10,7 @@ class ReplyRequest extends FormRequest
 
     public function authorize(): bool
     {
-        return $this->user()?->can('staff.reviews') ?? false;
+        return $this->user()?->can('reply', $this->route('review')) ?? false;
     }
 
     protected function prepareForValidation(): void

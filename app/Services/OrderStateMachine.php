@@ -5,6 +5,8 @@ namespace App\Services;
 use App\Enums\LineStatus;
 use App\Enums\OrderChannel;
 use App\Enums\OrderStatus;
+use App\Events\KitchenLineUpdated;
+use App\Events\OrderStatusChanged;
 use App\Models\Order;
 use App\Models\OrderLine;
 use App\Models\User;
@@ -89,6 +91,8 @@ class OrderStateMachine
 
             $locked->events()->create(['from' => $from, 'to' => $to, 'user_id' => $by?->id]);
 
+            OrderStatusChanged::dispatch($locked, $from, $to);
+
             return $order->setRawAttributes($locked->getAttributes(), true);
         });
     }
@@ -112,6 +116,8 @@ class OrderStateMachine
             }
 
             $line->forceFill(['status' => LineStatus::Ready, 'bumped_at' => now()])->save();
+
+            KitchenLineUpdated::dispatch($line, $order);
 
             if (! $order->lines()->where('status', '!=', LineStatus::Ready)->exists()) {
                 $this->transition($order->refresh(), OrderStatus::Ready, $by);
@@ -143,9 +149,13 @@ class OrderStateMachine
 
             $line->forceFill(['status' => LineStatus::Cooking, 'bumped_at' => null])->save();
 
+            KitchenLineUpdated::dispatch($line, $order);
+
             if ($order->status === OrderStatus::Ready) {
                 $order->forceFill(['status' => OrderStatus::Cooking, 'ready_at' => null])->save();
                 $order->events()->create(['from' => OrderStatus::Ready, 'to' => OrderStatus::Cooking, 'user_id' => $by?->id]);
+
+                OrderStatusChanged::dispatch($order, OrderStatus::Ready, OrderStatus::Cooking);
             }
 
             return $line;

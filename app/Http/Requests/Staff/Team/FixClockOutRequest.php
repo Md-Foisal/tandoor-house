@@ -8,7 +8,7 @@ class FixClockOutRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return $this->user()?->can('staff.team') ?? false;
+        return $this->user()?->can('fix', $this->route('attendance')) ?? false;
     }
 
     /**

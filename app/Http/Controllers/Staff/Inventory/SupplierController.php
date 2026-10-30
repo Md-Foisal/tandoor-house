@@ -6,18 +6,18 @@ use App\Enums\PurchaseOrderStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Staff\Inventory\SupplierRequest;
 use App\Models\Supplier;
-use App\Policies\InventoryPolicy;
 use App\Support\ActivityRecorder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class SupplierController extends Controller
 {
-    public function index(Request $request, InventoryPolicy $policy): Response
+    public function index(Request $request): Response
     {
-        abort_unless($policy->manage($request->user()), 403);
+        Gate::authorize('viewAny', Supplier::class);
 
         return Inertia::render('staff/inventory/suppliers', [
             'abilities' => InventoryData::abilities($request->user()),

@@ -46,6 +46,7 @@ export type ItemFormData = {
     is_available: boolean;
     service_periods: Period[];
     photo: File | null;
+    remove_photo: boolean;
     variants: VariantForm[];
     modifier_groups: GroupForm[];
 };
@@ -101,6 +102,7 @@ export function initialData(
         is_available: item?.is_available ?? true,
         service_periods: item?.service_periods ?? [],
         photo: null,
+        remove_photo: false,
         variants: (item?.variants ?? []).map((v) => ({
             key: newKey(),
             id: v.id,
@@ -151,6 +153,7 @@ export function toPayload(data: ItemFormData) {
         is_available: data.is_available,
         service_periods: data.service_periods,
         photo: data.photo,
+        remove_photo: data.remove_photo,
         variants: data.variants.map((v) => ({
             id: v.id,
             name: v.name,

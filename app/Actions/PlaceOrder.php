@@ -7,11 +7,13 @@ use App\Enums\OrderChannel;
 use App\Enums\OrderStatus;
 use App\Enums\PaymentMethod;
 use App\Enums\PaymentStatus;
+use App\Events\OrderPlaced;
 use App\Models\DiningTable;
 use App\Models\MenuItem;
 use App\Models\Order;
 use App\Models\PromoCode;
 use App\Models\User;
+use App\Payments\PaymentPageProps;
 use App\Services\CartService;
 use App\Services\Pricing;
 use App\Support\GuestOrders;
@@ -119,6 +121,11 @@ class PlaceOrder
             }
 
             $order->events()->create(['from' => null, 'to' => OrderStatus::Placed, 'user_id' => $user?->id]);
+
+            // Card orders reach the kitchen once paid (AnnounceOrderPaid).
+            if (! PaymentPageProps::isOnline($order->payment_method)) {
+                OrderPlaced::dispatch($order);
+            }
 
             return $order;
         });

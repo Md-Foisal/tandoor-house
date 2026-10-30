@@ -1,6 +1,7 @@
-import { Head, Link, router, usePoll } from '@inertiajs/react';
+import { Head, Link, router } from '@inertiajs/react';
 import {
     ArrowLeft,
+    Banknote,
     Download,
     MapPin,
     Pencil,
@@ -8,7 +9,7 @@ import {
     Printer,
     RotateCcw,
 } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
+import { useState } from 'react';
 import { useOnline } from '@/components/brand/states';
 import { Elapsed } from '@/components/staff/elapsed';
 import { StaffPageHeader } from '@/components/staff/page-header';
@@ -27,6 +28,7 @@ import {
 import { EditDialog } from '@/components/staff-orders/edit-dialog';
 import { OrderActions } from '@/components/staff-orders/order-actions';
 import { PaymentLine } from '@/components/staff-orders/order-card';
+import { TakePaymentDialog } from '@/components/staff-orders/take-payment-dialog';
 import { RefundDialog } from '@/components/staff-orders/refund-dialog';
 import {
     isLive,
@@ -34,10 +36,13 @@ import {
     type OrderDetailData,
 } from '@/components/staff-orders/types';
 import { useT } from '@/lib/i18n';
+import { channels, events, useLive } from '@/lib/realtime';
 import { formatMoney } from '@/lib/money';
 import { cn } from '@/lib/utils';
 import { AlertTriangle, IdCard } from 'lucide-react';
 import { formatStamp } from '@/components/staff-orders/format';
+
+const PAUSED_MS = 2_147_483_647;
 
 function Panel({
     title,
@@ -76,26 +81,16 @@ export default function OrderShow({
     const online = useOnline();
     const [editing, setEditing] = useState(false);
     const [refunding, setRefunding] = useState(false);
-    const poll = usePoll(
-        5_000,
-        { only: ['order', 'abilities'] },
-        { autoStart: false },
-    );
+    const [taking, setTaking] = useState(false);
+    const paused = editing || refunding || taking;
 
-    const pollRef = useRef(poll);
-    pollRef.current = poll;
-
-    useEffect(() => {
-        const current = pollRef.current;
-
-        if (online && !editing && !refunding) {
-            current.start();
-        } else {
-            current.stop();
-        }
-
-        return current.stop;
-    }, [online, editing, refunding]);
+    // useLive cannot be paused, so while a dialog is open it listens to
+    // nothing and its fallback poll is pushed out of reach.
+    useLive(['order', 'abilities'], {
+        channel: paused ? null : channels.staffOrders,
+        events: [events.orderStatusChanged, events.riderAssigned],
+        fallbackMs: paused ? PAUSED_MS : 5_000,
+    });
 
     const live = isLive(order.status);
     const totals = order.totals;
@@ -337,6 +332,22 @@ export default function OrderShow({
                                 ))}
                             </ul>
                         )}
+                        {abilities.take_payment && (
+                            <Button
+                                size="lg"
+                                className="mt-4 mr-2"
+                                disabled={!online}
+                                title={
+                                    !online
+                                        ? t('staff_orders.offline_reason')
+                                        : undefined
+                                }
+                                onClick={() => setTaking(true)}
+                            >
+                                <Banknote aria-hidden="true" />
+                                {t('staff_orders.take_payment.button')}
+                            </Button>
+                        )}
                         {abilities.refund && (
                             <Button
                                 variant="outline"
@@ -508,6 +519,14 @@ export default function OrderShow({
                     order={order}
                     open={editing}
                     onOpenChange={setEditing}
+                />
+            )}
+            {abilities.take_payment && abilities.payment_due !== null && (
+                <TakePaymentDialog
+                    number={order.number}
+                    amount={abilities.payment_due}
+                    open={taking}
+                    onOpenChange={setTaking}
                 />
             )}
             {abilities.refund && (

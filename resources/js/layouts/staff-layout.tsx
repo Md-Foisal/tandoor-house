@@ -47,6 +47,7 @@ import {
     SidebarTrigger,
 } from '@/components/ui/sidebar';
 import { useT } from '@/lib/i18n';
+import { useConnectionState } from '@/lib/realtime';
 import type { StaffArea } from '@/types';
 
 type AreaLink = { area: StaffArea; href: string; icon: LucideIcon };
@@ -74,6 +75,30 @@ export const staffLinks: { service: AreaLink[]; backOffice: AreaLink[] } = {
         { area: 'settings', href: '/staff/settings', icon: Settings },
     ],
 };
+
+function LiveStatus() {
+    const t = useT();
+    const connection = useConnectionState();
+
+    if (connection === 'disabled' || connection === 'offline') {
+        return null;
+    }
+
+    const live = connection === 'live';
+
+    return (
+        <span
+            role="status"
+            className="ml-auto flex items-center gap-1.5 text-xs text-ink-muted"
+        >
+            <span
+                aria-hidden="true"
+                className={`size-2 rounded-full ${live ? 'bg-leaf' : 'bg-turmeric'}`}
+            />
+            {t(live ? 'staff.live.on' : 'staff.live.reconnecting')}
+        </span>
+    );
+}
 
 function isActive(url: string, href: string): boolean {
     const path = url.split('?')[0] ?? url;
@@ -155,6 +180,9 @@ export default function StaffLayout({ children }: { children: ReactNode }) {
                     />
                 </SidebarContent>
                 <SidebarFooter>
+                    <div className="hidden px-2 group-data-[collapsible=icon]:hidden md:flex">
+                        <LiveStatus />
+                    </div>
                     <SidebarMenu>
                         <SidebarMenuItem>
                             <DropdownMenu>
@@ -228,6 +256,7 @@ export default function StaffLayout({ children }: { children: ReactNode }) {
                         aria-label={t('staff.open_menu')}
                     />
                     <span className="font-display text-lg">{name}</span>
+                    <LiveStatus />
                 </header>
                 <main id="main" className="flex min-w-0 flex-1 flex-col">
                     {children}

@@ -73,6 +73,10 @@ for (const theme of themes) {
                 deviceScaleFactor: 1,
                 storageState: email === null ? undefined : sessions.get(email),
             });
+            // Laravel Herd injects its own dev toolbar; this flag stops it mounting.
+            await context.addInitScript(() => {
+                window.__HERD_STUDIO__ = true;
+            });
             const page = await context.newPage();
 
             page.on('console', (message) => {

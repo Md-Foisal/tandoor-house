@@ -1,3 +1,5 @@
+import type { PaymentPanelProps } from '@/components/payments/types';
+
 export type Slot = { time: string; available: boolean };
 
 export type DayStatus = 'open' | 'closed' | 'late';
@@ -59,4 +61,36 @@ export type ReservationView = {
     notes: string | null;
 };
 
-export type ShowProps = { reservation: ReservationView };
+export type CancelTerms = {
+    allowed: boolean;
+    free: boolean;
+    hours: number;
+    deadline_label: string;
+    deposit_paid: number;
+};
+
+export type PendingPay = {
+    url: string;
+    expires_at: string;
+    expired: boolean;
+};
+
+export type ShowProps = {
+    reservation: ReservationView;
+    cancel: CancelTerms;
+    pay: PendingPay | null;
+};
+
+export type PayProps = {
+    reservation: {
+        reference: string;
+        party_size: number;
+        date_label: string;
+        time: string;
+        deposit: number;
+    };
+    payment: PaymentPanelProps | null;
+    declined: string | null;
+    hold: { expires_at: string; expired: boolean };
+    urls: { booking: string; new: string };
+};

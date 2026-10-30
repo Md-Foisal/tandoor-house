@@ -4,6 +4,7 @@ namespace App\Actions\Floor;
 
 use App\Enums\TableRequestType;
 use App\Enums\TableStatus;
+use App\Events\TableRequestRaised;
 use App\Models\DiningTable;
 use App\Models\TableRequest;
 use App\Models\User;
@@ -28,6 +29,8 @@ class HandleTableRequest
             if ($request->type === TableRequestType::Bill && $table->status === TableStatus::Seated) {
                 $table->forceFill(['status' => TableStatus::BillRequested])->save();
             }
+
+            TableRequestRaised::dispatch($request);
 
             return $request;
         });

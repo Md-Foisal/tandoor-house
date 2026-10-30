@@ -1,4 +1,5 @@
 import type { AllergenCode } from '@/components/brand/allergen-icon';
+import type { MenuImage } from '@/lib/media';
 
 export type Variant = {
     id: number;
@@ -41,8 +42,8 @@ export type MenuItem = {
     allergens: AllergenCode[];
     /** Allergens that only some options add, e.g. milk in the chai. */
     option_allergens?: AllergenCode[];
-    /** Media manifest key. */
-    image: string;
+    /** Media manifest key, or the converted upload when staff added a photo. */
+    image: MenuImage;
     has_options: boolean;
     variants?: Variant[];
     modifier_groups?: ModifierGroup[];

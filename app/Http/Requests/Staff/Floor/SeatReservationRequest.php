@@ -8,7 +8,7 @@ class SeatReservationRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return $this->user()?->can('staff.floor') ?? false;
+        return $this->user()?->can('staff.reservations.seat', $this->route('reservation')) ?? false;
     }
 
     /**

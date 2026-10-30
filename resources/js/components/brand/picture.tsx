@@ -1,11 +1,13 @@
 import { motion, useReducedMotion } from 'motion/react';
 import { useEffect, useRef, useState } from 'react';
 import { LogoMark } from '@/components/brand/logo';
-import { getImage, srcSet } from '@/lib/media';
+import { resolveImage, srcSet } from '@/lib/media';
+import type { MenuImage } from '@/lib/media';
 import { cn } from '@/lib/utils';
 
 type Props = {
-    mediaKey: string;
+    /** Manifest key, or an uploaded photo object, which is used as-is. */
+    mediaKey: MenuImage;
     alt?: string;
     sizes?: string;
     priority?: boolean;
@@ -27,7 +29,7 @@ export function Picture({
     steam = false,
     className,
 }: Props) {
-    const image = getImage(mediaKey);
+    const image = resolveImage(mediaKey);
     const reduced = useReducedMotion();
     const [loaded, setLoaded] = useState(priority);
     const ref = useRef<HTMLImageElement>(null);
@@ -44,6 +46,7 @@ export function Picture({
     }
 
     const largest = image.sources.webp[image.sources.webp.length - 1];
+    const avif = image.sources.avif;
     const clearing = steam && !reduced && !priority;
 
     return (
@@ -55,11 +58,9 @@ export function Picture({
                 backgroundPosition: 'center',
             }}
         >
-            <source
-                type="image/avif"
-                srcSet={srcSet(image.sources.avif)}
-                sizes={sizes}
-            />
+            {avif.length > 0 && (
+                <source type="image/avif" srcSet={srcSet(avif)} sizes={sizes} />
+            )}
             <source
                 type="image/webp"
                 srcSet={srcSet(image.sources.webp)}

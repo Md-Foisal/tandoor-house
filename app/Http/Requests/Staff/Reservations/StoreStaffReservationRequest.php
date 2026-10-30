@@ -15,7 +15,7 @@ class StoreStaffReservationRequest extends StoreReservationRequest
 {
     public function authorize(): bool
     {
-        return $this->user()?->can('staff.reservations') ?? false;
+        return $this->user()?->can('staff.reservations.book') ?? false;
     }
 
     /**

@@ -41,7 +41,7 @@ class TeamController extends Controller
             'people' => fn () => $tab === 'people' ? $this->people($actor, $report, $current) : null,
             'rota' => fn () => $tab === 'rota' ? $rota->build($week, $actor) : null,
             'attendance' => fn () => $tab === 'attendance' ? $report->build($week) : null,
-            'tips' => fn () => $tab === 'tips' ? self::split($tips, $report, $week) : null,
+            'tips' => fn () => $tab === 'tips' ? TipsController::overview($actor, $tips, $report, $week) : null,
         ]);
     }
 

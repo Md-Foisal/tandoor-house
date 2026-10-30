@@ -4,11 +4,14 @@ namespace App\Http\Controllers;
 
 use App\Enums\PaymentStatus;
 use App\Enums\ReservationStatus;
+use App\Events\ReservationUpdated;
 use App\Http\Requests\Reservations\StoreReservationRequest;
 use App\Models\Reservation;
 use App\Policies\ReservationPolicy;
+use App\Services\ReservationCancellation;
 use App\Services\TableAvailability;
 use App\Support\CodeGenerator;
+use App\Support\DepositHold;
 use App\Support\Settings;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\JsonResponse;
@@ -100,6 +103,8 @@ class ReservationController extends Controller
             ]);
         });
 
+        ReservationUpdated::dispatch($reservation);
+
         if ($request->boolean('marketing_opt_in') && $request->user() !== null) {
             $request->user()->update(['marketing_opt_in' => true]);
         }
@@ -109,16 +114,26 @@ class ReservationController extends Controller
             $reservation->reference,
         ])));
 
-        Inertia::flash('toast', [
-            'type' => 'success',
-            'message' => __($deposit > 0 ? 'booking.flash.pending_deposit' : 'booking.flash.confirmed'),
-        ]);
+        if ($deposit > 0) {
+            return redirect()->route('book.pay', $reservation);
+        }
+
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('booking.flash.confirmed')]);
 
         return redirect()->route('book.show', $reservation);
     }
 
-    public function show(Reservation $reservation, Settings $settings): Response
+    public function show(Request $request, Reservation $reservation, Settings $settings, ReservationCancellation $cancellation, DepositHold $hold): Response
     {
+        // A valid signed link (from the confirmation email) opens the booking
+        // in any browser; remembering it lets the same guest pay or cancel.
+        if ($request->hasValidSignature()) {
+            $request->session()->put(ReservationPolicy::SESSION_KEY, array_values(array_unique([
+                ...(array) $request->session()->get(ReservationPolicy::SESSION_KEY, []),
+                $reservation->reference,
+            ])));
+        }
+
         Gate::authorize('view', $reservation);
 
         $reservation->load('diningTable');
@@ -142,6 +157,14 @@ class ReservationController extends Controller
                 'occasion' => $this->occasionLabel($reservation->occasion),
                 'notes' => $reservation->notes,
             ],
+            'pay' => $reservation->status === ReservationStatus::PendingDeposit && $reservation->deposit_status !== PaymentStatus::Paid
+                ? [
+                    'url' => route('book.pay', $reservation),
+                    'expires_at' => $hold->until($reservation)->toIso8601String(),
+                    'expired' => $hold->expired($reservation),
+                ]
+                : null,
+            'cancel' => $cancellation->terms($reservation, Gate::allows('cancel', $reservation)),
         ]);
     }
 

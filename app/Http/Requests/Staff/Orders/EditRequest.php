@@ -8,7 +8,7 @@ class EditRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return $this->user()?->can('staff.orders') ?? false;
+        return $this->user()?->can('staff.orders.edit', $this->route('order')) ?? false;
     }
 
     /**

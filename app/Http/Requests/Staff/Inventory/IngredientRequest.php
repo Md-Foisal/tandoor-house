@@ -2,17 +2,17 @@
 
 namespace App\Http\Requests\Staff\Inventory;
 
-use App\Policies\InventoryPolicy;
+use App\Models\Ingredient;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
 class IngredientRequest extends FormRequest
 {
-    public function authorize(InventoryPolicy $policy): bool
+    public function authorize(): bool
     {
-        $user = $this->user();
-
-        return $user !== null && $user->can('staff.inventory') && $policy->manage($user);
+        return ($ingredient = $this->route('ingredient')) instanceof Ingredient
+            ? ($this->user()?->can('update', $ingredient) ?? false)
+            : ($this->user()?->can('create', Ingredient::class) ?? false);
     }
 
     /**

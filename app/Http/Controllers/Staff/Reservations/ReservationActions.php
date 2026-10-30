@@ -6,6 +6,7 @@ use App\Actions\Floor\SeatReservation;
 use App\Enums\PaymentStatus;
 use App\Enums\ReservationStatus;
 use App\Enums\TableStatus;
+use App\Events\ReservationUpdated;
 use App\Models\Reservation;
 use App\Models\User;
 use App\Support\ActivityRecorder;
@@ -39,6 +40,11 @@ class ReservationActions
                 'cancel' => $this->cancel($reservation, $user, (string) $reason),
                 default => throw new InvalidArgumentException("Unknown reservation action [{$action}]."),
             };
+
+            // SeatReservation announces its own change.
+            if ($action !== 'seat') {
+                ReservationUpdated::dispatch($reservation);
+            }
         });
     }
 

@@ -9,6 +9,7 @@ use App\Support\ActivityRecorder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 
 class ReviewReplyController extends Controller
@@ -43,6 +44,8 @@ class ReviewReplyController extends Controller
 
     public function destroy(Request $request, Review $review): RedirectResponse
     {
+        Gate::authorize('removeReply', $review);
+
         DB::transaction(function () use ($review, $request) {
             $locked = Review::query()->whereKey($review->id)->lockForUpdate()->firstOrFail();
 
