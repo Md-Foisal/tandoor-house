@@ -365,3 +365,67 @@ it('exports the tips split', function () {
 
     expect($response->streamedContent())->toContain('Asha,Waiter,4.00,3.33');
 });
+
+it('leaves the phone alone when an update does not mention it', function () {
+    $manager = teamUser(Role::Manager);
+    $waiter = teamUser(Role::Waiter);
+    $waiter->forceFill(['phone' => '07700 900123'])->save();
+
+    $this->actingAs($manager)->patch("/staff/team/people/{$waiter->id}", ['role' => 'cashier'])->assertSessionHasNoErrors();
+    expect($waiter->refresh()->phone)->toBe('07700 900123')->and($waiter->role)->toBe(Role::Cashier);
+
+    $this->actingAs($manager)->patch("/staff/team/people/{$waiter->id}", ['phone' => null])->assertSessionHasNoErrors();
+    expect($waiter->refresh()->phone)->toBeNull();
+});
+
+it('lets managers roster front-line staff and themselves but not managers or owners', function (Role $target) {
+    $manager = teamUser(Role::Manager);
+    $person = teamUser($target);
+    $body = ['user_id' => $person->id, 'date' => '2026-10-29', 'start' => '17:00', 'end' => '22:00', 'role' => $target->value];
+
+    $this->actingAs($manager)->post('/staff/team/shifts', $body)->assertForbidden();
+
+    $existing = shiftFor($person, '2026-10-30 17:00', '2026-10-30 22:00');
+    $this->actingAs($manager)->patch("/staff/team/shifts/{$existing->id}", [...$body, 'date' => '2026-10-30'])->assertForbidden();
+    $this->actingAs($manager)->delete("/staff/team/shifts/{$existing->id}")->assertForbidden();
+
+    expect(Shift::count())->toBe(1);
+})->with([Role::Owner, Role::Manager]);
+
+it('lets managers roster themselves and owners roster anyone', function () {
+    $manager = teamUser(Role::Manager);
+    $owner = teamUser(Role::Owner);
+
+    $this->actingAs($manager)->post('/staff/team/shifts', [
+        'user_id' => $manager->id, 'date' => '2026-10-29', 'start' => '17:00', 'end' => '22:00', 'role' => 'manager',
+    ])->assertSessionHasNoErrors();
+
+    $this->actingAs($owner)->post('/staff/team/shifts', [
+        'user_id' => $manager->id, 'date' => '2026-10-30', 'start' => '17:00', 'end' => '22:00', 'role' => 'manager',
+    ])->assertSessionHasNoErrors();
+
+    expect(Shift::count())->toBe(2);
+});
+
+it('skips shifts a manager may not copy and lets owners copy everything', function () {
+    $manager = teamUser(Role::Manager);
+    $owner = teamUser(Role::Owner);
+    $waiter = teamUser(Role::Waiter);
+    shiftFor($waiter, '2026-10-20 17:00', '2026-10-20 22:00');
+    shiftFor($owner, '2026-10-21 17:00', '2026-10-21 22:00');
+
+    $this->actingAs($manager)->post('/staff/team/shifts/copy-week', ['week' => '2026-10-26'])->assertRedirect();
+    expect(Shift::where('starts_at', '>=', '2026-10-26')->pluck('user_id')->all())->toBe([$waiter->id]);
+
+    $this->actingAs($owner)->post('/staff/team/shifts/copy-week', ['week' => '2026-10-26'])->assertRedirect();
+    expect(Shift::where('user_id', $owner->id)->where('starts_at', '>=', '2026-10-26')->count())->toBe(1);
+});
+
+it('flags on the rota which people the viewer may roster', function () {
+    $manager = teamUser(Role::Manager);
+    $owner = teamUser(Role::Owner);
+
+    $this->actingAs($manager)->get('/staff/team?tab=rota')->assertInertia(fn ($page) => $page
+        ->where('rota.people', fn ($people) => collect($people)->firstWhere('id', $owner->id)['can_roster'] === false
+            && collect($people)->firstWhere('id', $manager->id)['can_roster'] === true));
+});

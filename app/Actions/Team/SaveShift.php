@@ -5,14 +5,19 @@ namespace App\Actions\Team;
 use App\Enums\Role;
 use App\Models\Shift;
 use App\Models\User;
+use App\Support\ActivityRecorder;
 use Carbon\CarbonImmutable;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
 class SaveShift
 {
     public const MAX_HOURS = 16;
 
-    public function __construct(private readonly ShiftWarnings $warnings) {}
+    public function __construct(
+        private readonly ShiftWarnings $warnings,
+        private readonly ActivityRecorder $activity,
+    ) {}
 
     /**
      * @param  array<string, mixed>  $data
@@ -20,11 +25,30 @@ class SaveShift
      */
     public function __invoke(User $actor, array $data, ?Shift $shift = null): array
     {
-        $person = User::query()->findOrFail((int) $data['user_id']);
+        return DB::transaction(function () use ($actor, $data, $shift): array {
+            // Locking the person serialises their rota edits, so two requests cannot both pass the clash check.
+            $person = User::query()->whereKey((int) $data['user_id'])->lockForUpdate()->firstOrFail();
 
+            if ($shift !== null) {
+                $shift = Shift::query()->whereKey($shift->id)->lockForUpdate()->firstOrFail();
+                abort_unless(TeamRules::canRoster($actor, $shift->user()->firstOrFail()), 403);
+            }
+
+            return $this->save($actor, $person, $data, $shift);
+        });
+    }
+
+    /**
+     * @param  array<string, mixed>  $data
+     * @return array{shift: Shift, outside_hours: bool}
+     */
+    private function save(User $actor, User $person, array $data, ?Shift $shift): array
+    {
         if (! $person->role->isStaff()) {
             throw ValidationException::withMessages(['user_id' => __('staff_team.errors.not_staff')]);
         }
+
+        abort_unless(TeamRules::canRoster($actor, $person), 403);
 
         [$start, $end] = self::window((string) $data['date'], (string) $data['start'], (string) $data['end']);
 
@@ -53,11 +77,11 @@ class SaveShift
             'notes' => isset($data['notes']) ? (string) $data['notes'] : null,
         ])->save();
 
-        TeamActivity::record($isNew ? 'shift.created' : 'shift.updated', $shift, $actor, __($isNew ? 'staff_team.log.shift_created' : 'staff_team.log.shift_updated', [
+        $this->activity->record($isNew ? 'shift.created' : 'shift.updated', __($isNew ? 'staff_team.log.shift_created' : 'staff_team.log.shift_updated', [
             'user' => $actor->name,
             'name' => $person->name,
             'when' => $start->format('D j M H:i').'–'.$end->format('H:i'),
-        ]));
+        ]), $shift, by: $actor);
 
         return ['shift' => $shift, 'outside_hours' => $this->warnings->outsideHours($start, $end)];
     }

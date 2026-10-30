@@ -207,3 +207,13 @@ it('keeps clock actions to staff', function () {
     $this->actingAs(User::factory()->create())->post('/staff/clock-in')->assertForbidden();
     expect(Attendance::count())->toBe(0);
 });
+
+it('refuses clocking out twice and records one clock-out', function () {
+    $user = todayStaff(Role::Waiter);
+    $this->actingAs($user)->post('/staff/clock-in');
+
+    $this->actingAs($user)->post('/staff/clock-out')->assertSessionHasNoErrors();
+    $this->actingAs($user)->post('/staff/clock-out')->assertSessionHasErrors('clock');
+
+    expect(ActivityLog::where('event', 'clock_out')->count())->toBe(1);
+});

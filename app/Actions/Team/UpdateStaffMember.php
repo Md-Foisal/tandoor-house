@@ -4,10 +4,13 @@ namespace App\Actions\Team;
 
 use App\Enums\Role;
 use App\Models\User;
+use App\Support\ActivityRecorder;
 use Illuminate\Validation\ValidationException;
 
 class UpdateStaffMember
 {
+    public function __construct(private readonly ActivityRecorder $activity) {}
+
     /**
      * @param  array<string, mixed>  $data
      */
@@ -28,16 +31,19 @@ class UpdateStaffMember
         }
 
         $before = $target->role;
-        $target->phone = isset($data['phone']) ? (string) $data['phone'] : null;
+        if (array_key_exists('phone', $data)) {
+            $target->phone = $data['phone'] === null || $data['phone'] === '' ? null : (string) $data['phone'];
+        }
+
         $target->forceFill(['role' => $newRole])->save();
 
         if ($changesRole) {
-            TeamActivity::record('team.role_changed', $target, $actor, __('staff_team.log.role_changed', [
+            $this->activity->record('team.role_changed', __('staff_team.log.role_changed', [
                 'user' => $actor->name,
                 'name' => $target->name,
                 'from' => $before->label(),
                 'to' => $newRole->label(),
-            ]), ['from' => $before->value, 'to' => $newRole->value]);
+            ]), $target, ['from' => $before->value, 'to' => $newRole->value], $actor);
         }
 
         return $target;

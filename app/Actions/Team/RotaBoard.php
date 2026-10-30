@@ -21,7 +21,7 @@ class RotaBoard
     /**
      * @return array{days: list<array<string, mixed>>, people: array<int, array<string, mixed>>}
      */
-    public function build(WeekRange $week): array
+    public function build(WeekRange $week, ?User $actor = null): array
     {
         $days = [];
 
@@ -58,13 +58,14 @@ class RotaBoard
             ->orderBy('name')
             ->get(['id', 'name', 'role']);
 
-        $rows = $people->map(function (User $person) use ($shifts, $week) {
+        $rows = $people->map(function (User $person) use ($shifts, $week, $actor) {
             $mine = $shifts->where('user_id', $person->id);
 
             return [
                 'id' => $person->id,
                 'name' => $person->name,
                 'role' => $person->role->value,
+                'can_roster' => $actor === null || TeamRules::canRoster($actor, $person),
                 'minutes' => (int) $mine->sum(fn (Shift $s) => WeekReport::minutes($s->starts_at, $s->ends_at)),
                 'days' => collect(range(0, 6))->map(fn (int $i) => $mine
                     ->filter(fn (Shift $s) => $s->starts_at->toDateString() === $week->start->addDays($i)->toDateString())

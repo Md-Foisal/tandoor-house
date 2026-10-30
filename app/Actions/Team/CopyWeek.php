@@ -4,16 +4,29 @@ namespace App\Actions\Team;
 
 use App\Models\Shift;
 use App\Models\User;
+use App\Support\ActivityRecorder;
+use Illuminate\Support\Facades\DB;
 
 class CopyWeek
 {
+    public function __construct(private readonly ActivityRecorder $activity) {}
+
     /**
      * Copies the previous week's shifts into the chosen week, skipping any that
-     * would overlap or that belong to someone no longer on the team.
+     * would overlap, that belong to someone no longer on the team, or that the
+     * actor may not roster.
      *
      * @return array{copied: int, skipped: list<string>}
      */
     public function __invoke(User $actor, WeekRange $week): array
+    {
+        return DB::transaction(fn () => $this->copy($actor, $week));
+    }
+
+    /**
+     * @return array{copied: int, skipped: list<string>}
+     */
+    private function copy(User $actor, WeekRange $week): array
     {
         $source = Shift::query()
             ->with('user:id,name,role')
@@ -22,6 +35,9 @@ class CopyWeek
             ->orderBy('starts_at')
             ->get();
 
+        // One lock on every person being copied keeps concurrent edits from slipping an overlap in.
+        User::query()->whereIn('id', $source->pluck('user_id')->unique())->orderBy('id')->lockForUpdate()->get(['id']);
+
         $copied = 0;
         $skipped = [];
 
@@ -29,7 +45,7 @@ class CopyWeek
             $start = $shift->starts_at->addWeek();
             $end = $shift->ends_at->addWeek();
 
-            if (! $shift->user->role->isStaff() || SaveShift::clash($shift->user_id, $start, $end) !== null) {
+            if (! $shift->user->role->isStaff() || ! TeamRules::canRoster($actor, $shift->user) || SaveShift::clash($shift->user_id, $start, $end) !== null) {
                 $skipped[] = $shift->user->name.' '.$start->format('D H:i');
 
                 continue;
@@ -46,12 +62,12 @@ class CopyWeek
         }
 
         if ($copied > 0 || $skipped !== []) {
-            TeamActivity::record('shift.copied', $actor, $actor, __('staff_team.log.week_copied', [
+            $this->activity->record('shift.copied', __('staff_team.log.week_copied', [
                 'user' => $actor->name,
                 'week' => $week->label(),
                 'count' => $copied,
                 'skipped' => count($skipped),
-            ]), ['week' => $week->start->toDateString(), 'copied' => $copied, 'skipped' => $skipped]);
+            ]), $actor, ['week' => $week->start->toDateString(), 'copied' => $copied, 'skipped' => $skipped], $actor);
         }
 
         return ['copied' => $copied, 'skipped' => $skipped];

@@ -4,11 +4,14 @@ namespace App\Actions\Team;
 
 use App\Models\Attendance;
 use App\Models\User;
+use App\Support\ActivityRecorder;
 use Carbon\CarbonImmutable;
 use Illuminate\Validation\ValidationException;
 
 class FixClockOut
 {
+    public function __construct(private readonly ActivityRecorder $activity) {}
+
     /** A forgotten clock-out can be set up to this long after clocking in. */
     private const MAX_HOURS = 24;
 
@@ -29,12 +32,12 @@ class FixClockOut
 
         $attendance->forceFill(['clocked_out_at' => $out])->save();
 
-        TeamActivity::record('attendance.fixed', $attendance, $actor, __('staff_team.log.clock_out_fixed', [
+        $this->activity->record('attendance.fixed', __('staff_team.log.clock_out_fixed', [
             'user' => $actor->name,
             'name' => $attendance->user->name,
             'time' => $out->format('D j M H:i'),
             'reason' => $reason,
-        ]), ['reason' => $reason, 'clocked_out_at' => $out->toIso8601String()]);
+        ]), $attendance, ['reason' => $reason, 'clocked_out_at' => $out->toIso8601String()], $actor);
 
         return $attendance;
     }

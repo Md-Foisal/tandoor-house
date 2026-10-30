@@ -4,14 +4,16 @@ namespace App\Http\Controllers\Staff\Team;
 
 use App\Actions\Team\CopyWeek;
 use App\Actions\Team\SaveShift;
-use App\Actions\Team\TeamActivity;
+use App\Actions\Team\TeamRules;
 use App\Actions\Team\WeekRange;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Staff\Team\CopyWeekRequest;
 use App\Http\Requests\Staff\Team\SaveShiftRequest;
 use App\Models\Shift;
+use App\Support\ActivityRecorder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 
 class ShiftController extends Controller
@@ -26,16 +28,27 @@ class ShiftController extends Controller
         return $this->saved($save($request->user(), $request->validated(), $shift));
     }
 
-    public function destroy(Request $request, Shift $shift): RedirectResponse
+    public function destroy(Request $request, Shift $shift, ActivityRecorder $activity): RedirectResponse
     {
-        $shift->loadMissing('user');
+        $actor = $request->user() ?? abort(403);
 
-        TeamActivity::record('shift.deleted', $shift, $request->user(), __('staff_team.log.shift_deleted', [
-            'user' => $request->user()->name,
-            'name' => $shift->user->name,
-            'when' => $shift->starts_at->format('D j M H:i').'–'.$shift->ends_at->format('H:i'),
-        ]));
-        $shift->delete();
+        DB::transaction(function () use ($actor, $shift, $activity) {
+            $shift = Shift::query()->whereKey($shift->id)->lockForUpdate()->first();
+
+            if ($shift === null) {
+                return;
+            }
+
+            $person = $shift->user()->firstOrFail();
+            abort_unless(TeamRules::canRoster($actor, $person), 403);
+
+            $activity->record('shift.deleted', __('staff_team.log.shift_deleted', [
+                'user' => $actor->name,
+                'name' => $person->name,
+                'when' => $shift->starts_at->format('D j M H:i').'–'.$shift->ends_at->format('H:i'),
+            ]), $shift, by: $actor);
+            $shift->delete();
+        });
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __('staff_team.toast.shift_deleted')]);
 

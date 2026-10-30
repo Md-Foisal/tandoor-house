@@ -168,14 +168,21 @@ export function ShiftDialog({
                                         <SelectValue />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        {people.map((row) => (
-                                            <SelectItem
-                                                key={row.id}
-                                                value={String(row.id)}
-                                            >
-                                                {row.name}
-                                            </SelectItem>
-                                        ))}
+                                        {people
+                                            .filter(
+                                                (row) =>
+                                                    row.can_roster ||
+                                                    String(row.id) ===
+                                                        data.user_id,
+                                            )
+                                            .map((row) => (
+                                                <SelectItem
+                                                    key={row.id}
+                                                    value={String(row.id)}
+                                                >
+                                                    {row.name}
+                                                </SelectItem>
+                                            ))}
                                     </SelectContent>
                                 </Select>
                             )}

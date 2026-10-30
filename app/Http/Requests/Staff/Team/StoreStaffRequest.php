@@ -5,14 +5,13 @@ namespace App\Http\Requests\Staff\Team;
 use App\Enums\Role;
 use App\Models\User;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
 
 class StoreStaffRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return Gate::allows('staff.team');
+        return $this->user()?->can('staff.team') ?? false;
     }
 
     /**

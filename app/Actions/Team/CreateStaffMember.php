@@ -4,10 +4,13 @@ namespace App\Actions\Team;
 
 use App\Enums\Role;
 use App\Models\User;
+use App\Support\ActivityRecorder;
 use Illuminate\Support\Str;
 
 class CreateStaffMember
 {
+    public function __construct(private readonly ActivityRecorder $activity) {}
+
     /**
      * The password is random and never shown: they set their own from the
      * sign-in page. Phase 5 sends the invite email.
@@ -27,11 +30,11 @@ class CreateStaffMember
         ]);
         $user->forceFill(['role' => $role, 'email_verified_at' => now()])->save();
 
-        TeamActivity::record('team.added', $user, $actor, __('staff_team.log.added', [
+        $this->activity->record('team.added', __('staff_team.log.added', [
             'user' => $actor->name,
             'name' => $user->name,
             'role' => $role->label(),
-        ]), ['role' => $role->value]);
+        ]), $user, ['role' => $role->value], $actor);
 
         return $user;
     }

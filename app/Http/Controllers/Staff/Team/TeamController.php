@@ -39,7 +39,7 @@ class TeamController extends Controller
             'me' => ['id' => $actor->id, 'role' => $actor->role->value],
             'assignable_roles' => array_map(fn (Role $role) => $role->value, TeamRules::assignable($actor)),
             'people' => fn () => $tab === 'people' ? $this->people($actor, $report, $current) : null,
-            'rota' => fn () => $tab === 'rota' ? $rota->build($week) : null,
+            'rota' => fn () => $tab === 'rota' ? $rota->build($week, $actor) : null,
             'attendance' => fn () => $tab === 'attendance' ? $report->build($week) : null,
             'tips' => fn () => $tab === 'tips' ? self::split($tips, $report, $week) : null,
         ]);

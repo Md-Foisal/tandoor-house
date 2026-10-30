@@ -212,32 +212,34 @@ export function RotaTab({
                                                             />
                                                         ),
                                                     )}
-                                                    <Button
-                                                        type="button"
-                                                        variant="ghost"
-                                                        size="sm"
-                                                        className="min-h-11 w-full text-ink-muted"
-                                                        disabled={
-                                                            !context.online
-                                                        }
-                                                        onClick={() =>
-                                                            addFor(
-                                                                person.id,
-                                                                day.date,
-                                                            )
-                                                        }
-                                                    >
-                                                        <Plus aria-hidden="true" />
-                                                        <span className="sr-only">
-                                                            {t(
-                                                                'staff_team.rota.add_for',
-                                                                {
-                                                                    name: person.name,
-                                                                    day: `${day.label} ${day.day}`,
-                                                                },
-                                                            )}
-                                                        </span>
-                                                    </Button>
+                                                    {person.can_roster && (
+                                                        <Button
+                                                            type="button"
+                                                            variant="ghost"
+                                                            size="sm"
+                                                            className="min-h-11 w-full text-ink-muted"
+                                                            disabled={
+                                                                !context.online
+                                                            }
+                                                            onClick={() =>
+                                                                addFor(
+                                                                    person.id,
+                                                                    day.date,
+                                                                )
+                                                            }
+                                                        >
+                                                            <Plus aria-hidden="true" />
+                                                            <span className="sr-only">
+                                                                {t(
+                                                                    'staff_team.rota.add_for',
+                                                                    {
+                                                                        name: person.name,
+                                                                        day: `${day.label} ${day.day}`,
+                                                                    },
+                                                                )}
+                                                            </span>
+                                                        </Button>
+                                                    )}
                                                 </div>
                                             </td>
                                         ))}

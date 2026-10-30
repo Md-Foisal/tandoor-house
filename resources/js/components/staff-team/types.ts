@@ -47,6 +47,7 @@ export type RotaPerson = {
     id: number;
     name: string;
     role: Role;
+    can_roster: boolean;
     minutes: number;
     days: ShiftBlock[][];
 };

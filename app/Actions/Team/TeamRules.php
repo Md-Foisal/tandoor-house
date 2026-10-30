@@ -41,6 +41,12 @@ class TeamRules
         return in_array($target->role, self::FRONT_LINE, true);
     }
 
+    /** Owners roster anyone; managers roster front-line staff and themselves. */
+    public static function canRoster(User $actor, User $person): bool
+    {
+        return $actor->role === Role::Owner || $actor->is($person) || in_array($person->role, self::FRONT_LINE, true);
+    }
+
     /** Removing someone from the team is for owners, never for yourself. */
     public static function canRemove(User $actor, User $target): bool
     {

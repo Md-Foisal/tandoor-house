@@ -3,13 +3,12 @@
 namespace App\Http\Requests\Staff\Team;
 
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Support\Facades\Gate;
 
 class FixClockOutRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return Gate::allows('staff.team');
+        return $this->user()?->can('staff.team') ?? false;
     }
 
     /**
