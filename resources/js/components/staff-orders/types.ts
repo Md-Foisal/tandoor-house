@@ -107,6 +107,8 @@ export type OrderAbilities = {
     edit: boolean;
     refund: boolean;
     refund_limit: number | null;
+    take_payment: boolean;
+    payment_due: number | null;
     assign_rider: boolean;
 };
 

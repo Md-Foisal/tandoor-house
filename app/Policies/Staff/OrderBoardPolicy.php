@@ -55,6 +55,25 @@ class OrderBoardPolicy
     }
 
     /**
+     * Cashiers, managers and owners take any payment; a waiter only on the
+     * tables they serve, so dine-in orders.
+     */
+    public function takePayment(User $user, Order $order): Response
+    {
+        $allowed = match ($user->role) {
+            Role::Cashier, Role::Manager, Role::Owner => true,
+            Role::Waiter => $order->channel === OrderChannel::DineIn,
+            default => false,
+        };
+
+        if (in_array($order->status, [OrderStatus::Rejected, OrderStatus::Cancelled], true)) {
+            return Response::deny(__('staff_orders.take_payment.nothing_due'));
+        }
+
+        return $allowed ? Response::allow() : Response::deny(__('staff_orders.take_payment.not_allowed'));
+    }
+
+    /**
      * Which board steps each role may take. Reject and cancel are the
      * cashier's and above; the two delivery steps belong to riders (through
      * their own screen) and to managers.

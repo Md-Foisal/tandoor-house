@@ -1,6 +1,7 @@
 import { Head, Link, router, usePoll } from '@inertiajs/react';
 import {
     ArrowLeft,
+    Banknote,
     Download,
     MapPin,
     Pencil,
@@ -27,6 +28,7 @@ import {
 import { EditDialog } from '@/components/staff-orders/edit-dialog';
 import { OrderActions } from '@/components/staff-orders/order-actions';
 import { PaymentLine } from '@/components/staff-orders/order-card';
+import { TakePaymentDialog } from '@/components/staff-orders/take-payment-dialog';
 import { RefundDialog } from '@/components/staff-orders/refund-dialog';
 import {
     isLive,
@@ -76,6 +78,7 @@ export default function OrderShow({
     const online = useOnline();
     const [editing, setEditing] = useState(false);
     const [refunding, setRefunding] = useState(false);
+    const [taking, setTaking] = useState(false);
     const poll = usePoll(
         5_000,
         { only: ['order', 'abilities'] },
@@ -88,14 +91,14 @@ export default function OrderShow({
     useEffect(() => {
         const current = pollRef.current;
 
-        if (online && !editing && !refunding) {
+        if (online && !editing && !refunding && !taking) {
             current.start();
         } else {
             current.stop();
         }
 
         return current.stop;
-    }, [online, editing, refunding]);
+    }, [online, editing, refunding, taking]);
 
     const live = isLive(order.status);
     const totals = order.totals;
@@ -337,6 +340,22 @@ export default function OrderShow({
                                 ))}
                             </ul>
                         )}
+                        {abilities.take_payment && (
+                            <Button
+                                size="lg"
+                                className="mt-4 mr-2"
+                                disabled={!online}
+                                title={
+                                    !online
+                                        ? t('staff_orders.offline_reason')
+                                        : undefined
+                                }
+                                onClick={() => setTaking(true)}
+                            >
+                                <Banknote aria-hidden="true" />
+                                {t('staff_orders.take_payment.button')}
+                            </Button>
+                        )}
                         {abilities.refund && (
                             <Button
                                 variant="outline"
@@ -508,6 +527,14 @@ export default function OrderShow({
                     order={order}
                     open={editing}
                     onOpenChange={setEditing}
+                />
+            )}
+            {abilities.take_payment && abilities.payment_due !== null && (
+                <TakePaymentDialog
+                    number={order.number}
+                    amount={abilities.payment_due}
+                    open={taking}
+                    onOpenChange={setTaking}
                 />
             )}
             {abilities.refund && (

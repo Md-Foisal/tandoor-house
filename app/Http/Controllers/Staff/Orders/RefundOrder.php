@@ -7,16 +7,18 @@ use App\Models\Order;
 use App\Models\OrderLine;
 use App\Models\Payment;
 use App\Models\User;
+use App\Payments\Exceptions\PaymentException;
+use App\Payments\Payments;
 use App\Policies\Staff\OrderBoardPolicy;
 use App\Support\ActivityRecorder;
+use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
 /**
- * Records a refund against the order's payments. The gateway call is not made
- * here: the refund is bookkeeping, and card money goes back through the
- * payment provider's dashboard until the gateway is wired up.
+ * Refunds an order through each payment's own gateway (Payments::refund):
+ * card money goes back to the card, venue payments are recorded as cash.
  *
  * Everything the amount depends on (what was paid, what is already refunded,
  * the role's limit) is read again under a row lock, so two refunds at once
@@ -29,6 +31,7 @@ class RefundOrder
     public function __construct(
         private readonly OrderBoardPolicy $policy,
         private readonly ActivityRecorder $activity,
+        private readonly Payments $payments,
     ) {}
 
     /**
@@ -37,7 +40,7 @@ class RefundOrder
      */
     public function __invoke(Order $order, string $kind, ?int $typed, array $requested, string $reason, User $by): int
     {
-        return DB::transaction(function () use ($order, $kind, $typed, $requested, $reason, $by) {
+        [$amount, $failure] = DB::transaction(function () use ($order, $kind, $typed, $requested, $reason, $by) {
             $locked = Order::query()->lockForUpdate()->whereKey($order->getKey())->firstOrFail();
             $payments = $locked->payments()->lockForUpdate()->get();
 
@@ -50,6 +53,9 @@ class RefundOrder
                     'status' => PaymentStatus::Paid,
                 ])]);
             }
+
+            // Payments::refund reads the order through each payment.
+            $payments->each(fn (Payment $p) => $p->setRelation('order', $locked));
 
             $eligible = $payments->filter(fn (Payment $p) => in_array($p->status, self::PAID_STATES, true));
             $refundable = (int) $eligible->sum(fn (Payment $p) => $p->amount - $p->refunded);
@@ -75,6 +81,8 @@ class RefundOrder
             }
 
             $left = $amount;
+            $done = 0;
+            $failure = null;
 
             foreach ($eligible as $payment) {
                 $take = min($left, $payment->amount - $payment->refunded);
@@ -83,39 +91,54 @@ class RefundOrder
                     continue;
                 }
 
-                $meta = $payment->meta ?? [];
-                $meta['refunds'][] = [
-                    'amount' => $take,
-                    'reason' => $reason,
-                    'by' => $by->name,
-                    'at' => now()->toIso8601String(),
-                    'lines' => $lines,
-                ];
+                // The dishes are kept on the first payment that refunds, so
+                // splitting across payments never counts them twice.
+                $kept = $done === 0 ? $lines : [];
 
-                $payment->refunded += $take;
-                $payment->status = $payment->refunded >= $payment->amount ? PaymentStatus::Refunded : PaymentStatus::PartiallyRefunded;
-                $payment->meta = $meta;
-                $payment->save();
+                try {
+                    $this->payments->refund($payment, $take, $reason, $by, $kept);
+                } catch (ValidationException $e) {
+                    $failure = $e;
+                } catch (PaymentException|ConnectionException) {
+                    $failure = ValidationException::withMessages(['amount' => __('staff_orders.refund.gateway_unreachable')]);
+                }
+
+                if ($failure !== null) {
+                    // Nothing went back yet: leave everything as it was. Otherwise
+                    // keep what the gateway already returned and report the rest.
+                    if ($done === 0) {
+                        throw $failure;
+                    }
+
+                    break;
+                }
+
+                $done += $take;
                 $left -= $take;
             }
 
-            $locked->payment_status = (int) $payments->sum('refunded') >= (int) $payments->sum('amount')
-                ? PaymentStatus::Refunded
-                : PaymentStatus::PartiallyRefunded;
-            $locked->save();
-
+            $locked->refresh();
             $order->setRawAttributes($locked->getAttributes(), true);
 
             $this->activity->record(
                 'order.refunded',
-                __('staff_orders.log.refunded', ['user' => $by->name, 'amount' => '£'.number_format($amount / 100, 2), 'number' => $locked->number, 'reason' => $reason]),
+                __('staff_orders.log.refunded', ['user' => $by->name, 'amount' => '£'.number_format($done / 100, 2), 'number' => $locked->number, 'reason' => $reason]),
                 $locked,
-                ['amount' => $amount, 'reason' => $reason, 'lines' => $lines],
+                ['amount' => $done, 'reason' => $reason, 'lines' => $lines],
                 $by,
             );
 
-            return $amount;
+            return [$done, $failure];
         });
+
+        if ($failure !== null) {
+            throw ValidationException::withMessages(['amount' => __('staff_orders.refund.partial', [
+                'done' => '£'.number_format($amount / 100, 2),
+                'reason' => collect($failure->errors())->flatten()->first(),
+            ])]);
+        }
+
+        return $amount;
     }
 
     /**

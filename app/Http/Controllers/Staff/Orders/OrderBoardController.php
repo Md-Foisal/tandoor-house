@@ -4,9 +4,12 @@ namespace App\Http\Controllers\Staff\Orders;
 
 use App\Enums\OrderChannel;
 use App\Enums\OrderStatus;
+use App\Enums\PaymentMethod;
+use App\Enums\PaymentStatus;
 use App\Enums\Role;
 use App\Http\Controllers\Controller;
 use App\Models\Order;
+use App\Models\Payment;
 use App\Models\User;
 use App\Policies\Staff\OrderBoardPolicy;
 use Illuminate\Database\Eloquent\Builder;
@@ -51,12 +54,34 @@ class OrderBoardController extends Controller
                 'edit' => $policy->canEdit($order),
                 'refund' => $policy->canRefund($user) && $policy->isRefundable($order),
                 'refund_limit' => $policy->refundLimit($user),
+                'take_payment' => $this->amountDue($order, $user, $policy) !== null,
+                'payment_due' => $this->amountDue($order, $user, $policy),
                 'assign_rider' => $policy->canAssignRider($user, $order),
             ],
             'riders' => fn () => $policy->canAssignRider($user, $order)
                 ? User::query()->where('role', Role::Rider)->orderBy('name')->get(['id', 'name'])
                 : [],
         ]);
+    }
+
+    /** Pence waiting to be taken at the venue, when this user may take it. */
+    private function amountDue(Order $order, User $user, OrderBoardPolicy $policy): ?int
+    {
+        if (! $policy->takePayment($user, $order)->allowed()) {
+            return null;
+        }
+
+        $pending = $order->payments->first(fn (Payment $p) => $p->gateway === 'venue' && $p->status === PaymentStatus::Pending);
+
+        if ($pending !== null) {
+            return $pending->amount;
+        }
+
+        $legacy = $order->payments->isEmpty()
+            && $order->payment_status === PaymentStatus::Pending
+            && in_array($order->payment_method, [PaymentMethod::PayAtVenue, PaymentMethod::Cash], true);
+
+        return $legacy ? $order->total : null;
     }
 
     /**

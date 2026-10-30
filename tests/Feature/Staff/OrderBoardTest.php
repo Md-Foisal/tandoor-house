@@ -21,6 +21,7 @@ function orderWith(array $state = [], int $unitPrice = 1000, int $quantity = 2):
     OrderLine::factory()->for($order)->forItem(MenuItem::factory()->create(['price' => $unitPrice]))->create(['quantity' => $quantity]);
 
     $order->payments()->update(['amount' => $order->refresh()->total]);
+    $order->payments()->where('gateway', 'stripe')->update(['gateway' => 'fake']);
 
     return $order->refresh();
 }
