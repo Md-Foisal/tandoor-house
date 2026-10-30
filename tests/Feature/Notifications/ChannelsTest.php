@@ -9,6 +9,7 @@ use App\Notifications\Messages\WhatsAppMessage;
 use App\Notifications\NotificationChannels;
 use App\Notifications\PhoneNumber;
 use App\Notifications\Sms\LogSmsSender;
+use App\Notifications\Sms\NullSmsSender;
 use App\Notifications\Sms\SmsSender;
 use App\Notifications\WhatsApp\NullWhatsAppSender;
 use App\Notifications\WhatsApp\WhatsAppSender;
@@ -104,7 +105,7 @@ it('writes texts to the sms log by default', function () {
     expect(app(SmsSender::class))->toBeInstanceOf(LogSmsSender::class);
 
     Log::shouldReceive('channel')->with('sms')->once()->andReturnSelf();
-    Log::shouldReceive('info')->once()->with('sms', ['to' => '+447700900123', 'text' => 'Hello']);
+    Log::shouldReceive('info')->once()->with('sms', ['to' => '**********123', 'text' => 'Hello']);
 
     expect(app(SmsSender::class)->send('+447700900123', 'Hello'))->toBeTrue();
 });
@@ -139,4 +140,20 @@ it('follows the restaurant notification settings', function () {
     app(Settings::class)->flush();
 
     expect(NotificationChannels::for('review_request'))->toBe(['mail']);
+});
+
+it('masks the number and strips link queries in the sms log', function () {
+    Log::shouldReceive('channel')->with('sms')->once()->andReturnSelf();
+    Log::shouldReceive('info')->once()->with('sms', ['to' => '**********123', 'text' => 'Track it https://x.test/orders/1 now']);
+
+    (new LogSmsSender)->send('+447700900123', 'Track it https://x.test/orders/1?signature=abc&expires=1 now');
+});
+
+it('picks the sms sender from config', function () {
+    config(['notify.sms.driver' => 'null']);
+    expect(app(SmsSender::class))->toBeInstanceOf(NullSmsSender::class)
+        ->and(app(SmsSender::class)->send('+447700900123', 'Hello'))->toBeFalse();
+
+    config(['notify.sms.driver' => 'log']);
+    expect(app(SmsSender::class))->toBeInstanceOf(LogSmsSender::class);
 });

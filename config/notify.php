@@ -7,7 +7,7 @@ return [
     | "null" sends nothing. Swap in a real provider by binding its sender.
     */
     'sms' => [
-        'driver' => env('NOTIFY_SMS_DRIVER', 'log'),
+        'driver' => env('NOTIFY_SMS_DRIVER', env('APP_ENV') === 'production' ? 'null' : 'log'),
         'log_channel' => 'sms',
         'max_segments' => 3,
     ],

@@ -183,3 +183,17 @@ it('runs through the event system and the real sms channel', function () {
         ->and($sender->sent[0][0])->toBe('+447700900123')
         ->and($sender->sent[0][1])->toContain($order->number);
 });
+
+it('escapes markdown in customer-supplied names and reasons in emails', function () {
+    $order = Order::factory()->pickup()->create([
+        'contact' => ['name' => '[click](https://evil.test)', 'email' => 'a@example.test', 'phone' => '07700 900123'],
+        'rejection_reason' => '[refund](https://evil.test/refund)',
+    ]);
+
+    $html = (string) (new OrderUpdate($order, OrderStatus::Rejected))->toMail(new AnonymousNotifiable)->render();
+    expect($html)->not->toContain('href="https://evil.test');
+
+    $reservation = Reservation::factory()->create(['name' => '[click](https://evil.test)']);
+    $html = (string) (new BookingNotice($reservation, ReservationStatus::Confirmed))->toMail(new AnonymousNotifiable)->render();
+    expect($html)->not->toContain('href="https://evil.test');
+});

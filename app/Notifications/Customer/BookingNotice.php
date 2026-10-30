@@ -8,6 +8,7 @@ use App\Notifications\Messages\SmsMessage;
 use App\Notifications\Messages\WhatsAppMessage;
 use App\Notifications\NotificationChannels;
 use App\Support\GuestLinks;
+use App\Support\MarkdownText;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
@@ -44,7 +45,7 @@ class BookingNotice extends Notification implements ShouldQueue
         $mail = (new MailMessage)
             ->subject(__($this->key('subject'), $this->replacements()))
             ->markdown('mail.booking', [
-                'name' => $this->firstName(),
+                'name' => MarkdownText::escape($this->firstName()),
                 'headline' => __($this->key('headline'), $this->replacements()),
                 'body' => __($this->key('body'), $this->replacements()),
                 'reservation' => $this->reservation,

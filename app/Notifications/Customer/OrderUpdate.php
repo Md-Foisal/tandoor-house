@@ -9,6 +9,7 @@ use App\Notifications\Messages\SmsMessage;
 use App\Notifications\Messages\WhatsAppMessage;
 use App\Notifications\NotificationChannels;
 use App\Support\GuestLinks;
+use App\Support\MarkdownText;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
@@ -60,9 +61,9 @@ class OrderUpdate extends Notification implements ShouldQueue
         return (new MailMessage)
             ->subject($this->line('subject'))
             ->markdown('mail.order-update', [
-                'name' => $this->firstName(),
-                'headline' => $this->line('headline'),
-                'body' => $this->line('body'),
+                'name' => MarkdownText::escape($this->firstName()),
+                'headline' => $this->line('headline', true),
+                'body' => $this->line('body', true),
                 'order' => $this->order,
                 'url' => $this->url(),
             ]);
@@ -93,15 +94,16 @@ class OrderUpdate extends Notification implements ShouldQueue
         return explode(' ', trim((string) ($this->order->contact['name'] ?? '')))[0];
     }
 
-    private function line(string $part): string
+    private function line(string $part, bool $markdown = false): string
     {
         $time = ($this->order->estimated_ready_at ?? $this->order->pickup_at)?->timezone('Europe/London')->format('H:i') ?? '';
 
+        $reason = $this->order->rejection_reason ?: __('notify.order.no_reason');
         $replace = [
             'number' => $this->order->number,
             'restaurant' => config('restaurant.name'),
             'time' => $time,
-            'reason' => $this->order->rejection_reason ?: __('notify.order.no_reason'),
+            'reason' => $markdown ? MarkdownText::escape($reason) : $reason,
         ];
 
         return __("notify.order.{$this->stage->value}.{$part}", $replace);
