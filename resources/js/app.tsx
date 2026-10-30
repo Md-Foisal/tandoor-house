@@ -1,6 +1,7 @@
 import '@fontsource/rozha-one/latin-400.css';
 import '@fontsource-variable/hanken-grotesk/wght.css';
 import { createInertiaApp } from '@inertiajs/react';
+import type { ReactNode } from 'react';
 import { ConsentBanner } from '@/components/consent/consent-banner';
 import { Toaster } from '@/components/ui/sonner';
 import { TooltipProvider } from '@/components/ui/tooltip';
@@ -15,22 +16,33 @@ import StyleguideLayout from '@/layouts/styleguide-layout';
 
 const appName = import.meta.env.VITE_APP_NAME || 'Tandoor House';
 
+// The banner reads translations from page props, so it must render inside a
+// layout (within Inertia's context) rather than around the app.
+function WithConsent({ children }: { children: ReactNode }) {
+    return (
+        <>
+            {children}
+            <ConsentBanner />
+        </>
+    );
+}
+
 void createInertiaApp({
     title: (title) => (title ? `${title} · ${appName}` : appName),
     layout: (name) => {
         switch (true) {
             case name.startsWith('staff/kitchen'):
-                return KitchenLayout;
+                return [WithConsent, KitchenLayout];
             case name.startsWith('staff/'):
-                return StaffLayout;
+                return [WithConsent, StaffLayout];
             case name.startsWith('styleguide/'):
-                return StyleguideLayout;
+                return [WithConsent, StyleguideLayout];
             case name.startsWith('auth/'):
-                return AuthLayout;
+                return [WithConsent, AuthLayout];
             case name.startsWith('settings/'):
-                return [PublicLayout, SettingsLayout];
+                return [WithConsent, PublicLayout, SettingsLayout];
             default:
-                return PublicLayout;
+                return [WithConsent, PublicLayout];
         }
     },
     strictMode: true,
@@ -39,7 +51,6 @@ void createInertiaApp({
             <TooltipProvider delayDuration={0}>
                 {app}
                 <Toaster />
-                <ConsentBanner />
             </TooltipProvider>
         );
     },
