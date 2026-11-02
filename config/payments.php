@@ -38,6 +38,8 @@ return [
         'key' => env('STRIPE_KEY'),
         'secret' => env('STRIPE_SECRET'),
         'webhook_secret' => env('STRIPE_WEBHOOK_SECRET'),
+        // Live keys take real money, so they work only when this is set on purpose at launch.
+        'allow_live' => (bool) env('STRIPE_ALLOW_LIVE', false),
         'api' => 'https://api.stripe.com/v1',
         'tolerance' => 300,
     ],
