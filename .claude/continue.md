@@ -4,7 +4,7 @@ You are taking over an unfinished autonomous build of this project from another 
 
 ## 0. Paused on 2 Nov 2026 — resume here
 
-Phases 3, 4 and 5 are merged (PRs #4, #5, #6). Phase 6 is on branch `feat/phase-6-hardening` (pushed: no — push it), nearly done. Committed: staff PWA, SEO/OG/schema.org, privacy notice + cookie policy + PECR banner, retention/pruning + data export/erase, role page-access and rate-limit tests, security headers/CSP and the security review fixes, accessibility audit + fixes (focus rings), demo seed, STRIPE_ALLOW_LIVE switch. Last full run: 2,507 tests green.
+Phases 3, 4 and 5 are merged (PRs #4, #5, #6). Phase 6 is on branch `feat/phase-6-hardening` (pushed), nearly done. Committed: staff PWA, SEO/OG/schema.org, privacy notice + cookie policy + PECR banner, retention/pruning + data export/erase, role page-access and rate-limit tests, security headers/CSP and the security review fixes, accessibility audit + fixes (focus rings), demo seed, STRIPE_ALLOW_LIVE switch. Last full run: 2,507 tests green.
 
 Left to do, in order:
 1. Performance audit: `scripts/perf-audit.mjs` and the `lighthouse` dev dependency are uncommitted work in progress from an agent that stopped at a usage limit (menu caching already exists). Finish it: run Lighthouse on /, /menu, a dish, /book, /visit, /staff/orders; fix clear budget misses (LCP < 2.5 s, CLS < 0.1); record before/after.
