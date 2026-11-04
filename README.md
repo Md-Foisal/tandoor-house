@@ -182,25 +182,20 @@ The server is the source of truth. There is no REST API for the web app: routes,
 ### An order's life
 
 ```mermaid
-stateDiagram-v2
-    direction LR
-    [*] --> Placed
-    Placed --> Accepted: staff or auto-accept
-    Placed --> Rejected
-    Placed --> Cancelled
-    Accepted --> Cooking: kitchen starts
-    Accepted --> Cancelled
-    Cooking --> Ready: kitchen bumps the ticket
-    Ready --> OutForDelivery: delivery
-    Ready --> Collected: pickup
-    Ready --> Served: dine-in
-    OutForDelivery --> Delivered
-    Delivered --> Completed
+flowchart TB
+    Placed(["Placed"]) -->|"staff or auto-accept"| Accepted(["Accepted"])
+    Accepted -->|"kitchen starts"| Cooking(["Cooking"])
+    Cooking -->|"kitchen bumps the ticket"| Ready(["Ready"])
+    Ready -->|delivery| Out(["Out for delivery"])
+    Ready -->|pickup| Collected(["Collected"])
+    Ready -->|dine-in| Served(["Served"])
+    Out --> Delivered(["Delivered"])
+    Delivered --> Completed(["Completed"])
     Collected --> Completed
     Served --> Completed
-    Completed --> [*]
-    Rejected --> [*]
-    Cancelled --> [*]
+    Placed -.-> Rejected(["Rejected"])
+    Placed -.-> Cancelled(["Cancelled"])
+    Accepted -.-> Cancelled
 ```
 
 The transitions live in one place, `app/Services/OrderStateMachine.php`. Every transition runs inside a transaction that locks the order row and re-reads its status first, so two staff pressing Accept on the same order cannot both win.
