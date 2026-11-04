@@ -45,6 +45,10 @@
 
         @viteReactRefresh
         @vite(['resources/css/app.css', 'resources/js/app.tsx', "resources/js/pages/{$page['component']}.tsx"])
+        @unless (Vite::isRunningHot())
+            <link rel="preload" as="font" type="font/woff2" crossorigin href="{{ Vite::asset('node_modules/@fontsource-variable/hanken-grotesk/files/hanken-grotesk-latin-wght-normal.woff2') }}">
+            <link rel="preload" as="font" type="font/woff2" crossorigin href="{{ Vite::asset('node_modules/@fontsource/rozha-one/files/rozha-one-latin-400-normal.woff2') }}">
+        @endunless
         @php($seo = $page['props']['seo'] ?? null)
         @if ($seo)
             <meta name="description" content="{{ $seo['description'] }}" inertia="description">
