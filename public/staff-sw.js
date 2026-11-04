@@ -3,15 +3,15 @@
  * icons, nothing else: no staff page, Inertia response or API data is ever
  * cached. Reverb WebSockets are not fetches, so they are untouched.
  */
-const VERSION = 'staff-v1';
+const VERSION = 'staff-v2';
 const CACHE = `tandoor-staff-${VERSION}`;
 const OFFLINE_URL = '/staff/offline';
 const PRECACHE = [
     OFFLINE_URL,
-    '/staff/icons/icon-192.png',
-    '/staff/icons/icon-512.png',
-    '/staff/icons/icon-maskable-512.png',
-    '/staff/icons/apple-touch-icon.png',
+    '/staff-app/icons/icon-192.png',
+    '/staff-app/icons/icon-512.png',
+    '/staff-app/icons/icon-maskable-512.png',
+    '/staff-app/icons/apple-touch-icon.png',
 ];
 
 self.addEventListener('install', (event) => {

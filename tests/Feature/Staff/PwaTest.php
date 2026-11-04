@@ -2,6 +2,8 @@
 
 use App\Enums\Role;
 use App\Models\User;
+use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Route;
 
 it('serves a staff-only manifest to anyone', function () {
     $manifest = $this->get('/staff/manifest.webmanifest')
@@ -39,6 +41,18 @@ it('ships a service worker that keeps only the offline page and icons', function
     expect($worker)->toContain("'/staff/offline'")
         ->and($worker)->not->toContain('cache.put')
         ->and($worker)->toContain('key !== CACHE');
+});
+
+it('keeps every public folder clear of the routes', function () {
+    $routes = collect(Route::getRoutes()->getRoutes())
+        ->map(fn ($route) => explode('/', $route->uri())[0])
+        ->unique();
+
+    // A folder named like a route wins over the app: php artisan serve answers
+    // 404, and Apache or nginx would answer with their folder rules.
+    foreach (File::directories(public_path()) as $folder) {
+        expect($routes)->not->toContain(basename($folder));
+    }
 });
 
 it('links the manifest from the staff layout only', function () {

@@ -50,7 +50,7 @@ export function StaffPwaHead() {
             <link rel="manifest" href="/staff/manifest.webmanifest" />
             <link
                 rel="apple-touch-icon"
-                href="/staff/icons/apple-touch-icon.png"
+                href="/staff-app/icons/apple-touch-icon.png"
             />
             <meta name="theme-color" content="#16110D" />
             <meta name="mobile-web-app-capable" content="yes" />
