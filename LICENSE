@@ -1,0 +1,55 @@
+Copyright (c) 2026 Md. Foisal. All rights reserved.
+
+This source code is published for viewing only. No permission is granted to
+use, copy, modify, merge, publish, distribute, sublicense or sell this
+software, or any part of it, without prior written permission from the
+copyright holder.
+
+Third-party material
+--------------------
+
+The files above are the copyright holder's own work, with the exceptions
+below. Third-party material stays under its own terms and is not covered by
+the statement above.
+
+1. Laravel + React starter kit. The application was generated from the
+   Laravel + React starter kit (https://github.com/laravel/react-starter-kit),
+   which its authors release under the MIT license. Files that remain
+   substantially as generated from it keep that MIT license. The kit's
+   repository names no individual copyright holder, so none is claimed here.
+
+2. shadcn/ui. Components under resources/js/components/ui started from
+   shadcn/ui (https://github.com/shadcn-ui/ui), restyled for this project.
+
+   MIT License
+
+   Copyright (c) 2023 shadcn
+
+   Permission is hereby granted, free of charge, to any person obtaining a
+   copy of this software and associated documentation files (the
+   "Software"), to deal in the Software without restriction, including
+   without limitation the rights to use, copy, modify, merge, publish,
+   distribute, sublicense, and/or sell copies of the Software, and to permit
+   persons to whom the Software is furnished to do so, subject to the
+   following conditions:
+
+   The above copyright notice and this permission notice shall be included
+   in all copies or substantial portions of the Software.
+
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
+   THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+   FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+   DEALINGS IN THE SOFTWARE.
+
+3. Dependencies. Packages installed through Composer and npm keep their own
+   licenses, listed in their packages.
+
+4. Photographs and video. Media under public/media is free-licence stock
+   from Unsplash and Pexels and follows the licences and credits in
+   docs/image-credits.md. It is not covered by the statement at the top.
+
+5. Fonts. Rozha One and Hanken Grotesk are installed from the Fontsource
+   packages and are licensed under the SIL Open Font License 1.1.
