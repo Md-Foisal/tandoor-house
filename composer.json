@@ -14,6 +14,7 @@
     "require": {
         "php": "^8.3",
         "barryvdh/laravel-dompdf": "^3.1",
+        "fakerphp/faker": "^1.24",
         "inertiajs/inertia-laravel": "^3.0",
         "laravel/chisel": "^0.1.0",
         "laravel/fortify": "^1.37.2",
@@ -23,7 +24,6 @@
         "laravel/wayfinder": "^0.1.14"
     },
     "require-dev": {
-        "fakerphp/faker": "^1.24",
         "larastan/larastan": "^3.9",
         "laravel/pail": "^1.2.5",
         "laravel/pao": "^1.0.6",

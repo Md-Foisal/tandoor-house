@@ -14,7 +14,7 @@ return [
     |
     */
 
-    'default' => env('MAIL_MAILER', 'log'),
+    'default' => env('DEMO_MODE') ? 'log' : env('MAIL_MAILER', 'log'),
 
     /*
     |--------------------------------------------------------------------------

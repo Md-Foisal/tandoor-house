@@ -10,7 +10,7 @@ import {
 import { motion, useReducedMotion } from 'motion/react';
 import type { ReactNode } from 'react';
 import { Logo } from '@/components/brand/logo';
-import { OfflineBanner } from '@/components/brand/states';
+import { DemoBanner, OfflineBanner } from '@/components/brand/states';
 import { ThemeToggle } from '@/components/brand/theme-toggle';
 import { Button } from '@/components/ui/button';
 import {
@@ -458,6 +458,7 @@ export default function PublicLayout({ children }: { children: ReactNode }) {
             >
                 {t('ui.skip_to_content')}
             </a>
+            <DemoBanner />
             <OfflineBanner />
             <DesktopHeader links={links} />
             <MobileHeader links={links} />
