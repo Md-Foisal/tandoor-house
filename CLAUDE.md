@@ -1,7 +1,5 @@
 # Tandoor House
 
-> **Unfinished build.** Before anything else, read `.claude/continue.md` and follow it.
-
 A restaurant platform for a UK restaurant: customers order, book and pay; staff take, cook, serve and deliver; the owner runs menu, stock, people and money. The restaurant name and cuisine come from `config/restaurant.php`.
 
 ## Stack (do not swap)
