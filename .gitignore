@@ -42,3 +42,10 @@ yarn-error.log
 /opencode.json
 /opencode.jsonc
 /.claude/settings.local.json
+/tools/film/node_modules
+/tools/film/out
+/tools/film/public/raw
+/tools/film/public/audio
+/tools/film/src/data
+/tools/film/public/media
+/tools/film/public/fonts
