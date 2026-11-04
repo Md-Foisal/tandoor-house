@@ -134,7 +134,7 @@ for (const [name, path, user, list] of shots) {
             await sharp(png)
                 .resize({ width })
                 .webp({ quality: 78 })
-                .toFile(`${outDir}/${name}-${device}-${scheme}.webp`);
+                .toFile(`${outDir}/${String(name)}-${device}-${scheme}.webp`);
             await context.close();
         }
     }
