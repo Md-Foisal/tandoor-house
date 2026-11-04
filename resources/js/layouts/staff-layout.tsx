@@ -21,7 +21,7 @@ import {
 import type { ReactNode } from 'react';
 import { InstallApp, StaffPwaHead } from '@/components/staff/install-app';
 import { LogoMark } from '@/components/brand/logo';
-import { OfflineBanner } from '@/components/brand/states';
+import { DemoBanner, OfflineBanner } from '@/components/brand/states';
 import { ThemeToggle } from '@/components/brand/theme-toggle';
 import {
     DropdownMenu,
@@ -256,6 +256,7 @@ export default function StaffLayout({ children }: { children: ReactNode }) {
                 <SidebarRail />
             </Sidebar>
             <SidebarInset className="min-w-0 bg-paper">
+                <DemoBanner />
                 <OfflineBanner />
                 <header className="sticky top-0 z-20 flex h-14 items-center gap-2 border-b border-line bg-paper/95 px-3 backdrop-blur-sm md:hidden">
                     <SidebarTrigger

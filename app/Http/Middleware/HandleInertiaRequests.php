@@ -71,6 +71,10 @@ class HandleInertiaRequests extends Middleware
             'staffAreas' => fn () => $request->user()?->isStaff()
                 ? array_map(fn (StaffArea $area) => $area->value, StaffArea::for($request->user()->role))
                 : [],
+            'demo' => config('demo.enabled') ? [
+                'password' => config('demo.password'),
+                'accounts' => config('demo.accounts'),
+            ] : null,
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
         ];
     }

@@ -25,7 +25,7 @@ class FakeGateway implements PaymentGateway
 {
     public function __construct()
     {
-        if (app()->isProduction()) {
+        if (app()->isProduction() && ! config('demo.enabled')) {
             throw new GatewayNotConfigured('The fake payment gateway cannot run in production.');
         }
     }

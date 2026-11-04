@@ -20,6 +20,7 @@ declare module '@inertiajs/core' {
             openStatus: OpenStatusData;
             staffAreas: StaffArea[];
             auth: Auth;
+            demo: { password: string; accounts: Record<string, string> } | null;
             sidebarOpen: boolean;
             [key: string]: unknown;
         };
