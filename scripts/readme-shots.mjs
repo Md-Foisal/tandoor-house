@@ -119,7 +119,9 @@ for (const [name, path, user, list] of shots) {
             });
             const page = await context.newPage();
 
-            await page.goto(`${baseUrl}${String(path)}`, { waitUntil: 'networkidle' });
+            await page.goto(`${baseUrl}${String(path)}`, {
+                waitUntil: 'networkidle',
+            });
             await page.evaluate(() =>
                 window.scrollTo(0, document.body.scrollHeight),
             );
