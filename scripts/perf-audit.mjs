@@ -94,7 +94,8 @@ for (const entry of pages.filter((p) => !only || only.includes(p.name))) {
         )
         .sort(
             (a, b) =>
-                (b.details.overallSavingsMs ?? 0) - (a.details.overallSavingsMs ?? 0),
+                (b.details.overallSavingsMs ?? 0) -
+                (a.details.overallSavingsMs ?? 0),
         )
         .slice(0, 5)
         .map(
@@ -110,7 +111,10 @@ for (const entry of pages.filter((p) => !only || only.includes(p.name))) {
             scripts
                 .sort((a, b) => b.transferSize - a.transferSize)
                 .slice(0, 4)
-                .map((item) => `${item.url.split('/').pop()} ${kb(item.transferSize)}`)
+                .map(
+                    (item) =>
+                        `${item.url.split('/').pop()} ${kb(item.transferSize)}`,
+                )
                 .join(', ') || 'none'
         }\n`,
     );

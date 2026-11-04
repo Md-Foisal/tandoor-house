@@ -38,6 +38,9 @@ const icons = [
 await mkdir(OUT, { recursive: true });
 
 for (const [file, size, fill] of icons) {
-    await sharp(mark(size, fill), { density: 300 }).resize(size, size).png().toFile(OUT + file);
+    await sharp(mark(size, fill), { density: 300 })
+        .resize(size, size)
+        .png()
+        .toFile(OUT + file);
     console.log(`wrote ${file}`);
 }

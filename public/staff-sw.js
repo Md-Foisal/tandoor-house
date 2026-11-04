@@ -30,7 +30,11 @@ self.addEventListener('activate', (event) => {
             .then((keys) =>
                 Promise.all(
                     keys
-                        .filter((key) => key.startsWith('tandoor-staff-') && key !== CACHE)
+                        .filter(
+                            (key) =>
+                                key.startsWith('tandoor-staff-') &&
+                                key !== CACHE,
+                        )
                         .map((key) => caches.delete(key)),
                 ),
             )
@@ -49,7 +53,9 @@ self.addEventListener('fetch', (event) => {
     if (request.mode === 'navigate') {
         event.respondWith(
             fetch(request).catch(() =>
-                caches.match(OFFLINE_URL).then((cached) => cached ?? Response.error()),
+                caches
+                    .match(OFFLINE_URL)
+                    .then((cached) => cached ?? Response.error()),
             ),
         );
 
@@ -57,6 +63,8 @@ self.addEventListener('fetch', (event) => {
     }
 
     if (PRECACHE.includes(url.pathname)) {
-        event.respondWith(caches.match(request).then((cached) => cached ?? fetch(request)));
+        event.respondWith(
+            caches.match(request).then((cached) => cached ?? fetch(request)),
+        );
     }
 });
