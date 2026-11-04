@@ -18,6 +18,11 @@ return [
     'sign_in' => 'Sign in',
     'order_now' => 'Order now',
     'main' => 'Main',
+    'more' => [
+        'open' => 'Open more pages and settings',
+        'title' => 'More',
+        'description' => 'Our story, finding us, allergens and how the site looks.',
+    ],
     'footer' => [
         'tagline' => 'Clay oven, open kitchen, East London.',
         'hours' => 'Opening hours',

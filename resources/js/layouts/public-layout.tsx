@@ -2,6 +2,7 @@ import { Link, usePage } from '@inertiajs/react';
 import {
     CalendarDays,
     Home,
+    Menu,
     ShoppingBag,
     User,
     UtensilsCrossed,
@@ -12,10 +13,21 @@ import { Logo } from '@/components/brand/logo';
 import { OfflineBanner } from '@/components/brand/states';
 import { ThemeToggle } from '@/components/brand/theme-toggle';
 import { Button } from '@/components/ui/button';
+import {
+    Sheet,
+    SheetClose,
+    SheetContent,
+    SheetDescription,
+    SheetTitle,
+    SheetTrigger,
+} from '@/components/ui/sheet';
 import { useT } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
 
 type NavItem = { href: string; label: string; match: (url: string) => boolean };
+
+// Under 1024px the header fits this many links; the rest move to the menu.
+const TABLET_LINKS = 2;
 
 function isCurrent(url: string, href: string): boolean {
     const path = url.split('?')[0] ?? url;
@@ -56,6 +68,71 @@ export function BasketBadge({
     );
 }
 
+/**
+ * The pages and settings the phone tab bar and tablet header have no room
+ * for. The sheet closes on a link tap because the layout stays mounted.
+ */
+function MoreMenu({
+    links,
+    className,
+}: {
+    links: NavItem[];
+    className?: string;
+}) {
+    const t = useT();
+    const { url } = usePage();
+    const extras = [{ href: '/allergens', label: t('nav.footer.allergens') }];
+
+    return (
+        <Sheet>
+            <SheetTrigger
+                aria-label={t('nav.more.open')}
+                className={cn(
+                    'grid size-11 place-items-center rounded-full text-ink outline-hidden hover:bg-clay focus-visible:outline-2 focus-visible:outline-ember focus-visible:outline-solid',
+                    className,
+                )}
+            >
+                <Menu className="size-6" aria-hidden="true" />
+            </SheetTrigger>
+            <SheetContent side="right" className="gap-6 p-5">
+                <SheetTitle className="pr-12 font-display text-2xl font-normal">
+                    {t('nav.more.title')}
+                </SheetTitle>
+                <SheetDescription className="sr-only">
+                    {t('nav.more.description')}
+                </SheetDescription>
+                <nav aria-label={t('nav.more.title')}>
+                    <ul className="flex flex-col">
+                        {[...links, ...extras].map(({ href, label }) => (
+                            <li key={href}>
+                                <SheetClose asChild>
+                                    <Link
+                                        href={href}
+                                        aria-current={
+                                            isCurrent(url, href)
+                                                ? 'page'
+                                                : undefined
+                                        }
+                                        className="flex min-h-12 items-center rounded-md px-2 font-semibold outline-hidden hover:bg-clay focus-visible:outline-2 focus-visible:outline-ember focus-visible:outline-solid aria-[current=page]:text-ember"
+                                    >
+                                        {label}
+                                    </Link>
+                                </SheetClose>
+                            </li>
+                        ))}
+                    </ul>
+                </nav>
+                <div className="flex flex-col gap-2 border-t border-line pt-5">
+                    <p className="text-label text-ink-muted">
+                        {t('ui.theme.label')}
+                    </p>
+                    <ThemeToggle className="self-start" />
+                </div>
+            </SheetContent>
+        </Sheet>
+    );
+}
+
 function DesktopHeader({ links }: { links: NavItem[] }) {
     const t = useT();
     const { name, basketCount, auth } = usePage().props;
@@ -66,7 +143,7 @@ function DesktopHeader({ links }: { links: NavItem[] }) {
             <div className="container-page flex h-[4.5rem] items-center gap-8">
                 <Link
                     href="/"
-                    className="inline-flex min-h-11 items-center rounded-sm outline-hidden focus-visible:outline-2 focus-visible:outline-ember focus-visible:outline-solid"
+                    className="inline-flex min-h-11 shrink-0 items-center rounded-sm whitespace-nowrap outline-hidden focus-visible:outline-2 focus-visible:outline-ember focus-visible:outline-solid"
                 >
                     <Logo name={name} />
                 </Link>
@@ -74,7 +151,7 @@ function DesktopHeader({ links }: { links: NavItem[] }) {
                     aria-label={t('nav.main')}
                     className="flex flex-1 items-center gap-1"
                 >
-                    {links.map((link) => {
+                    {links.map((link, index) => {
                         const current = link.match(url);
 
                         return (
@@ -84,8 +161,9 @@ function DesktopHeader({ links }: { links: NavItem[] }) {
                                 prefetch
                                 aria-current={current ? 'page' : undefined}
                                 className={cn(
-                                    'relative rounded-md px-3 py-2.5 font-semibold text-ink-muted outline-hidden transition-colors duration-150 hover:text-ink focus-visible:outline-2 focus-visible:outline-ember focus-visible:outline-solid',
+                                    'relative rounded-md px-3 py-2.5 font-semibold whitespace-nowrap text-ink-muted outline-hidden transition-colors duration-150 hover:text-ink focus-visible:outline-2 focus-visible:outline-ember focus-visible:outline-solid',
                                     current && 'text-ink',
+                                    index >= TABLET_LINKS && 'hidden lg:block',
                                 )}
                             >
                                 {link.label}
@@ -136,13 +214,14 @@ function DesktopHeader({ links }: { links: NavItem[] }) {
                     <Button asChild className="ml-2">
                         <Link href="/menu">{t('nav.order_now')}</Link>
                     </Button>
+                    <MoreMenu links={links} className="lg:hidden" />
                 </div>
             </div>
         </header>
     );
 }
 
-function MobileHeader() {
+function MobileHeader({ links }: { links: NavItem[] }) {
     const { name } = usePage().props;
 
     return (
@@ -157,7 +236,7 @@ function MobileHeader() {
                         className="[&_svg]:size-7 [&>span:last-child]:text-xl"
                     />
                 </Link>
-                <ThemeToggle />
+                <MoreMenu links={links} />
             </div>
         </header>
     );
@@ -381,7 +460,7 @@ export default function PublicLayout({ children }: { children: ReactNode }) {
             </a>
             <OfflineBanner />
             <DesktopHeader links={links} />
-            <MobileHeader />
+            <MobileHeader links={links} />
             <main id="main" className="flex-1">
                 {children}
             </main>
