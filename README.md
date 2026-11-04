@@ -22,6 +22,14 @@
 
 > **A sandbox, not a business.** Tandoor House is a fictional restaurant in East London built to show a complete, real-world product. Card payments run in Stripe test mode, or on a fake gateway by default, so no money moves. Text messages go to a log. The 40 dishes use free-licence stock photos, 20 of them stand-ins for similar dishes. There is no live demo; you run it locally in a few minutes (see [Run it](#run-it)).
 
+## Watch the film
+
+One evening of service in 2:22, from a guest's phone to the kitchen display, out with a rider and into the owner's reports. It is all the running app, in 4K with sound.
+
+<p align="center">
+  <a href="docs/media/film/tandoor-house-film.mp4"><img alt="A silent preview of the film: the Tandoor House title, a guest ordering on a phone, a ticket landing on the kitchen display, a rider delivering and the owner's stock screen" src="docs/media/film/tandoor-house-teaser.webp" width="800"></a>
+</p>
+
 ## See it work
 
 **A customer orders on a phone** (about 28 seconds): filter the menu, open a dish, fill the basket, check out for collection, pay with a test card.
