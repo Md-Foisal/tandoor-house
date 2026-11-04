@@ -26,8 +26,10 @@
 
 One evening of service in 2:22, from a guest's phone to the kitchen display, out with a rider and into the owner's reports. It is all the running app, in 4K with sound.
 
+**[Watch it on YouTube](https://youtu.be/NwxVs3GprHQ)**, or [download the MP4](docs/media/film/tandoor-house-film.mp4).
+
 <p align="center">
-  <a href="docs/media/film/tandoor-house-film.mp4"><img alt="A silent preview of the film: the Tandoor House title, a guest ordering on a phone, a ticket landing on the kitchen display, a rider delivering and the owner's stock screen" src="docs/media/film/tandoor-house-teaser.webp" width="800"></a>
+  <a href="https://youtu.be/NwxVs3GprHQ"><img alt="A silent preview of the film: the Tandoor House title, a guest ordering on a phone, a ticket landing on the kitchen display, a rider delivering and the owner's stock screen" src="docs/media/film/tandoor-house-teaser.webp" width="800"></a>
 </p>
 
 ## See it work
