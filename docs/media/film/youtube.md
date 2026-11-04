@@ -28,6 +28,8 @@ Stack: Laravel 13, Inertia 3, React 19, TypeScript strict, Tailwind 4, Laravel R
 
 To be clear about the demo: the restaurant is fictional and the data is seeded. Food photos are free-licence stock. Payments run in test mode on a built-in test gateway, with Stripe's Payment Element ready for real keys. Text messages use a log driver until a provider is connected.
 
+Try it live: https://tandoor-house.onrender.com (free hosting, so the first visit can take about a minute to wake up)
+
 Code: https://github.com/Md-Foisal/tandoor-house
 
 Music: "Smooth Jazz" by Francisco Alvear, from Mixkit (Mixkit Stock Music Free License).
