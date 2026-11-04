@@ -1,0 +1,2 @@
+import { readdirSync, readFileSync, existsSync } from 'node:fs';
+for (const s of readdirSync('public/raw')) for (const c of readdirSync(`public/raw/${s}`)) { const f=`public/raw/${s}/${c}/index.json`; if(!existsSync(f)) continue; const d=JSON.parse(readFileSync(f)); const T=d.frames.map(x=>x[1]); const dur=T.at(-1)-T[0]; let maxGap=0; for(let i=1;i<T.length;i++) maxGap=Math.max(maxGap,T[i]-T[i-1]); console.log(s,c,'frames',T.length,'dur',dur.toFixed(1),'marks',Object.entries(d.marks).map(([k,v])=>k+'@'+(v-T[0]).toFixed(1)).join(' ')); }
