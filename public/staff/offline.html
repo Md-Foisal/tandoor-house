@@ -63,7 +63,10 @@
                 margin: 0 0 28px;
                 color: var(--muted);
             }
-            button {
+            .retry {
+                display: inline-flex;
+                align-items: center;
+                text-decoration: none;
                 min-height: 48px;
                 padding: 0 24px;
                 border: 0;
@@ -75,7 +78,7 @@
                     sans-serif;
                 cursor: pointer;
             }
-            button:focus-visible {
+            a.retry:focus-visible {
                 outline: 3px solid var(--ember);
                 outline-offset: 3px;
             }
@@ -104,14 +107,7 @@
             </svg>
             <h1>{{title}}</h1>
             <p>{{body}}</p>
-            <button type="button" onclick="location.assign('/staff')">
-                {{retry}}
-            </button>
+            <a class="retry" href="/staff">{{retry}}</a>
         </main>
-        <script>
-            addEventListener('online', function () {
-                location.assign('/staff');
-            });
-        </script>
     </body>
 </html>

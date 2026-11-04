@@ -111,3 +111,34 @@
 **Open**
 - Real SMS and WhatsApp providers, and a production mail service, are needed before messages reach real customers.
 - The scheduler needs `php artisan schedule:work` (or a cron entry for `schedule:run`) and a queue worker on the server.
+
+## Phase 6: hardening and handover
+
+**Done**
+- Staff panel installs on tablets as an app, with an offline page; the service worker caches only that page and the icons, never staff data.
+- Search, social and structured data (`Restaurant`, `Menu`, `MenuItem`) printed by the root view; `sitemap.xml` and `robots.txt`; private pages are `noindex`.
+- UK GDPR privacy notice, cookie policy built from the real cookie list, and a PECR banner where Reject is as easy as Accept.
+- Retention: activity logs after 12 months, bookings after 12 months or six years with a deposit, baskets and invites pruned daily. Customers can download their data and delete their account.
+- Security review fixes: CSP with nonces, security headers, trusted hosts, auth and write throttles, private photo originals, live Stripe keys refused unless `STRIPE_ALLOW_LIVE` is set. A test visits every page and throttle as every role.
+- Accessibility audit with axe (WCAG 2.2 AA) on 26 pages, both themes: focus rings now drawn, staff meters and tables named, tap targets at least 44 px.
+- Performance audit (`scripts/perf-audit.mjs`, Lighthouse mobile, simulated slow 4G, Herd toolbar blocked). The menu had a layout shift of 0.209 from the web fonts; preloading both fonts brought CLS to 0.000 on every page.
+- Found while taking screenshots: the offline page used an inline script the CSP blocks; it is now a plain link.
+- `docs/handover.md` written and checked against the code.
+- 2,508 tests, PHPStan, TypeScript, Vite+ lint and format, Pint and the production build all pass. Screenshots of 6 views at 375, 768 and 1280 in light and dark: `docs/screenshots/phase-6/`.
+
+| Page | Score before | Score after | LCP before | LCP after | CLS before | CLS after |
+| --- | --- | --- | --- | --- | --- | --- |
+| Home | 71 | 82 | 5.27 s | 4.89 s | 0.001 | 0.000 |
+| Menu | 71 | 100 | 4.38 s | 0.91 s | 0.209 | 0.000 |
+| Dish | 76 | 82 | 5.12 s | 5.04 s | 0.001 | 0.000 |
+| Book | 78 | 99 | 4.21 s | 0.91 s | 0.001 | 0.000 |
+| Visit | 66 | 87 | 14.51 s | 4.06 s | 0.001 | 0.000 |
+| Staff orders | 80 | 100 | 4.52 s | 1.07 s | 0.001 | 0.000 |
+
+"Before" was measured with Herd's dev toolbar loading (about 2 MB of extra script), so part of the gain is the toolbar being blocked. Only the CLS fix is a code change.
+
+**Decided:** see `docs/decisions.md` → Phase 6.
+
+**Open**
+- Home, dish and visit pages still show a lab LCP above 2.5 s under the simulated throttle (0.3 to 0.8 s unthrottled). Splitting the shared script bundle would help and is the next performance step if real-user numbers need it.
+- Everything the client must supply is listed in `docs/handover.md`.
