@@ -23,7 +23,7 @@ export function QuantityStepper({
 }: Props) {
     const t = useT();
     const button =
-        'grid size-11 place-items-center rounded-full text-ink outline-none transition-colors duration-150 hover:bg-clay focus-visible:outline-2 focus-visible:outline-ember disabled:opacity-40 disabled:hover:bg-transparent';
+        'grid size-11 place-items-center rounded-full text-ink outline-hidden transition-colors duration-150 hover:bg-clay focus-visible:outline-2 focus-visible:outline-solid focus-visible:outline-ember disabled:opacity-40 disabled:hover:bg-transparent';
 
     return (
         <div

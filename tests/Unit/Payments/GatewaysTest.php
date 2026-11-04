@@ -18,6 +18,12 @@ it('refuses a live stripe key', function () {
     new StripeGateway;
 })->throws(GatewayNotConfigured::class);
 
+it('accepts a live stripe key only when live payments are switched on', function () {
+    config(['payments.stripe.secret' => 'sk_live_abc', 'payments.stripe.allow_live' => true]);
+
+    expect(new StripeGateway)->toBeInstanceOf(StripeGateway::class);
+});
+
 it('refuses to build stripe without a secret', function () {
     config(['payments.stripe.secret' => null]);
 

@@ -184,44 +184,49 @@ export function OrderSummary({
                 )}
             </div>
 
-            <dl
+            <div
                 className="grid gap-2 border-t border-line pt-4"
                 aria-live="polite"
             >
-                <Row
-                    label={t('checkout.summary.subtotal')}
-                    pence={totals.subtotal}
-                />
-                {totals.discount > 0 && (
+                <dl className="grid gap-2">
                     <Row
-                        label={t(
-                            rewardOn
-                                ? 'checkout.summary.loyalty_discount'
-                                : 'checkout.summary.discount',
-                        )}
-                        pence={-totals.discount}
+                        label={t('checkout.summary.subtotal')}
+                        pence={totals.subtotal}
                     />
-                )}
-                {form.data.channel === 'delivery' && (
-                    <div className="flex justify-between gap-4">
-                        <dt className="text-ink-muted">
-                            {t('checkout.summary.delivery')}
-                        </dt>
-                        <dd className="tabular-nums">
-                            {totals.delivery > 0
-                                ? formatMoney(totals.delivery)
-                                : t('checkout.summary.delivery_pending')}
-                        </dd>
-                    </div>
-                )}
+                    {totals.discount > 0 && (
+                        <Row
+                            label={t(
+                                rewardOn
+                                    ? 'checkout.summary.loyalty_discount'
+                                    : 'checkout.summary.discount',
+                            )}
+                            pence={-totals.discount}
+                        />
+                    )}
+                    {form.data.channel === 'delivery' && (
+                        <div className="flex justify-between gap-4">
+                            <dt className="text-ink-muted">
+                                {t('checkout.summary.delivery')}
+                            </dt>
+                            <dd className="tabular-nums">
+                                {totals.delivery > 0
+                                    ? formatMoney(totals.delivery)
+                                    : t('checkout.summary.delivery_pending')}
+                            </dd>
+                        </div>
+                    )}
+                    {form.data.channel === 'dine_in' &&
+                        totals.serviceFull > 0 && (
+                            <Row
+                                label={t('checkout.summary.service', {
+                                    rate: props.serviceChargeRate / 100,
+                                })}
+                                pence={totals.service}
+                            />
+                        )}
+                </dl>
                 {form.data.channel === 'dine_in' && totals.serviceFull > 0 && (
                     <div className="grid gap-2">
-                        <Row
-                            label={t('checkout.summary.service', {
-                                rate: props.serviceChargeRate / 100,
-                            })}
-                            pence={totals.service}
-                        />
                         <div className="flex items-center justify-between gap-3 text-sm">
                             <label
                                 htmlFor="remove-service"
@@ -245,23 +250,28 @@ export function OrderSummary({
                         </p>
                     </div>
                 )}
-                {totals.tip > 0 && (
-                    <Row label={t('checkout.summary.tip')} pence={totals.tip} />
-                )}
-                <div className="mt-2 flex items-baseline justify-between gap-4 border-t border-line-strong pt-3">
-                    <dt className="text-title font-semibold">
-                        {t('checkout.summary.total')}
-                    </dt>
-                    <dd className="font-display text-display-md tabular-nums">
-                        {formatMoney(totals.total)}
-                    </dd>
-                </div>
+                <dl className="grid gap-2">
+                    {totals.tip > 0 && (
+                        <Row
+                            label={t('checkout.summary.tip')}
+                            pence={totals.tip}
+                        />
+                    )}
+                    <div className="mt-2 flex items-baseline justify-between gap-4 border-t border-line-strong pt-3">
+                        <dt className="text-title font-semibold">
+                            {t('checkout.summary.total')}
+                        </dt>
+                        <dd className="font-display text-display-md tabular-nums">
+                            {formatMoney(totals.total)}
+                        </dd>
+                    </div>
+                </dl>
                 <p className="text-sm text-ink-muted">
                     {t('checkout.summary.vat', {
                         vat: formatMoney(totals.vat),
                     })}
                 </p>
-            </dl>
+            </div>
         </section>
     );
 }

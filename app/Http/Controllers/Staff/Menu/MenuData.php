@@ -129,7 +129,8 @@ class MenuData
 
     public static function photoUrl(MenuItem $item): ?string
     {
-        $path = $item->photo['sources']['webp'][0][1] ?? $item->image;
+        // Originals are private; until the sizes are made there is nothing to show.
+        $path = $item->photo['sources']['webp'][0][1] ?? null;
 
         return $path === null ? null : Storage::disk('public')->url($path);
     }

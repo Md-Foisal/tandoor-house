@@ -247,7 +247,10 @@ export function Management({
             </div>
 
             <p className="text-sm text-ink-muted">
-                <Link href="/staff/orders" className="underline">
+                <Link
+                    href="/staff/orders"
+                    className="inline-flex min-h-11 items-center underline"
+                >
                     {t('staff_today.front.open_orders')}
                 </Link>
             </p>

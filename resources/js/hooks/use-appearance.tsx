@@ -1,4 +1,9 @@
 import { useSyncExternalStore } from 'react';
+import {
+    hasPreferenceConsent,
+    subscribe as subscribeToConsent,
+    writePreferenceCookie,
+} from '@/components/consent/consent-store';
 
 export type ResolvedAppearance = 'light' | 'dark';
 export type Appearance = ResolvedAppearance | 'system';
@@ -20,21 +25,27 @@ const prefersDark = (): boolean => {
     return window.matchMedia('(prefers-color-scheme: dark)').matches;
 };
 
-const setCookie = (name: string, value: string, days = 365): void => {
-    if (typeof document === 'undefined') {
-        return;
-    }
-
-    const maxAge = days * 24 * 60 * 60;
-    document.cookie = `${name}=${value};path=/;max-age=${maxAge};SameSite=Lax`;
-};
-
 const getStoredAppearance = (): Appearance => {
     if (typeof window === 'undefined') {
         return 'system';
     }
 
+    // A saved choice is read only if the visitor allowed preferences.
+    if (!hasPreferenceConsent()) {
+        return 'system';
+    }
+
     return (localStorage.getItem('appearance') as Appearance) || 'system';
+};
+
+const persist = (mode: Appearance): void => {
+    if (!hasPreferenceConsent()) {
+        return;
+    }
+
+    localStorage.setItem('appearance', mode);
+    // The cookie lets the server paint the right theme on the first byte.
+    writePreferenceCookie('appearance', mode, 365);
 };
 
 const isDarkMode = (appearance: Appearance): boolean => {
@@ -75,16 +86,19 @@ export function initializeTheme(): void {
         return;
     }
 
-    if (!localStorage.getItem('appearance')) {
-        localStorage.setItem('appearance', 'system');
-        setCookie('appearance', 'system');
-    }
-
     currentAppearance = getStoredAppearance();
     applyTheme(currentAppearance);
 
     // Set up system theme change listener
     mediaQuery()?.addEventListener('change', handleSystemThemeChange);
+
+    // Accepting preferences later saves the theme already chosen this visit;
+    // withdrawing it keeps the theme until the page is reloaded.
+    subscribeToConsent(() => {
+        if (hasPreferenceConsent() && currentAppearance !== 'system') {
+            persist(currentAppearance);
+        }
+    });
 }
 
 export function useAppearance(): UseAppearanceReturn {
@@ -101,11 +115,7 @@ export function useAppearance(): UseAppearanceReturn {
     const updateAppearance = (mode: Appearance): void => {
         currentAppearance = mode;
 
-        // Store in localStorage for client-side persistence...
-        localStorage.setItem('appearance', mode);
-
-        // Store in cookie for SSR...
-        setCookie('appearance', mode);
+        persist(mode);
 
         applyTheme(mode);
         notify();

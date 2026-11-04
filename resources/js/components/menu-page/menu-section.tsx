@@ -53,7 +53,7 @@ export function MenuSection({
             data-slug={category.slug}
             tabIndex={-1}
             aria-labelledby={headingId}
-            className="scroll-mt-28 py-8 outline-none md:scroll-mt-32"
+            className="scroll-mt-28 py-8 outline-hidden md:scroll-mt-32"
         >
             <Serve>
                 <SectionHeading

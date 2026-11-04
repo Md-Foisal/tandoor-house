@@ -48,7 +48,12 @@ export function ReportCard({
                 </div>
                 {exportHref &&
                     (online ? (
-                        <Button asChild variant="outline" size="sm">
+                        <Button
+                            asChild
+                            variant="outline"
+                            size="sm"
+                            className="min-h-11"
+                        >
                             <a
                                 href={exportHref}
                                 aria-label={t(
@@ -66,6 +71,7 @@ export function ReportCard({
                         <Button
                             variant="outline"
                             size="sm"
+                            className="min-h-11"
                             disabled
                             title={t('staff_reports.export.offline')}
                         >

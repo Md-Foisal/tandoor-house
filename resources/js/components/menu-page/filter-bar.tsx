@@ -121,7 +121,7 @@ export function FilterBar({
                             type="button"
                             onClick={clearSearch}
                             aria-label={t('menu.search.clear')}
-                            className="absolute top-1/2 right-1 grid size-11 -translate-y-1/2 place-items-center rounded-full text-ink-muted outline-none hover:text-ink focus-visible:outline-2 focus-visible:outline-ember"
+                            className="absolute top-1/2 right-1 grid size-11 -translate-y-1/2 place-items-center rounded-full text-ink-muted outline-hidden hover:text-ink focus-visible:outline-2 focus-visible:outline-ember focus-visible:outline-solid"
                         >
                             <X className="size-5" aria-hidden="true" />
                         </button>
@@ -225,7 +225,7 @@ export function FilterBar({
                     <button
                         type="button"
                         onClick={clear}
-                        className="-my-2 inline-flex min-h-11 items-center font-semibold text-ember underline underline-offset-4 outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ember"
+                        className="-my-2 inline-flex min-h-11 items-center font-semibold text-ember underline underline-offset-4 outline-hidden focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ember focus-visible:outline-solid"
                     >
                         {t('menu.filters.clear_all')}
                     </button>

@@ -47,6 +47,7 @@ return [
     'columns' => [
         'ingredient' => 'Ingredient',
         'stock' => 'Stock against par',
+        'stock_meter' => ':name stock against par',
         'value' => 'Value',
         'last_movement' => 'Last movement',
         'actions' => 'Actions',

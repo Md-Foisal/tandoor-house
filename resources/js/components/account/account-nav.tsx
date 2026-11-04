@@ -39,7 +39,7 @@ export function AccountNav() {
                                 prefetch
                                 aria-current={current ? 'page' : undefined}
                                 className={cn(
-                                    'flex h-11 items-center rounded-full px-4 font-semibold whitespace-nowrap text-ink-muted outline-none hover:text-ink focus-visible:outline-2 focus-visible:outline-ember lg:rounded-md',
+                                    'flex h-11 items-center rounded-full px-4 font-semibold whitespace-nowrap text-ink-muted outline-hidden hover:text-ink focus-visible:outline-2 focus-visible:outline-ember focus-visible:outline-solid lg:rounded-md',
                                     current &&
                                         'bg-ink text-paper hover:text-paper',
                                 )}

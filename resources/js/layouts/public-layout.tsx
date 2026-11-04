@@ -66,7 +66,7 @@ function DesktopHeader({ links }: { links: NavItem[] }) {
             <div className="container-page flex h-[4.5rem] items-center gap-8">
                 <Link
                     href="/"
-                    className="rounded-sm outline-none focus-visible:outline-2 focus-visible:outline-ember"
+                    className="inline-flex min-h-11 items-center rounded-sm outline-hidden focus-visible:outline-2 focus-visible:outline-ember focus-visible:outline-solid"
                 >
                     <Logo name={name} />
                 </Link>
@@ -84,7 +84,7 @@ function DesktopHeader({ links }: { links: NavItem[] }) {
                                 prefetch
                                 aria-current={current ? 'page' : undefined}
                                 className={cn(
-                                    'relative rounded-md px-3 py-2.5 font-semibold text-ink-muted transition-colors duration-150 outline-none hover:text-ink focus-visible:outline-2 focus-visible:outline-ember',
+                                    'relative rounded-md px-3 py-2.5 font-semibold text-ink-muted outline-hidden transition-colors duration-150 hover:text-ink focus-visible:outline-2 focus-visible:outline-ember focus-visible:outline-solid',
                                     current && 'text-ink',
                                 )}
                             >
@@ -113,7 +113,7 @@ function DesktopHeader({ links }: { links: NavItem[] }) {
                     <ThemeToggle className="hidden lg:inline-flex" />
                     <Link
                         href={auth.user ? '/account' : '/login'}
-                        className="grid size-11 place-items-center rounded-full text-ink outline-none hover:bg-clay focus-visible:outline-2 focus-visible:outline-ember"
+                        className="grid size-11 place-items-center rounded-full text-ink outline-hidden hover:bg-clay focus-visible:outline-2 focus-visible:outline-ember focus-visible:outline-solid"
                         aria-label={
                             auth.user ? t('nav.account') : t('nav.sign_in')
                         }
@@ -122,7 +122,7 @@ function DesktopHeader({ links }: { links: NavItem[] }) {
                     </Link>
                     <Link
                         href="/basket"
-                        className="relative grid size-11 place-items-center rounded-full text-ink outline-none hover:bg-clay focus-visible:outline-2 focus-visible:outline-ember"
+                        className="relative grid size-11 place-items-center rounded-full text-ink outline-hidden hover:bg-clay focus-visible:outline-2 focus-visible:outline-ember focus-visible:outline-solid"
                         aria-label={t('nav.basket_count', {
                             count: basketCount,
                         })}
@@ -150,14 +150,14 @@ function MobileHeader() {
             <div className="flex h-14 items-center justify-between px-4">
                 <Link
                     href="/"
-                    className="rounded-sm outline-none focus-visible:outline-2 focus-visible:outline-ember"
+                    className="inline-flex min-h-11 items-center rounded-sm outline-hidden focus-visible:outline-2 focus-visible:outline-ember focus-visible:outline-solid"
                 >
                     <Logo
                         name={name}
                         className="[&_svg]:size-7 [&>span:last-child]:text-xl"
                     />
                 </Link>
-                <ThemeToggle className="scale-90" />
+                <ThemeToggle />
             </div>
         </header>
     );
@@ -201,7 +201,7 @@ function MobileTabBar() {
                                 prefetch
                                 aria-current={current ? 'page' : undefined}
                                 className={cn(
-                                    'flex h-16 flex-col items-center justify-center gap-1 text-[0.6875rem] font-semibold text-ink-muted outline-none focus-visible:bg-clay',
+                                    'flex h-16 flex-col items-center justify-center gap-1 text-[0.6875rem] font-semibold text-ink-muted outline-hidden focus-visible:bg-clay',
                                     current && 'text-ember',
                                 )}
                             >
@@ -278,7 +278,7 @@ function Footer() {
                     <h2 className="text-label text-ink-muted">
                         {t('nav.footer.contact')}
                     </h2>
-                    <address className="mt-3 flex flex-col gap-1 text-sm not-italic">
+                    <address className="mt-3 flex flex-col text-sm not-italic">
                         <span>{restaurant.address.line1}</span>
                         <span>
                             {restaurant.address.city}{' '}
@@ -286,13 +286,13 @@ function Footer() {
                         </span>
                         <a
                             href={`tel:${restaurant.phone.replaceAll(' ', '')}`}
-                            className="mt-2 font-semibold underline-offset-4 hover:underline"
+                            className="inline-flex min-h-11 items-center self-start font-semibold underline-offset-4 hover:underline"
                         >
                             {restaurant.phone}
                         </a>
                         <a
                             href={`mailto:${restaurant.email}`}
-                            className="font-semibold underline-offset-4 hover:underline"
+                            className="inline-flex min-h-11 items-center self-start font-semibold underline-offset-4 hover:underline"
                         >
                             {restaurant.email}
                         </a>
@@ -302,11 +302,11 @@ function Footer() {
                     <h2 className="text-label text-ink-muted">
                         {t('nav.footer.legal')}
                     </h2>
-                    <ul className="mt-3 flex flex-col gap-1 text-sm">
+                    <ul className="mt-3 flex flex-col text-sm">
                         <li>
                             <Link
                                 href="/allergens"
-                                className="inline-block py-1 underline-offset-4 hover:underline"
+                                className="inline-flex min-h-11 items-center underline-offset-4 hover:underline"
                             >
                                 {t('nav.footer.allergens')}
                             </Link>
@@ -314,7 +314,7 @@ function Footer() {
                         <li>
                             <Link
                                 href="/privacy"
-                                className="inline-block py-1 underline-offset-4 hover:underline"
+                                className="inline-flex min-h-11 items-center underline-offset-4 hover:underline"
                             >
                                 {t('nav.footer.privacy')}
                             </Link>
@@ -322,7 +322,7 @@ function Footer() {
                         <li>
                             <Link
                                 href="/cookies"
-                                className="inline-block py-1 underline-offset-4 hover:underline"
+                                className="inline-flex min-h-11 items-center underline-offset-4 hover:underline"
                             >
                                 {t('nav.footer.cookies')}
                             </Link>
@@ -375,7 +375,7 @@ export default function PublicLayout({ children }: { children: ReactNode }) {
         <div className="flex min-h-dvh flex-col bg-paper">
             <a
                 href="#main"
-                className="sr-only z-50 rounded-md bg-ink px-4 py-3 font-semibold text-paper focus:not-sr-only focus:fixed focus:top-3 focus:left-3"
+                className="sr-only z-50 min-h-11 min-w-11 items-center rounded-md bg-ink px-4 py-3 font-semibold text-paper focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:inline-flex"
             >
                 {t('ui.skip_to_content')}
             </a>

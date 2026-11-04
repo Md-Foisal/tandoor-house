@@ -63,8 +63,10 @@ class SaveMenuItem
 
             $replacing = $photo !== null || ($removePhoto && $item->image !== null);
 
+            // The original keeps the camera's EXIF (location, device), so it
+            // stays on the private disk; only the stripped crops are public.
             if ($photo !== null) {
-                $item->image = $photo->store('menu', 'public') ?: null;
+                $item->image = $photo->store(ConvertMenuPhoto::ORIGINALS, ConvertMenuPhoto::ORIGINALS_DISK) ?: null;
             } elseif ($removePhoto) {
                 $item->image = null;
             }
@@ -77,6 +79,7 @@ class SaveMenuItem
 
             if ($replacing) {
                 Storage::disk('public')->delete(array_filter([$oldImage, ...$oldDerived]));
+                Storage::disk(ConvertMenuPhoto::ORIGINALS_DISK)->delete(array_filter([$oldImage]));
             }
 
             if ($oldPrice !== null && $oldPrice !== $item->price) {

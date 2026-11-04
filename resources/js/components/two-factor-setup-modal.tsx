@@ -108,7 +108,7 @@ function TwoFactorSetupStep({
                                         'settings_pages.two_factor.setup_key',
                                     )}
                                     value={manualSetupKey}
-                                    className="h-11 w-full bg-surface px-3 text-ink outline-none focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ember"
+                                    className="h-11 w-full bg-surface px-3 text-ink outline-hidden focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ember focus-visible:outline-solid"
                                 />
                                 <button
                                     type="button"
@@ -122,7 +122,7 @@ function TwoFactorSetupStep({
                                                   'settings_pages.two_factor.copy_key',
                                               )
                                     }
-                                    className="grid w-11 place-items-center border-l border-line-strong outline-none hover:bg-clay focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ember"
+                                    className="grid w-11 place-items-center border-l border-line-strong outline-hidden hover:bg-clay focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ember focus-visible:outline-solid"
                                 >
                                     <IconComponent
                                         className="size-4"

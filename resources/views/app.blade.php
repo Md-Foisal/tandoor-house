@@ -5,7 +5,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
 
         {{-- Inline script to detect system dark mode preference and apply it immediately --}}
-        <script>
+        <script nonce="{{ Vite::cspNonce() }}">
             (function() {
                 const appearance = '{{ $appearance ?? "system" }}';
 
@@ -20,7 +20,7 @@
         </script>
 
         {{-- Inline style to set the HTML background color based on our theme in app.css --}}
-        <style>
+        <style nonce="{{ Vite::cspNonce() }}">
             html {
                 background-color: #f7f1e8;
             }
@@ -31,7 +31,7 @@
         </style>
 
         <noscript>
-            <style>
+            <style nonce="{{ Vite::cspNonce() }}">
                 [data-reveal] { opacity: 1 !important; transform: none !important; filter: none !important; clip-path: none !important; }
             </style>
         </noscript>
@@ -45,8 +45,34 @@
 
         @viteReactRefresh
         @vite(['resources/css/app.css', 'resources/js/app.tsx', "resources/js/pages/{$page['component']}.tsx"])
+        @unless (Vite::isRunningHot())
+            <link rel="preload" as="font" type="font/woff2" crossorigin href="{{ Vite::asset('node_modules/@fontsource-variable/hanken-grotesk/files/hanken-grotesk-latin-wght-normal.woff2') }}">
+            <link rel="preload" as="font" type="font/woff2" crossorigin href="{{ Vite::asset('node_modules/@fontsource/rozha-one/files/rozha-one-latin-400-normal.woff2') }}">
+        @endunless
+        @php($seo = $page['props']['seo'] ?? null)
+        @if ($seo)
+            <meta name="description" content="{{ $seo['description'] }}" inertia="description">
+            <meta name="robots" content="{{ $seo['robots'] }}">
+            <link rel="canonical" href="{{ $seo['canonical'] }}">
+            <meta property="og:site_name" content="{{ config('restaurant.name') }}">
+            <meta property="og:locale" content="en_GB">
+            <meta property="og:type" content="{{ $seo['type'] }}">
+            <meta property="og:title" content="{{ $seo['title'] }}">
+            <meta property="og:description" content="{{ $seo['description'] }}">
+            <meta property="og:url" content="{{ $seo['canonical'] }}">
+            <meta property="og:image" content="{{ $seo['image'] }}">
+            <meta property="og:image:width" content="1200">
+            <meta property="og:image:height" content="630">
+            <meta name="twitter:card" content="summary_large_image">
+            <meta name="twitter:title" content="{{ $seo['title'] }}">
+            <meta name="twitter:description" content="{{ $seo['description'] }}">
+            <meta name="twitter:image" content="{{ $seo['image'] }}">
+            @foreach ($seo['jsonld'] as $document)
+                <script type="application/ld+json" nonce="{{ Vite::cspNonce() }}">{!! \App\Support\StructuredData::encode($document) !!}</script>
+            @endforeach
+        @endif
         <x-inertia::head>
-            <title>{{ config('app.name', 'Laravel') }}</title>
+            <title>{{ $seo['title'] ?? config('app.name', 'Laravel') }}</title>
         </x-inertia::head>
     </head>
     <body class="font-sans antialiased">

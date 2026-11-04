@@ -2,6 +2,17 @@
 
 You are taking over an unfinished autonomous build of this project from another Claude session (a different account). Everything you need is in this repository. Read this whole file once, then work through it without asking the owner anything except where it says "ask".
 
+## 0. Paused on 2 Nov 2026 — resume here
+
+Phases 3, 4 and 5 are merged (PRs #4, #5, #6). Phase 6 is on branch `feat/phase-6-hardening` (pushed), nearly done. Committed: staff PWA, SEO/OG/schema.org, privacy notice + cookie policy + PECR banner, retention/pruning + data export/erase, role page-access and rate-limit tests, security headers/CSP and the security review fixes, accessibility audit + fixes (focus rings), demo seed, STRIPE_ALLOW_LIVE switch. Last full run: 2,507 tests green.
+
+Left to do, in order:
+1. Performance audit: `scripts/perf-audit.mjs` and the `lighthouse` dev dependency are uncommitted work in progress from an agent that stopped at a usage limit (menu caching already exists). Finish it: run Lighthouse on /, /menu, a dish, /book, /visit, /staff/orders; fix clear budget misses (LCP < 2.5 s, CLS < 0.1); record before/after.
+2. `docs/handover.md` is drafted (uncommitted). Check it against the code, commit.
+3. Phase 6 decisions are drafted outside the repo; add a "Phase 6" section to `docs/decisions.md` (PWA, SEO via Blade, cookie consent, retention, CSP/trusted hosts/throttles, focus-ring fix, a11y choices, STRIPE_ALLOW_LIVE).
+4. Run every check, `npm run build`, screenshots of new screens (privacy, cookies, banner, account data rights, staff install) into `docs/screenshots/phase-6/`, Phase 6 entry in `docs/progress.md`, PR, CI, merge.
+5. Delete this file and its pointer in `CLAUDE.md`, commit, tell the owner the build is finished.
+
 ## 1. Working with Foisal (the owner)
 
 - Write to him in **Bengali (বাংলা)**. Code, comments, commits, PRs and docs stay in English.

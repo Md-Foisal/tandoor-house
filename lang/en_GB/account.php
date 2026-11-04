@@ -119,4 +119,8 @@ return [
         'trimmed' => ':items has fewer choices than before, so we kept what fits.',
         'nothing' => 'Nothing from that order is on the menu right now.',
     ],
+    'erase' => [
+        'last_owner' => 'You are the only owner, so the account cannot be deleted. Make someone else an owner first.',
+        'former_customer' => 'Former customer',
+    ],
 ];

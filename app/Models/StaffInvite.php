@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\MassPrunable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -23,7 +24,21 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 class StaffInvite extends Model
 {
+    use MassPrunable;
+
     protected $guarded = ['id'];
+
+    /**
+     * Accepted or expired more than 30 days ago: the token is dead and only adds clutter.
+     *
+     * @return Builder<StaffInvite>
+     */
+    public function prunable(): Builder
+    {
+        $cutoff = now()->subDays(30);
+
+        return static::where(fn ($q) => $q->where('accepted_at', '<', $cutoff)->orWhere('expires_at', '<', $cutoff));
+    }
 
     protected function casts(): array
     {

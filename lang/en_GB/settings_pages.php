@@ -27,6 +27,15 @@ return [
         'unverified' => 'Your email address is not confirmed yet.',
         'resend' => 'Send the confirmation link again',
         'link_sent' => 'A fresh confirmation link is on its way.',
+        'marketing' => 'Send me offers and news by email',
+        'marketing_hint' => 'Off unless you tick it. Order and booking messages always come through. Change your mind whenever you like.',
+    ],
+    'export' => [
+        'title' => 'Download your data',
+        'description' => 'Your details, addresses, orders, bookings, reviews and points in one file.',
+        'action' => 'Download my data',
+        'hint' => 'A JSON file. You can ask for it up to five times an hour.',
+        'offline' => 'You are offline. Reconnect to download.',
     ],
     'password' => [
         'title' => 'Change your password',
@@ -112,7 +121,7 @@ return [
     ],
     'delete' => [
         'title' => 'Delete your account',
-        'description' => 'This removes your account, saved addresses and points.',
+        'description' => 'This removes your account, saved addresses and points. Past orders and bookings stay in our books for tax, with your name, email, phone and address taken off.',
         'warning' => 'There is no undoing this.',
         'open' => 'Delete account',
         'dialog_title' => 'Delete your account?',

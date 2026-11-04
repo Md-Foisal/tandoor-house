@@ -77,7 +77,7 @@ export function OrderCard({
                 <div className="min-w-0">
                     <Link
                         href={`/staff/orders/${order.number}`}
-                        className="inline-flex min-h-11 items-center font-display text-title underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-ember"
+                        className="inline-flex min-h-11 items-center font-display text-title underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-ember focus-visible:outline-solid"
                         aria-label={t('staff_orders.card.open', {
                             number: order.number,
                         })}

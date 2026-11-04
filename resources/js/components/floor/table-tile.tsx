@@ -10,29 +10,15 @@ import { RequestBadge, StatusLabel, isOccupied, statusMeta } from './status';
 import type { FloorTable } from './types';
 import { formatClock } from './use-now';
 
-export function tableAriaLabel(
-    table: FloorTable,
-    t: ReturnType<typeof useT>,
-): string {
-    const parts = [
-        t('staff_floor.tile.aria', {
-            table: table.label,
-            seats: table.group_seats,
-            status: t(`staff_floor.status.${table.status}`),
-        }),
-    ];
+/** Spoken after the visible text, so the button's name stays the same as what is shown. */
+export function TableDescription({ table }: { table: FloorTable }) {
+    const t = useT();
 
-    if (table.merged_into_label) {
-        parts.push(
-            t('staff_floor.tile.joined_to', { lead: table.merged_into_label }),
-        );
-    }
-
-    table.requests.forEach((request) =>
-        parts.push(t(`staff_floor.request.${request.type}`)),
+    return (
+        <span id={`table-${table.id}-seats`} className="sr-only">
+            {t('staff_floor.tile.seats', { count: table.group_seats })}
+        </span>
     );
-
-    return parts.join(', ');
 }
 
 /** The pulse that says a request just arrived. State-change motion only. */
@@ -112,96 +98,100 @@ export const TableTile = forwardRef<HTMLButtonElement, TileProps>(
                   : 'rounded-lg';
 
         return (
-            <button
-                ref={ref}
-                type="button"
-                data-table-id={table.id}
-                tabIndex={tabIndex}
-                aria-label={tableAriaLabel(table, t)}
-                aria-pressed={selecting ? selected : undefined}
-                aria-disabled={selecting && !selectable ? true : undefined}
-                onClick={onActivate}
-                onFocus={onFocus}
-                className={cn(
-                    'relative flex h-full w-full flex-col items-start justify-start gap-0.5 overflow-hidden border-2 p-1.5 text-left text-xs text-ink transition-colors duration-150 outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ember',
-                    meta.tile,
-                    radius,
-                    joined && 'border-dashed',
-                    selected && 'ring-4 ring-ember ring-offset-0',
-                    selecting && !selectable && 'opacity-45',
-                )}
-            >
-                <span className="flex w-full items-center justify-between gap-1">
-                    <span className="text-base leading-none font-bold">
-                        {table.label}
+            <>
+                <TableDescription table={table} />
+                <button
+                    ref={ref}
+                    type="button"
+                    data-table-id={table.id}
+                    tabIndex={tabIndex}
+                    aria-describedby={`table-${table.id}-seats`}
+                    aria-pressed={selecting ? selected : undefined}
+                    aria-disabled={selecting && !selectable ? true : undefined}
+                    onClick={onActivate}
+                    onFocus={onFocus}
+                    className={cn(
+                        'relative flex h-full w-full flex-col items-start justify-start gap-0.5 overflow-hidden border-2 p-1.5 text-left text-xs text-ink outline-hidden transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ember focus-visible:outline-solid',
+                        meta.tile,
+                        radius,
+                        joined && 'border-dashed',
+                        selected && 'ring-4 ring-ember ring-offset-0',
+                        selecting && !selectable && 'opacity-45',
+                    )}
+                >
+                    <span className="flex w-full items-center justify-between gap-1">
+                        <span className="text-base leading-none font-bold">
+                            {table.label}
+                        </span>
+                        <span className="text-xs text-ink-muted tabular-nums">
+                            {t('staff_floor.tile.seats_short', {
+                                count: table.group_seats,
+                            })}
+                        </span>
                     </span>
-                    <span className="text-xs text-ink-muted tabular-nums">
-                        {t('staff_floor.tile.seats_short', {
-                            count: table.group_seats,
-                        })}
-                    </span>
-                </span>
-                <StatusLabel
-                    status={table.status}
-                    className="text-xs leading-tight"
-                />
-                {joined && (
-                    <span className="inline-flex items-center gap-1 text-ink-muted">
-                        <Link2 className="size-3.5" aria-hidden />
-                        {table.merged_into_label}
-                    </span>
-                )}
-                {!joined && table.merged_labels.length > 0 && (
-                    <span className="inline-flex items-center gap-1 text-ink-muted">
-                        <Link2 className="size-3.5" aria-hidden />+
-                        {table.merged_labels.join(' +')}
-                    </span>
-                )}
-                {roomy && table.party && (
-                    <span className="w-full truncate font-semibold">
-                        {table.party.name ?? t('staff_floor.tile.walk_in')}
-                        {table.party.size ? ` · ${table.party.size}` : ''}
-                    </span>
-                )}
-                {roomy && !isOccupied(table) && table.booking && (
-                    <span className="w-full truncate font-semibold">
-                        {t('staff_floor.tile.booking_at', {
-                            name: table.booking.name,
-                            time: formatClock(table.booking.starts_at),
-                        })}
-                    </span>
-                )}
-                {roomy && isOccupied(table) && (
-                    <span className="flex w-full items-center gap-1.5 tabular-nums">
-                        <Elapsed
-                            since={table.seated_at}
-                            warnAfter={75}
-                            lateAfter={105}
-                        />
-                        {table.open_total > 0 && (
-                            <span className="text-ink-muted">
-                                {formatMoney(table.open_total)}
-                            </span>
-                        )}
-                    </span>
-                )}
-                {table.requests.length > 0 && (
-                    <span className="absolute right-1 bottom-1 flex flex-wrap justify-end gap-1">
-                        <RequestBadges table={table} fresh={fresh} />
-                    </span>
-                )}
-                {selecting && (
-                    <span
-                        aria-hidden
-                        className={cn(
-                            'absolute top-1 right-1 grid size-5 place-items-center rounded-sm border-2 border-line-strong bg-surface',
-                            selected && 'border-ember bg-ember text-ember-ink',
-                        )}
-                    >
-                        {selected && <Check className="size-3.5" />}
-                    </span>
-                )}
-            </button>
+                    <StatusLabel
+                        status={table.status}
+                        className="text-xs leading-tight"
+                    />
+                    {joined && (
+                        <span className="inline-flex items-center gap-1 text-ink-muted">
+                            <Link2 className="size-3.5" aria-hidden />
+                            {table.merged_into_label}
+                        </span>
+                    )}
+                    {!joined && table.merged_labels.length > 0 && (
+                        <span className="inline-flex items-center gap-1 text-ink-muted">
+                            <Link2 className="size-3.5" aria-hidden />+
+                            {table.merged_labels.join(' +')}
+                        </span>
+                    )}
+                    {roomy && table.party && (
+                        <span className="w-full truncate font-semibold">
+                            {table.party.name ?? t('staff_floor.tile.walk_in')}
+                            {table.party.size ? ` · ${table.party.size}` : ''}
+                        </span>
+                    )}
+                    {roomy && !isOccupied(table) && table.booking && (
+                        <span className="w-full truncate font-semibold">
+                            {t('staff_floor.tile.booking_at', {
+                                name: table.booking.name,
+                                time: formatClock(table.booking.starts_at),
+                            })}
+                        </span>
+                    )}
+                    {roomy && isOccupied(table) && (
+                        <span className="flex w-full items-center gap-1.5 tabular-nums">
+                            <Elapsed
+                                since={table.seated_at}
+                                warnAfter={75}
+                                lateAfter={105}
+                            />
+                            {table.open_total > 0 && (
+                                <span className="text-ink-muted">
+                                    {formatMoney(table.open_total)}
+                                </span>
+                            )}
+                        </span>
+                    )}
+                    {table.requests.length > 0 && (
+                        <span className="absolute right-1 bottom-1 flex flex-wrap justify-end gap-1">
+                            <RequestBadges table={table} fresh={fresh} />
+                        </span>
+                    )}
+                    {selecting && (
+                        <span
+                            aria-hidden
+                            className={cn(
+                                'absolute top-1 right-1 grid size-5 place-items-center rounded-sm border-2 border-line-strong bg-surface',
+                                selected &&
+                                    'border-ember bg-ember text-ember-ink',
+                            )}
+                        >
+                            {selected && <Check className="size-3.5" />}
+                        </span>
+                    )}
+                </button>
+            </>
         );
     },
 );

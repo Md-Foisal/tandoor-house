@@ -195,19 +195,20 @@ export default function Visit({
                 </Serve>
                 <dl className="grid gap-x-10 gap-y-6 md:grid-cols-2">
                     {ways.map(({ key, icon: Icon }) => (
-                        <Serve key={key} className="flex gap-4">
+                        <Serve
+                            key={key}
+                            className="grid grid-cols-[auto_1fr] gap-x-4"
+                        >
                             <Icon
                                 aria-hidden
-                                className="mt-1 size-6 shrink-0 text-ember"
+                                className="row-span-2 mt-1 size-6 shrink-0 text-ember"
                             />
-                            <div>
-                                <dt className="text-title">
-                                    {t(`pages.visit.getting_here.${key}.title`)}
-                                </dt>
-                                <dd className="max-w-[52ch] text-ink-muted">
-                                    {t(`pages.visit.getting_here.${key}.body`)}
-                                </dd>
-                            </div>
+                            <dt className="text-title">
+                                {t(`pages.visit.getting_here.${key}.title`)}
+                            </dt>
+                            <dd className="max-w-[52ch] text-ink-muted">
+                                {t(`pages.visit.getting_here.${key}.body`)}
+                            </dd>
                         </Serve>
                     ))}
                 </dl>

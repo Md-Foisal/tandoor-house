@@ -132,11 +132,8 @@ export function TicketCard({
                             type="button"
                             disabled={disabled || line.done}
                             onClick={() => onBumpLine(line)}
-                            aria-label={t('staff_kitchen.ticket.bump_line', {
-                                dish: line.name,
-                            })}
                             className={cn(
-                                'flex min-h-16 w-full items-start gap-3 px-4 py-3 text-left outline-none focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ember',
+                                'flex min-h-16 w-full items-start gap-3 px-4 py-3 text-left outline-hidden focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ember focus-visible:outline-solid',
                                 line.done
                                     ? 'bg-leaf-soft text-ink-muted'
                                     : 'hover:bg-clay active:bg-clay',
@@ -196,6 +193,11 @@ export function TicketCard({
                                             />
                                         )}
                                         {line.notes}
+                                    </span>
+                                )}
+                                {!line.done && (
+                                    <span className="sr-only">
+                                        {t('staff_kitchen.ticket.bump_line')}
                                     </span>
                                 )}
                             </span>

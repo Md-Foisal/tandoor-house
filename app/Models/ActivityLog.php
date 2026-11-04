@@ -4,6 +4,8 @@ namespace App\Models;
 
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\MassPrunable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
@@ -22,7 +24,19 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
 #[Fillable(['event', 'subject_type', 'subject_id', 'user_id', 'description', 'properties'])]
 class ActivityLog extends Model
 {
+    use MassPrunable;
+
     public const UPDATED_AT = null;
+
+    /**
+     * Twelve months is enough to answer "who changed this"; money records live in their own tables.
+     *
+     * @return Builder<ActivityLog>
+     */
+    public function prunable(): Builder
+    {
+        return static::where('created_at', '<', now()->subMonths(12));
+    }
 
     protected function casts(): array
     {

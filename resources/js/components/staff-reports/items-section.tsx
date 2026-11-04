@@ -78,10 +78,18 @@ export function ItemsSection({
                         className="gap-6"
                     >
                         <TabsList aria-label={t('staff_reports.items.tabs')}>
-                            <TabsTrigger value="quantity" className="min-h-10">
+                            <TabsTrigger
+                                value="quantity"
+                                aria-controls={undefined}
+                                className="min-h-11"
+                            >
                                 {t('staff_reports.items.by_quantity')}
                             </TabsTrigger>
-                            <TabsTrigger value="revenue" className="min-h-10">
+                            <TabsTrigger
+                                value="revenue"
+                                aria-controls={undefined}
+                                className="min-h-11"
+                            >
                                 {t('staff_reports.items.by_revenue')}
                             </TabsTrigger>
                         </TabsList>

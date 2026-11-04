@@ -16,12 +16,13 @@ use Illuminate\Support\Str;
 use RuntimeException;
 
 /**
- * Turns an uploaded dish photo into 4:5 crops at 480, 960 and 1600px (AVIF and
+ * Turns an uploaded dish photo (kept privately, EXIF and all) into 4:5 crops at 480, 960 and 1600px (AVIF and
  * WebP) and a blurred placeholder, stored as menu/{item}/{hash}-{width}.{ext}.
  *
  * Engines, in order: Imagick when it can write AVIF, the project's sharp via
  * scripts/convert-photo.mjs, then GD (WebP only, so the AVIF list stays empty
- * and the browser takes the WebP source).
+ * and the browser takes the WebP source). Every engine drops metadata, so no
+ * public crop carries the camera's EXIF.
  */
 class ConvertMenuPhoto implements ShouldQueue
 {
@@ -30,6 +31,13 @@ class ConvertMenuPhoto implements ShouldQueue
     public const WIDTHS = [480, 960, 1600];
 
     public const MAX_SIDE = 6000;
+
+    /**
+     * Uploaded originals live on the private disk: they still carry EXIF.
+     */
+    public const ORIGINALS_DISK = 'local';
+
+    public const ORIGINALS = 'menu-originals';
 
     public int $tries = 3;
 
@@ -40,8 +48,15 @@ class ConvertMenuPhoto implements ShouldQueue
     public function handle(): void
     {
         $disk = Storage::disk('public');
+        $originals = Storage::disk(self::ORIGINALS_DISK);
 
-        if (! $disk->exists($this->source)) {
+        // Uploads from before originals went private: move them off the web.
+        if (! $originals->exists($this->source) && $disk->exists($this->source)) {
+            $originals->put($this->source, (string) $disk->get($this->source));
+            $disk->delete($this->source);
+        }
+
+        if (! $originals->exists($this->source)) {
             return;
         }
 
@@ -50,7 +65,7 @@ class ConvertMenuPhoto implements ShouldQueue
 
         try {
             $original = $work.'/original';
-            File::put($original, $disk->get($this->source));
+            File::put($original, (string) $originals->get($this->source));
             $hash = substr(sha1_file($original) ?: Str::random(40), 0, 12);
 
             $meta = $this->convert($original, $work);

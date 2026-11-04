@@ -5,6 +5,7 @@ namespace App\Http\Middleware;
 use App\Enums\StaffArea;
 use App\Services\CartService;
 use App\Services\OpeningHours;
+use App\Support\Seo;
 use App\Support\Settings;
 use App\Support\Translations;
 use Illuminate\Http\Request;
@@ -41,6 +42,8 @@ class HandleInertiaRequests extends Middleware
      */
     public function share(Request $request): array
     {
+        $scope = $this->translationScope($request);
+
         return [
             ...parent::share($request),
             'name' => config('restaurant.name'),
@@ -57,7 +60,9 @@ class HandleInertiaRequests extends Middleware
                     ? (int) $rating
                     : $rating,
             ]),
-            'translations' => Inertia::once(fn () => Translations::forLocale(app()->getLocale())),
+            'seo' => fn () => Seo::for($request),
+            // Keyed by audience, so signing in or out swaps the cached set.
+            'translations' => Inertia::once(fn () => $this->translations($scope))->as("translations-{$scope}"),
             'auth' => [
                 'user' => $request->user(),
             ],
@@ -68,5 +73,37 @@ class HandleInertiaRequests extends Middleware
                 : [],
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
         ];
+    }
+
+    /**
+     * Who the interface strings are for: staff get every group, a guest
+     * opening a staff invite gets the team group it needs, anyone else gets
+     * the public groups only.
+     */
+    private function translationScope(Request $request): string
+    {
+        if ($request->user()?->isStaff()) {
+            return 'staff';
+        }
+
+        return $request->routeIs('invite.*') ? 'invite' : 'public';
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function translations(string $scope): array
+    {
+        $groups = Translations::forLocale(app()->getLocale());
+
+        if ($scope === 'staff') {
+            return $groups;
+        }
+
+        return array_filter(
+            $groups,
+            fn (string $group) => ! str_starts_with($group, 'staff') || ($scope === 'invite' && $group === 'staff_team'),
+            ARRAY_FILTER_USE_KEY,
+        );
     }
 }

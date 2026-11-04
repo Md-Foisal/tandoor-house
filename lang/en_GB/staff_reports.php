@@ -220,6 +220,7 @@ return [
     'week_of' => 'Week of :date',
     'table' => [
         'show' => 'Show as a table',
+        'region' => ':title, table. Scroll sideways to see every column.',
     ],
 
     'pdf' => [

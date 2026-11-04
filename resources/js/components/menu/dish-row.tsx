@@ -44,7 +44,7 @@ export function DishRow({ item, href, onAdd, className }: Props) {
                     <Link
                         href={href}
                         prefetch
-                        className="outline-none after:absolute after:inset-0 after:content-[''] focus-visible:underline focus-visible:decoration-ember focus-visible:decoration-2 focus-visible:underline-offset-4"
+                        className="outline-hidden after:absolute after:inset-0 after:content-[''] focus-visible:underline focus-visible:decoration-ember focus-visible:decoration-2 focus-visible:underline-offset-4"
                     >
                         {item.name}
                     </Link>
@@ -99,7 +99,7 @@ export function DishRow({ item, href, onAdd, className }: Props) {
                                 ? t('ui.choose_item', { item: item.name })
                                 : t('ui.add_item', { item: item.name })
                         }
-                        className="relative z-10 -mt-5 grid size-11 place-items-center rounded-full bg-ember text-ember-ink shadow-plate transition-transform duration-150 outline-none hover:scale-105 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ember active:scale-95 disabled:bg-clay disabled:text-ink-muted disabled:shadow-none"
+                        className="relative z-10 -mt-5 grid size-11 place-items-center rounded-full bg-ember text-ember-ink shadow-plate outline-hidden transition-transform duration-150 hover:scale-105 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ember focus-visible:outline-solid active:scale-95 disabled:bg-clay disabled:text-ink-muted disabled:shadow-none"
                     >
                         <Plus
                             className="size-5"

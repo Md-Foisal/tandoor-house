@@ -37,8 +37,10 @@ class StripeGateway implements PaymentGateway
             throw new GatewayNotConfigured('STRIPE_SECRET is not set.');
         }
 
-        if (str_starts_with($secret, 'sk_live_') || str_starts_with($secret, 'rk_live_')) {
-            throw new GatewayNotConfigured('Live Stripe keys are refused; use a test mode key.');
+        $live = str_starts_with($secret, 'sk_live_') || str_starts_with($secret, 'rk_live_');
+
+        if ($live && ! config('payments.stripe.allow_live')) {
+            throw new GatewayNotConfigured('Live Stripe keys are refused unless STRIPE_ALLOW_LIVE is true; use a test mode key.');
         }
 
         $this->secret = $secret;

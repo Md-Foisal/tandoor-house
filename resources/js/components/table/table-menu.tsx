@@ -46,7 +46,7 @@ export function TableMenu({ categories }: { categories: Category[] }) {
                         data-slug={category.slug}
                         tabIndex={-1}
                         aria-labelledby={`${sectionId(category.slug)}-title`}
-                        className="scroll-mt-28 py-6 outline-none md:scroll-mt-32"
+                        className="scroll-mt-28 py-6 outline-hidden md:scroll-mt-32"
                     >
                         <SectionHeading
                             id={`${sectionId(category.slug)}-title`}

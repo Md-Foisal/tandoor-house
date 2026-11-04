@@ -186,7 +186,7 @@ export function PeopleTab({
                     type="button"
                     variant="ghost"
                     size="sm"
-                    className="min-h-11 text-chilli"
+                    className="min-h-11 min-w-11 text-chilli"
                     disabled={!context.online}
                     onClick={() => setRemoving(person)}
                 >

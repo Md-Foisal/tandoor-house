@@ -2,12 +2,14 @@
 
 use App\Http\Controllers\Account\AccountController;
 use App\Http\Controllers\Account\AddressController;
+use App\Http\Controllers\Account\DataExportController;
 use App\Http\Controllers\Account\OrderHistoryController;
 use App\Http\Controllers\Account\ReviewController;
 use App\Http\Controllers\BasketController;
 use App\Http\Controllers\CartLineController;
 use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\LegalController;
 use App\Http\Controllers\MenuController;
 use App\Http\Controllers\OrderCancellationController;
 use App\Http\Controllers\OrderPaymentController;
@@ -17,6 +19,7 @@ use App\Http\Controllers\PaymentWebhookController;
 use App\Http\Controllers\ReservationCancellationController;
 use App\Http\Controllers\ReservationController;
 use App\Http\Controllers\ReservationPaymentController;
+use App\Http\Controllers\SitemapController;
 use App\Http\Controllers\StyleguideController;
 use App\Http\Controllers\TableOrderingController;
 use App\Http\Controllers\TablePaymentController;
@@ -24,12 +27,17 @@ use Illuminate\Foundation\Http\Middleware\ValidateCsrfToken;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', HomeController::class)->name('home');
+Route::get('sitemap.xml', SitemapController::class)->name('sitemap');
+Route::get('robots.txt', [SitemapController::class, 'robots'])->name('robots');
 
 Route::controller(PageController::class)->group(function () {
     Route::get('story', 'story')->name('story');
     Route::get('visit', 'visit')->name('visit');
     Route::get('allergens', 'allergens')->name('allergens');
 });
+
+Route::get('privacy', [LegalController::class, 'privacy'])->name('privacy');
+Route::get('cookies', [LegalController::class, 'cookies'])->name('cookies');
 
 Route::controller(MenuController::class)->prefix('menu')->name('menu.')->group(function () {
     Route::get('/', 'index')->name('index');
@@ -62,7 +70,7 @@ Route::controller(ReservationController::class)->prefix('book')->name('book.')->
     Route::get('/', 'create')->name('create');
     Route::get('slots', 'slots')->name('slots');
     Route::post('/', 'store')->middleware('throttle:booking')->name('store');
-    Route::get('{reservation:reference}', 'show')->name('show');
+    Route::get('{reservation:reference}', 'show')->middleware('throttle:lookup')->name('show');
 });
 
 Route::controller(ReservationPaymentController::class)->prefix('book/{reservation:reference}/pay')->name('book.pay')->group(function () {
@@ -89,12 +97,15 @@ Route::middleware(['auth', 'verified'])->prefix('account')->name('account.')->gr
     Route::resource('addresses', AddressController::class)->except(['show', 'create', 'edit']);
     Route::get('reviews', [ReviewController::class, 'index'])->name('reviews.index');
     Route::post('orders/{order:number}/review', [ReviewController::class, 'store'])->name('reviews.store');
+    Route::get('data-export', DataExportController::class)->middleware('throttle:5,60')->name('data-export');
 });
 
-Route::controller(StyleguideController::class)->prefix('styleguide')->name('styleguide.')->group(function () {
-    Route::get('/', 'index')->name('index');
-    Route::get('motion', 'motion')->name('motion');
-});
+if (! app()->isProduction()) {
+    Route::controller(StyleguideController::class)->prefix('styleguide')->name('styleguide.')->group(function () {
+        Route::get('/', 'index')->name('index');
+        Route::get('motion', 'motion')->name('motion');
+    });
+}
 
 require __DIR__.'/settings.php';
 require __DIR__.'/staff.php';

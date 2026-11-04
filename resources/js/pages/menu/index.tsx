@@ -109,7 +109,11 @@ export default function MenuIndex({ categories }: Props) {
     return (
         <>
             <Head title={t('menu.title')}>
-                <meta name="description" content={t('menu.meta_description')} />
+                <meta
+                    head-key="description"
+                    name="description"
+                    content={t('menu.meta_description')}
+                />
             </Head>
 
             <div className="container-page flex flex-col gap-3 pt-6 pb-5 md:pt-10">
@@ -123,7 +127,7 @@ export default function MenuIndex({ categories }: Props) {
                         {t('menu.allergen_note')}{' '}
                         <Link
                             href="/allergens"
-                            className="inline-flex min-h-11 items-center font-semibold text-ember underline underline-offset-4 outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ember"
+                            className="inline-flex min-h-11 items-center font-semibold text-ember underline underline-offset-4 outline-hidden focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ember focus-visible:outline-solid"
                         >
                             {t('menu.allergen_link')}
                         </Link>

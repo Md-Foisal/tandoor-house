@@ -169,11 +169,16 @@ export default function MenuIndex({
                         onValueChange={(v) => setTab(v as typeof tab)}
                     >
                         <TabsList>
-                            <TabsTrigger value="items" className="min-h-11">
+                            <TabsTrigger
+                                value="items"
+                                aria-controls={undefined}
+                                className="min-h-11"
+                            >
                                 {t('staff_menu.tabs.items')}
                             </TabsTrigger>
                             <TabsTrigger
                                 value="categories"
+                                aria-controls={undefined}
                                 className="min-h-11"
                             >
                                 {t('staff_menu.tabs.categories')}

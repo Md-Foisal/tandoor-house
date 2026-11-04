@@ -166,13 +166,17 @@ export default function MenuShow({ item, category, related }: Props) {
     return (
         <>
             <Head title={item.name}>
-                <meta name="description" content={item.description} />
+                <meta
+                    head-key="description"
+                    name="description"
+                    content={item.description}
+                />
             </Head>
 
             <div className="container-page pt-4 pb-40 md:pt-8 md:pb-16">
                 <Link
                     href={backHref}
-                    className="-ml-2 inline-flex min-h-11 items-center gap-2 rounded-md px-2 font-semibold text-ink-muted outline-none hover:text-ink focus-visible:outline-2 focus-visible:outline-ember"
+                    className="-ml-2 inline-flex min-h-11 items-center gap-2 rounded-md px-2 font-semibold text-ink-muted outline-hidden hover:text-ink focus-visible:outline-2 focus-visible:outline-ember focus-visible:outline-solid"
                 >
                     <ArrowLeft className="size-4" aria-hidden="true" />
                     {t('menu.dish.back')}

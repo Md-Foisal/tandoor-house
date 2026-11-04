@@ -8,7 +8,7 @@ import type { FloorActions } from './use-floor-actions';
 import { formatClock, useNow } from './use-now';
 
 const selectClass =
-    'h-12 w-full rounded-md border border-line-strong bg-surface px-3 text-base text-ink outline-none focus-visible:outline-2 focus-visible:outline-ember disabled:opacity-50';
+    'h-12 w-full rounded-md border border-line-strong bg-surface px-3 text-base text-ink outline-hidden focus-visible:outline-2 focus-visible:outline-solid focus-visible:outline-ember disabled:opacity-50';
 
 /** Bookings due in the next two hours, with a one-tap way to seat them. */
 export function BookingsRail({

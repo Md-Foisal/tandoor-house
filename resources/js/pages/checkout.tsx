@@ -336,7 +336,7 @@ export default function Checkout(props: CheckoutProps) {
                             id="step-heading"
                             ref={headingRef}
                             tabIndex={-1}
-                            className="font-display text-display-md outline-none"
+                            className="font-display text-display-md outline-hidden"
                         >
                             {t(`checkout.heading.${steps[step].key}`)}
                         </h2>

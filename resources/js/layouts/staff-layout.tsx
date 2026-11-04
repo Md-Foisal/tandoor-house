@@ -19,6 +19,7 @@ import {
     ChevronsUpDown,
 } from 'lucide-react';
 import type { ReactNode } from 'react';
+import { InstallApp, StaffPwaHead } from '@/components/staff/install-app';
 import { LogoMark } from '@/components/brand/logo';
 import { OfflineBanner } from '@/components/brand/states';
 import { ThemeToggle } from '@/components/brand/theme-toggle';
@@ -161,11 +162,12 @@ export default function StaffLayout({ children }: { children: ReactNode }) {
 
     return (
         <SidebarProvider defaultOpen={sidebarOpen}>
+            <StaffPwaHead />
             <Sidebar collapsible="icon" variant="sidebar">
                 <SidebarHeader>
                     <Link
                         href="/staff"
-                        className="flex h-12 items-center gap-2.5 rounded-md px-1.5 outline-none focus-visible:outline-2 focus-visible:outline-ember"
+                        className="flex h-12 items-center gap-2.5 rounded-md px-1.5 outline-hidden focus-visible:outline-2 focus-visible:outline-ember focus-visible:outline-solid"
                     >
                         <LogoMark className="size-7" />
                         <span className="truncate font-display text-lg group-data-[collapsible=icon]:hidden">
@@ -188,6 +190,7 @@ export default function StaffLayout({ children }: { children: ReactNode }) {
                         <LiveStatus />
                     </div>
                     <SidebarMenu>
+                        <InstallApp />
                         <SidebarMenuItem>
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>

@@ -16,3 +16,6 @@ Schedule::command('reports:daily-close')->dailyAt('23:30')->timezone('Europe/Lon
 Schedule::command('reports:weekly')->weeklyOn(1, '07:00')->timezone('Europe/London');
 
 Schedule::command('queue:prune-failed --hours=168')->daily();
+
+// Activity logs (12 months), abandoned baskets and dead staff invites (30 days). Orders, payments and bookings are kept six years.
+Schedule::command('model:prune')->daily()->withoutOverlapping();

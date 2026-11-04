@@ -22,6 +22,7 @@ class DatabaseSeeder extends Seeder
             ReservationSeeder::class,
             ReviewSeeder::class,
             PeopleSeeder::class,
+            FeatureDemoSeeder::class,
         ]);
     }
 }
