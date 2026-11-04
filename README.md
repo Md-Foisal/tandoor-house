@@ -153,34 +153,28 @@ The identity is written down in [docs/design-system.md](docs/design-system.md) a
 ## Architecture
 
 ```mermaid
-flowchart LR
-    subgraph Browser
-        Guest["Guest and customer site<br/>(phone first)"]
-        Staff["Staff panel<br/>(tablet PWA, kitchen display)"]
-    end
+flowchart TB
+    Guest["Guest and customer site (phone first)"]
+    Staff["Staff panel (tablet app, kitchen display)"]
+    Inertia["Controllers, policies, form requests<br/>Inertia 3 with typed props"]
+    Domain["Actions and services<br/>Pricing, OrderStateMachine, Payments, Automation, ActivityRecorder"]
+    Queue["Queued jobs and notifications<br/>mail, SMS, reminders, reports"]
+    Sched["Scheduler: automations and pruning"]
+    DB[("SQLite locally, MySQL in production")]
+    Gateway["Payment gateway: fake, venue, Stripe test mode"]
+    Reverb["Reverb WebSockets"]
 
-    subgraph Laravel["Laravel 13"]
-        Inertia["Controllers, policies, form requests<br/>Inertia 3 + typed props"]
-        Domain["Actions and services<br/>Pricing, OrderStateMachine, Payments,<br/>Automation, ActivityRecorder"]
-        Queue["Queued jobs and notifications<br/>mail, SMS, reminders, reports"]
-        Sched["Scheduler<br/>automations, pruning"]
-        Reverb["Reverb<br/>WebSockets"]
-    end
-
-    DB[("SQLite locally<br/>MySQL in production")]
-    Gateway["Payment gateway<br/>fake, venue, Stripe test mode"]
-
-    Guest -->|"Inertia visits"| Inertia
-    Staff -->|"Inertia visits"| Inertia
+    Guest --> Inertia
+    Staff --> Inertia
     Inertia --> Domain
+    Sched --> Domain
     Domain --> DB
     Domain --> Gateway
-    Gateway -.->|"webhooks"| Inertia
+    Gateway -.->|webhooks| Inertia
     Domain --> Queue
-    Sched --> Domain
     Domain -->|"events: ids and statuses only"| Reverb
-    Reverb -.->|"live updates"| Guest
-    Reverb -.->|"live updates"| Staff
+    Reverb -.->|live updates| Guest
+    Reverb -.->|live updates| Staff
 ```
 
 The server is the source of truth. There is no REST API for the web app: routes, controllers, policies and validation live in Laravel, and pages receive typed props through Inertia. Broadcast events carry only ids and statuses, so a page reloads its own data and permissions are checked again on every update. When the socket is down (and for guests, who have no private channel) pages poll every 15 seconds instead.
@@ -189,6 +183,7 @@ The server is the source of truth. There is no REST API for the web app: routes,
 
 ```mermaid
 stateDiagram-v2
+    direction LR
     [*] --> Placed
     Placed --> Accepted: staff or auto-accept
     Placed --> Rejected
