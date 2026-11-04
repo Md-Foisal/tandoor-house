@@ -1,5 +1,6 @@
 <?php
 
+use App\Actions\UkFormats;
 use App\Enums\OrderChannel;
 use App\Enums\OrderStatus;
 use App\Enums\PaymentStatus;
@@ -174,6 +175,17 @@ $checks = [
         User::query()->where('loyalty_points', '>', 0)->get()->each(function (User $user) {
             expect($user->loyalty_points)->toBe((int) $user->loyaltyTransactions()->sum('points'));
         });
+    },
+    'seeds phone numbers the booking and checkout forms accept' => function () {
+        $phones = User::whereNotNull('phone')->pluck('phone')
+            ->merge(Reservation::pluck('phone'))
+            ->merge(Order::whereNotNull('contact')->get()->pluck('contact.phone')->filter());
+
+        expect($phones)->not->toBeEmpty();
+
+        foreach ($phones as $phone) {
+            expect(UkFormats::mobile($phone))->not->toBeNull("{$phone} is not a UK mobile number");
+        }
     },
     'covers every delivery postcode with a zone' => function () {
         $prefixes = DeliveryZone::all()->flatMap->postcode_prefixes;

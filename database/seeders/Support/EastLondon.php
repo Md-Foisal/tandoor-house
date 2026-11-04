@@ -3,7 +3,7 @@
 namespace Database\Seeders\Support;
 
 /**
- * Plausible addresses, postcodes and neighbourhoods around Hanbury Street.
+ * Plausible addresses, postcodes, neighbourhoods and phone numbers around Hanbury Street.
  */
 final class EastLondon
 {
@@ -51,6 +51,15 @@ final class EastLondon
         $areas = self::AREAS[$prefix ?? ''] ?? self::AREAS[Dice::pick(self::prefixes())];
 
         return Dice::pick($areas);
+    }
+
+    /**
+     * Ofcom keeps 07700 900000 to 900999 for drama and demos, so these pass the
+     * booking and checkout rules and never belong to a real person.
+     */
+    public static function mobile(): string
+    {
+        return '07700 900'.fake()->numerify('###');
     }
 
     public static function person(): string

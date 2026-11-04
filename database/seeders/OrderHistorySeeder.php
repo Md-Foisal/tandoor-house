@@ -274,7 +274,7 @@ class OrderHistorySeeder extends Seeder
         $prep = max(1, ...array_column($lines, 'prep'));
         $contact = $user !== null
             ? ['name' => $user->name, 'email' => $user->email, 'phone' => $user->phone]
-            : ['name' => EastLondon::person(), 'email' => fake('en_GB')->safeEmail(), 'phone' => '07'.fake('en_GB')->numerify('### ######')];
+            : ['name' => EastLondon::person(), 'email' => fake('en_GB')->safeEmail(), 'phone' => EastLondon::mobile()];
         $cashCollected = $method === PaymentMethod::Cash && $final === OrderStatus::Completed
             ? (int) (ceil($totals['total'] / 500) * 500)
             : null;

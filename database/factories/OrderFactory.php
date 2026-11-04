@@ -77,7 +77,7 @@ class OrderFactory extends Factory
             'contact' => [
                 'name' => fake()->name(),
                 'email' => fake()->safeEmail(),
-                'phone' => '07'.fake()->numerify('### ######'),
+                'phone' => EastLondon::mobile(),
             ],
             'address' => null,
             'postcode' => null,

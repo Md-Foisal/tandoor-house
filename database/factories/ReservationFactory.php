@@ -5,6 +5,7 @@ namespace Database\Factories;
 use App\Enums\PaymentStatus;
 use App\Enums\ReservationStatus;
 use App\Models\Reservation;
+use Database\Seeders\Support\EastLondon;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
@@ -25,7 +26,7 @@ class ReservationFactory extends Factory
             'user_id' => null,
             'name' => fake()->name(),
             'email' => fake()->safeEmail(),
-            'phone' => '07'.fake()->numerify('### ######'),
+            'phone' => EastLondon::mobile(),
             'party_size' => 2,
             'starts_at' => $start,
             'ends_at' => $start->copy()->addMinutes(105),
