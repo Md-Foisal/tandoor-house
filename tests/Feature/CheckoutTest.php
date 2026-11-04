@@ -83,6 +83,13 @@ it('places a guest delivery order', function () {
     expect(session('guest_orders'))->toBe([$order->number]);
 });
 
+it('opens the page after checkout at the top', function () {
+    $page = file_get_contents(resource_path('js/pages/checkout.tsx'));
+
+    expect($page)->toContain("preserveScroll: 'errors'")
+        ->and($page)->not->toContain('preserveScroll: true');
+});
+
 it('rejects a postcode outside the zones', function () {
     fillBasket();
 
