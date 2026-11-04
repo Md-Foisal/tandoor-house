@@ -106,7 +106,7 @@ export default function BookCreate({
         }
 
         form.post(store.url(), {
-            preserveScroll: true,
+            preserveScroll: 'errors',
             onError: () => summaryRef.current?.focus(),
         });
     };
