@@ -167,7 +167,7 @@ class ReservationSeeder extends Seeder
                 $customer,
                 $name,
                 $customer->email ?? Str::slug($name, '.').'@'.Dice::pick(['gmail.com', 'outlook.com', 'icloud.com', 'btinternet.com']),
-                $customer->phone ?? '07'.fake('en_GB')->numerify('### ######'),
+                $customer->phone ?? EastLondon::mobile(),
             );
 
             return;

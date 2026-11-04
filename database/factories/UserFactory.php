@@ -4,6 +4,7 @@ namespace Database\Factories;
 
 use App\Enums\Role;
 use App\Models\User;
+use Database\Seeders\Support\EastLondon;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
@@ -29,7 +30,7 @@ class UserFactory extends Factory
             'name' => fake()->name(),
             'email' => fake()->unique()->safeEmail(),
             'role' => Role::Customer,
-            'phone' => '07'.fake()->numerify('### ######'),
+            'phone' => EastLondon::mobile(),
             'email_verified_at' => now(),
             'password' => static::$password ??= Hash::make('password'),
             'remember_token' => Str::random(10),

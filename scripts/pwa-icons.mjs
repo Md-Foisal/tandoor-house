@@ -2,7 +2,7 @@
  * Draws the staff app icons from the brand mark (the tandoor arch with its ember):
  * node scripts/pwa-icons.mjs
  * Writes icon-192.png, icon-512.png, icon-maskable-512.png and apple-touch-icon.png
- * to public/staff/icons/. Colours are the dark paper, ink and ember tokens from
+ * to public/staff-app/icons/. Colours are the dark paper, ink and ember tokens from
  * docs/design-system.md, matching the kitchen display.
  */
 import { mkdir } from 'node:fs/promises';
@@ -11,7 +11,7 @@ import sharp from 'sharp';
 const PAPER = '#16110D';
 const INK = '#F2E8DA';
 const EMBER = '#E8784A';
-const OUT = new URL('../public/staff/icons/', import.meta.url).pathname;
+const OUT = new URL('../public/staff-app/icons/', import.meta.url).pathname;
 
 // `fill` is the share of the canvas the 32-unit mark occupies; maskable icons
 // keep it inside the 80% safe circle.

@@ -21,7 +21,7 @@ class StaffPwaController extends Controller
     {
         $name = config('restaurant.name');
         $icon = fn (string $file, int $size, string $purpose) => [
-            'src' => "/staff/icons/{$file}",
+            'src' => "/staff-app/icons/{$file}",
             'sizes' => "{$size}x{$size}",
             'type' => 'image/png',
             'purpose' => $purpose,
@@ -29,7 +29,7 @@ class StaffPwaController extends Controller
         $shortcut = fn (string $area, string $url) => [
             'name' => __("staff.areas.{$area}"),
             'url' => $url,
-            'icons' => [['src' => '/staff/icons/icon-192.png', 'sizes' => '192x192', 'type' => 'image/png']],
+            'icons' => [['src' => '/staff-app/icons/icon-192.png', 'sizes' => '192x192', 'type' => 'image/png']],
         ];
 
         return response()->json([
@@ -70,7 +70,7 @@ class StaffPwaController extends Controller
                 e(__('staff.install.offline_body')),
                 e(__('staff.install.offline_retry')),
             ],
-            File::get(public_path('staff/offline.html')),
+            File::get(public_path('staff-app/offline.html')),
         );
 
         return response($html)->header('Cache-Control', 'no-cache');

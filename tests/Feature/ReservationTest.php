@@ -130,6 +130,13 @@ it('confirms small parties with no deposit', function () {
         ->and($reservation->reference)->toMatch('/^R[A-Z2-9]{5}$/');
 });
 
+it('opens the confirmation at the top but keeps the place on a rejected form', function () {
+    $page = file_get_contents(resource_path('js/pages/book/create.tsx'));
+
+    expect($page)->toContain("preserveScroll: 'errors'")
+        ->and($page)->not->toContain('preserveScroll: true');
+});
+
 it('holds large parties as pending deposit', function () {
     $this->post('/book', bookingPayload(['party_size' => 6]))->assertRedirect();
 
