@@ -24,7 +24,7 @@
 
 <p align="center"><sub>The demo sleeps on free hosting, so the first visit can take about a minute. Sign in as anyone with one tap. It resets itself after a quiet spell.</sub></p>
 
-> **A sandbox, not a business.** Tandoor House is a fictional restaurant in East London built to show a complete, real-world product. Card payments run in Stripe test mode, or on a fake gateway by default, so no money moves. Text messages go to a log. The 40 dishes use free-licence stock photos, 20 of them stand-ins for similar dishes. There is no live demo; you run it locally in a few minutes (see [Run it](#run-it)).
+> **A sandbox, not a business.** Tandoor House is a fictional restaurant in East London built to show a complete, real-world product. Card payments run in Stripe test mode, or on a fake gateway by default, so no money moves. Text messages go to a log. The 40 dishes use free-licence stock photos, 20 of them stand-ins for similar dishes. You can also run it locally in a few minutes (see [Run it](#run-it)).
 
 ## Watch the film
 
