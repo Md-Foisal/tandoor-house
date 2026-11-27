@@ -62,4 +62,11 @@ return [
     'step_current' => 'in progress',
     'step_upcoming' => 'to come',
     'skip_to_content' => 'Skip to content',
+    'demo' => [
+        'banner' => 'This is a demo of a fictional restaurant. No real food, money or messages.',
+        'protected' => 'Passwords, sign-in settings and staff records stay as they are in the demo, so the next visitor can sign in too.',
+        'accounts_title' => 'Try it as anyone',
+        'accounts_body' => 'One tap signs you in. The demo starts fresh after a quiet spell, so break whatever you like.',
+        'cards' => 'To pay, choose a test card on the payment form. No real card is ever needed.',
+    ],
 ];

@@ -1,4 +1,4 @@
-import { Form, Head } from '@inertiajs/react';
+import { Form, Head, router, usePage } from '@inertiajs/react';
 import { useOnline } from '@/components/brand/states';
 import { Notice } from '@/components/alert-error';
 import { Field } from '@/components/input-error';
@@ -20,15 +20,56 @@ type Props = {
     canResetPassword: boolean;
 };
 
+function DemoAccounts() {
+    const t = useT();
+    const { demo } = usePage().props;
+
+    if (demo === null) {
+        return null;
+    }
+
+    return (
+        <section className="flex flex-col gap-3 rounded-lg border border-line bg-surface p-4">
+            <h2 className="font-display text-xl">
+                {t('ui.demo.accounts_title')}
+            </h2>
+            <p className="text-sm text-ink-muted">
+                {t('ui.demo.accounts_body')}
+            </p>
+            <div className="grid grid-cols-2 gap-2">
+                {Object.entries(demo.accounts).map(([role, email]) => (
+                    <Button
+                        key={role}
+                        type="button"
+                        variant="outline"
+                        onClick={() =>
+                            router.post(store.url(), {
+                                email,
+                                password: demo.password,
+                            })
+                        }
+                    >
+                        {t(`roles.${role}`)}
+                    </Button>
+                ))}
+            </div>
+            <p className="text-sm text-ink-muted">{t('ui.demo.cards')}</p>
+        </section>
+    );
+}
+
 export default function Login({ status, canResetPassword }: Props) {
     const t = useT();
     const online = useOnline();
+    const { demo } = usePage().props;
 
     return (
         <>
             <Head title={t('auth_pages.login.head')} />
 
             {status && <Notice>{status}</Notice>}
+
+            <DemoAccounts />
 
             <PasskeyVerify />
 
@@ -50,7 +91,7 @@ export default function Login({ status, canResetPassword }: Props) {
                                     type="email"
                                     name="email"
                                     required
-                                    autoFocus
+                                    autoFocus={demo === null}
                                     autoComplete="email"
                                     placeholder={t(
                                         'auth_pages.common.email_placeholder',

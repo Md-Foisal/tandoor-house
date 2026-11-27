@@ -1,0 +1,8 @@
+# One free web service built from the Dockerfile; the container sets its own
+# secrets and database on every start, so nothing needs filling in.
+services:
+    - type: web
+      name: tandoor-house
+      runtime: docker
+      plan: free
+      autoDeploy: true

@@ -91,3 +91,7 @@ Test cards on the fake payment form: Visa 4242 and Mastercard 4444 succeed; "Car
 9. **ICO registration number** and the company details shown in the footer and privacy notice.
 10. **Opening hours, delivery zones, prices, allergens and recipes**: the seeded values are realistic examples and must be replaced with the restaurant's own (all editable in the staff panel).
 11. **Servers**: run `php artisan storage:link` on each server.
+
+## The public demo
+
+https://tandoor-house.onrender.com runs the `Dockerfile` on Render's free plan with `DEMO_MODE=true` (see `render.yaml` and `docs/decisions.md`). It sleeps after 15 minutes without traffic and starts fresh when it wakes. It is not a template for the real launch: follow "Going live" above for that.

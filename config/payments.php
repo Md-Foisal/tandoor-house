@@ -4,7 +4,8 @@ use App\Payments\Gateways\FakeGateway;
 use App\Payments\Gateways\StripeGateway;
 use App\Payments\Gateways\VenueGateway;
 
-$online = env('STRIPE_SECRET') ? 'stripe' : 'fake';
+// A public demo must never reach a real payment provider, whatever keys are set.
+$online = env('STRIPE_SECRET') && ! env('DEMO_MODE') ? 'stripe' : 'fake';
 
 return [
 

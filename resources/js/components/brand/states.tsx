@@ -126,6 +126,21 @@ export function useOnline(): boolean {
     return online;
 }
 
+export function DemoBanner() {
+    const t = useT();
+    const { demo } = usePage().props;
+
+    if (demo === null) {
+        return null;
+    }
+
+    return (
+        <p className="bg-turmeric-soft px-4 py-2 text-center text-sm font-semibold text-ink">
+            {t('ui.demo.banner')}
+        </p>
+    );
+}
+
 export function OfflineBanner({
     forceOffline = false,
 }: {

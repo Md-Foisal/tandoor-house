@@ -22,6 +22,9 @@ it('sends the hardening headers on a page', function () {
 });
 
 it('locks the page to its own origin, Stripe and Reverb', function () {
+    // The policy adds the Vite origin while `npm run dev` is running.
+    Vite::useHotFile(storage_path('framework/testing/no-hot-file'));
+
     config([
         'broadcasting.connections.reverb.options.host' => 'ws.example.test',
         'broadcasting.connections.reverb.options.port' => 443,
