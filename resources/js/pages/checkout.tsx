@@ -280,7 +280,7 @@ export default function Checkout(props: CheckoutProps) {
         }));
 
         form.post(store.url(), {
-            preserveScroll: true,
+            preserveScroll: 'errors',
             onError: (serverErrors) => {
                 const first = Object.keys(serverErrors)[0];
 
