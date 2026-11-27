@@ -66,11 +66,26 @@ class FeatureDemoSeeder extends Seeder
         $shortfall = ($reward + 220) - $earned;
 
         if ($shortfall > 0) {
-            Order::where('user_id', $demo->id)->where('status', OrderStatus::Completed)->oldest('completed_at')->limit(3)->get()
-                ->each(function (Order $order) use (&$shortfall) {
-                    $extra = (int) ceil($shortfall / 3);
-                    DB::table('loyalty_transactions')->where('order_id', $order->id)->where('kind', 'earned')->increment('points', $extra);
+            // Top up existing earned rows: an order that earned no points has none to increment.
+            $rows = $demo->loyaltyTransactions()->where('kind', 'earned')->oldest('created_at')->limit(3)->pluck('id');
+
+            if ($rows->isEmpty()) {
+                LoyaltyTransaction::forceCreate([
+                    'user_id' => $demo->id,
+                    'order_id' => $earnedOrder->id,
+                    'points' => $shortfall,
+                    'kind' => 'earned',
+                    'reason' => "Order {$earnedOrder->number}",
+                    'created_at' => $earnedOrder->completed_at,
+                ]);
+            } else {
+                $share = intdiv($shortfall, $rows->count());
+                $remainder = $shortfall % $rows->count();
+
+                $rows->each(function (int $id, int $index) use ($share, $remainder) {
+                    DB::table('loyalty_transactions')->where('id', $id)->increment('points', $share + ($index < $remainder ? 1 : 0));
                 });
+            }
         }
 
         LoyaltyTransaction::forceCreate([
