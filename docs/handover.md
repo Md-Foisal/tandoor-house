@@ -94,4 +94,4 @@ Test cards on the fake payment form: Visa 4242 and Mastercard 4444 succeed; "Car
 
 ## The public demo
 
-https://tandoor-house.onrender.com runs the `Dockerfile` on Render's free plan with `DEMO_MODE=true` (see `render.yaml` and `docs/decisions.md`). It sleeps after 15 minutes without traffic and starts fresh when it wakes. It is not a template for the real launch: follow "Going live" above for that.
+https://tandoorhouse.onrender.com runs the `Dockerfile` on Render's free plan with `DEMO_MODE=true`, in its own Render workspace (see `docs/decisions.md`). A cron-job.org job opens `/up` every 10 minutes so it does not sleep; if it ever restarts, it starts fresh. It is not a template for the real launch: follow "Going live" above for that.

@@ -20,7 +20,7 @@
   </picture>
 </p>
 
-<p align="center"><strong><a href="https://tandoor-house.onrender.com">Try the live demo</a></strong> · <a href="https://youtu.be/NwxVs3GprHQ">Watch the film</a></p>
+<p align="center"><strong><a href="https://tandoorhouse.onrender.com">Try the live demo</a></strong> · <a href="https://youtu.be/NwxVs3GprHQ">Watch the film</a></p>
 
 <p align="center"><sub>The demo sleeps on free hosting, so the first visit can take about a minute. Sign in as anyone with one tap. It resets itself after a quiet spell.</sub></p>
 
